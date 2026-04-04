@@ -4,7 +4,7 @@
 {% block content %}
 
 <div class="w3-container">
-    <form  class="w3-container w3-card-4 w3-light-gray w3-margin-top w3-margin-bottom">
+    <form  class="w3-container w3-card-4 w3-light-gray w3-margin-top w3-margin-bottom" method="POST">
         <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
 
         {{ form.hidden_tag() }}
@@ -37,5 +37,7 @@
 </div>
 
 </div>
+
+<script src="{{ url_for('profile.static', filename='js/profile.js') }}?v={{ version }}"></script>
 
 {% endblock %}

@@ -11,7 +11,7 @@ $(function(){
 	    } else {
 	       var req_data = {action:action}
 	    }
-	    $.post('/qlabAJAX', req_data).done(function(response) {
+	    $.post('/qlab/qlabAJAX', req_data).done(function(response) {
 	            $('#qlab_status').text(response['text']);
             }).fail(function() {
                 $('#qlab_status').text('Action Failed. Contact Support');

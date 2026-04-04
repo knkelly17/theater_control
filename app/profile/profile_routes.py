@@ -1,12 +1,13 @@
 """Routes for the Flask web application handling lighting and QLab control via OSC."""
 import datetime
-from flask import render_template, request, jsonify, redirect, url_for
+from flask import flash, render_template, request, jsonify, redirect, url_for
 from flask_login import LoginManager, current_user, login_user, login_required, logout_user, UserMixin
 from pythonosc.udp_client import SimpleUDPClient
 from werkzeug.security import generate_password_hash, check_password_hash
 import mysql.connector
 from app import app
 from .profile_forms import LoginForm
+from . import profile_bp
 from systems import etc_ip, etc_port, qlab_ip, qlab_port
 
 
@@ -31,8 +32,8 @@ def get_db(dbconnection=app.dbconnection):
     )
 
 
-
 # --- USER CLASS ---
+
 class User(UserMixin):
     def __init__(self, id, username, password_hash):
         self.id = id
@@ -47,16 +48,6 @@ def check_password(this_user, password):
         if not user_data:
             return False
     return check_password_hash(user_data["password_hash"], password)
-
-@login_manager.user_loader
-def load_user(user_id):
-    with get_db(dbconnection=app.dbconnection) as db:
-        cursor = db.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM users WHERE ID=%s", (user_id,))
-        data = cursor.fetchone()
-        if data:
-            return User(data["ID"], data["username"], data["password_hash"])
-        return None
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -79,7 +70,6 @@ def login():
                     'text': url_for("index"),
                     'login_result': login_result
                     })
-                #return redirect(url_for("index"))
             else:
                 login_result = 0
                 this_text = "Invalid username or password. Please try again."
@@ -97,7 +87,7 @@ def logout():
     return redirect(url_for("index"))
 
 
-@app.route("/profile", methods=["GET", "POST"])
+@profile_bp.route("/", methods=["GET", "POST"])
 @login_required
 def profile():
     form = LoginForm()
@@ -107,6 +97,7 @@ def profile():
 @app.route("/change_password", methods=["POST"])
 @login_required
 def change_password():
+    
     current_password = request.form["current_password"]
     this_user = current_user.username
 
@@ -124,6 +115,14 @@ def change_password():
         cursor = db.cursor()
         cursor.execute("UPDATE users SET password_hash=%s WHERE ID=%s", (hashed_password, current_user.id))
         db.commit()
+    
 
-    return jsonify({'text': "Password changed successfully."})
+    form = LoginForm()
+    logout_user()
+    login_result = 1
+    return jsonify({
+        'text': url_for("login"),
+        'login_result': login_result
+        }
+    )
 

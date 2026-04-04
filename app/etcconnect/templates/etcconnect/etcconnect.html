@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <!-- h1>Enter Channel Number to set Full or Out</h1 -->
+
+{% include 'user_menu.html' %} 
+ <div class="w3-container">
+    <form>
+
+        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+        <div class="w3-row">
+        {{ form.hidden_tag() }}
+            <div class="w3-col w3-pale-green">Enter Channel Number to set Full or Out</div>
+        </div>
+        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+        <div class="w3-row">
+            <div class="w3-col m12 l6">{{ form.channel_full_out.label }} {{ form.channel_full_out() }}</div>
+        </div>
+        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+        <div class="w3-row">
+            <div class="w3-col m6 l4">{{ form.channelFull() }}</div>
+        </div>
+        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+        <div class="w3-row">
+            <div class="w3-col m6 l4">{{ form.channelOut() }}</div>
+        </div>
+        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+
+        <div class="w3-row">
+            <div class="w3-col w3-pale-green">Enter Channel Number And Level</div>
+        </div>
+        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+        <div class="w3-row">
+            <div class="w3-col s6 m6 l3">{{ form.channelLevel.label }} {{ form.channelLevel(size=5) }}</div>
+            <div class="w3-col s6 m6 l3">{{ form.setLevel.label }} {{ form.setLevel() }}</div>
+        </div>
+        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+        <div class="w3-row">
+            <div class="w3-col m6 l4">{{ form.channelLevelButton() }}</div>
+        </div>
+        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+
+        <div class="w3-row">
+            <div class="w3-col w3-pale-green">Enter Address Number And Level</div>
+        </div>
+        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+        <div class="w3-row">
+            <div class="w3-col s6 m6 l3">{{ form.address.label }} {{ form.address(size=5) }}</div>
+            <div class="w3-col s6 m6 l3">{{ form.addressLevel.label }} {{ form.addressLevel() }}</div>
+        </div>
+        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+        <div class="w3-row">
+            <div class="w3-col m6 l4">{{ form.addressLevelButton() }}</div>
+        </div>
+        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+
+        <div class="w3-row">
+            <div class="w3-col w3-pale-green">Enter Cue Number</div>
+        </div>
+        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+        <div class="w3-row">
+            <div class="w3-col s6 m6 l3">{{ form.cue.label }} {{ form.cue() }}</div>
+        </div>
+        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+        <div class="w3-row">
+            <div class="w3-col m6 l4">{{ form.fire_cue() }}</div>
+        </div>
+        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+
+    </form>
+<div class="w3-row">
+    <div class="w3-col w3-panel w3-pale-blue alert-info" id="etc_status">Most Recent Command</div>
+</div>
+</div>
+
+<script src="{{ url_for('etcconnect.static', filename='js/etcconnect.js') }}?v={{ version }}"></script>
+
+{% endblock %}
+
+
+
+
+

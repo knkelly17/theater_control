@@ -6,7 +6,6 @@ from pythonosc.udp_client import SimpleUDPClient
 from werkzeug.security import generate_password_hash, check_password_hash
 import mysql.connector
 from app import app
-from app.forms import ETCForm, QlabForm, LoginForm
 from systems import etc_ip, etc_port, qlab_ip, qlab_port
 
 
@@ -39,14 +38,6 @@ class User(UserMixin):
         self.username = username
         self.password_hash = password_hash
 
-def check_password(this_user, password):
-    with get_db(dbconnection=app.dbconnection) as db:
-        cursor = db.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM users WHERE username=%s", (this_user,))
-        user_data = cursor.fetchone()
-        if not user_data:
-            return False
-    return check_password_hash(user_data["password_hash"], password)
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -66,49 +57,6 @@ def index():
     """Home page route."""
     return render_template('index.html', title='Home', version=ver)
 
-
-@app.route('/channel_set', methods=['GET', 'POST'])
-@login_required
-def channel_set():
-    """Lighting Control page route."""
-    form = ETCForm()
-    return render_template('channelSet.html', title='Lighting Control', form=form, version=ver)
-
-
-@app.route('/channelSetAJAX', methods=['POST', 'GET'])
-@login_required
-def channel_set_full_out():
-    """Channel level setting via AJAX route."""
-    ip = str(etc_ip)
-    port = int(etc_port)
-    client = SimpleUDPClient(ip, port)
-    level = request.form['level']
-    if level == 'cue':
-        cue_number = request.form['cue_number']
-        message = "/eos/cue/fire"
-        client.send_message(message, cue_number)
-        this_text = 'Cue '+cue_number+' is active'
-    else:
-        chan_id = request.form['chan_id']
-        message = "/eos/chan/" + chan_id + "/"
-        client.send_message(message, level)
-        this_text = 'Channel '+chan_id+' is @ '+request.form['level']
-    return jsonify({'text': this_text})
-
-
-@app.route('/addressSetAJAX', methods=['POST', 'GET'])
-@login_required
-def address_set_full_out():
-    """Address level setting via AJAX route."""
-    ip = str(etc_ip)
-    port = int(etc_port)
-    client = SimpleUDPClient(ip, port)
-    level = request.form['level']
-    addr_id = request.form['addr_id']
-    message = "/eos/addr/" + addr_id + "/"
-    client.send_message(message, level)
-    this_text = 'Address '+addr_id+' is @ '+request.form['level']
-    return jsonify({'text': this_text})
 
 @app.route("/admin", methods=["GET", "POST"])
 @login_required

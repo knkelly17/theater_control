@@ -25,7 +25,7 @@ def qlab_control():
     return render_template('qlab/qlab.html', title='QLab Control', form=form, version=ver)
 
 
-@app.route('/qlabAJAX', methods=['POST', 'GET'])
+@qlab_bp.route('/qlabAJAX', methods=['POST', 'GET'])
 @login_required
 def qlab_remote_ajax():
     """QLab control via AJAX route."""

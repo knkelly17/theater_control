@@ -20,6 +20,8 @@
 
         {% block content %} {% endblock %}
 
+        {% if current_user.is_authenticated %}
+
 
         <script>
             this_page = window.location.pathname.replace("/", "");
@@ -30,6 +32,8 @@
             document.getElementsByClassName(this_page)[0].classList.add("selected-button", "w3-blue");
             document.getElementsByClassName(this_page)[0].classList.remove("w3-dark-gray");
         </script>
+
+        {% endif %}
 
         <script>
            function menu_function() {

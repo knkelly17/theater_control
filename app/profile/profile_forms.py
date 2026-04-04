@@ -48,7 +48,7 @@ class LoginForm(FlaskForm):
             'w3-medium '
     })
 
-    submit_change_password = SubmitField('Submit', render_kw={
+    submit_change_password = SubmitField('Change Password', render_kw={
         'class':
             'w3-button '
             'w3-blue '

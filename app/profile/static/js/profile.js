@@ -13,7 +13,6 @@ $(function(){
 				} else {
 					$('#login_status').text(response['text']);
 				}
-				console.log(response)
             }).fail(function() {
                 $('#login_status').text('Action Failed. Contact Support');
             });
@@ -38,11 +37,11 @@ $(function(){
 	    var req_data = {current_password: current_password, new_password: new_password, confirm_password: confirm_password}
 	    $.post('/change_password', req_data).done(function(response) {
 				if (response['login_result'] == 1) {
+					alert('Password changed successfully. Please log in again.')
 					window.location.href = response['text'];
 				} else {
 					$('#login_status').text(response['text']);
 				}
-				console.log(response)
             }).fail(function() {
                 $('#login_status').text('Action Failed. Contact Support');
             });
