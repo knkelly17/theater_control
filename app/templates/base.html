@@ -1,0 +1,47 @@
+<!Doctype html>
+<html xmlns="http://www.w3.org/1999/html">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        {% if title %}
+        <title>{{ title }} - Mills Theater</title>
+        {% else %}
+        <title>Welcome to Mills Theater</title>
+        {% endif %}
+        <link rel="stylesheet" type="text/css" href="/static/css/w3.css">
+        <link rel="icon" type="image/x-icon" href="/static/images/favicon.ico">
+    </head>
+
+    <body>
+
+   
+        <script src="/static/js/jquery-4.0.0.min.js"></script>
+        <script src="/static/js/script.js?v={{ version }}"></script>
+
+        {% block content %} {% endblock %}
+
+
+        <script>
+            this_page = window.location.pathname.replace("/", "");
+            if (this_page == "") {
+                this_page = "index";
+            }
+            console.log("Current page: " + this_page);
+            document.getElementsByClassName(this_page)[0].classList.add("selected-button", "w3-blue");
+            document.getElementsByClassName(this_page)[0].classList.remove("w3-dark-gray");
+        </script>
+
+        <script>
+           function menu_function() {
+               var x = document.getElementById("menubar");
+               console.log(x);
+               if (x.className.indexOf("w3-show") == -1) {
+                   x.className += " w3-show";
+               } else {
+                   x.className = x.className.replace(" w3-show", "");
+               }
+           }
+         </script>
+     
+    </body>
+</html>

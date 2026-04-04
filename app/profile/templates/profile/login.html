@@ -1,0 +1,41 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="w3-container">
+    <form  class="w3-container w3-card-4 w3-light-gray w3-margin-top w3-margin-bottom">
+        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+
+        {{ form.hidden_tag() }}
+
+        <div class="w3-row">
+            <div class="w3-col m3 l2 w3-pale-green">Username</div>
+        </div>
+        <div class="w3-row">
+            <div class="w3-col m3 l2">{{ form.username() }}</div>
+        </div>
+
+        <div class="w3-row">
+            <div class="w3-col m3 l2 w3-pale-green">Password</div>
+        </div>
+        <div class="w3-row">
+            <div class="w3-col m3 l2">{{ form.password() }}</div>
+        </div>
+
+        <div class="w3-row"><div class="w3-col m3 l2">&nbsp;</div></div>
+
+        <div class="w3-row">
+            <div class="w3-col m3 l2">{{ form.submit_login() }}</div>
+        </div>
+
+        <div class="w3-row"><div class="w3-col m3 l2">&nbsp;</div></div>
+
+    </form>
+    <div class="w3-row">
+    <div class="w3-col w3-panel w3-pale-blue alert-info" id="login_status"></div>
+</div>
+
+</div>
+
+{% endblock %}

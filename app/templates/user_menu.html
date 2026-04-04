@@ -1,0 +1,33 @@
+<div class="w3-container w3-light-gray w3-center">
+    <h1>MHS Theater</h1>
+</div>
+
+<div class="w3-container w3-light-gray w3-center">
+    <div class="w3-bar">
+        <a href="{{ url_for('index') }}"
+            class="w3-button w3-bar-item w3-hide-small w3-left w3-dark-gray index">Home</a>
+        <a href="{{ url_for('channel_set') }}"
+            class="w3-button w3-bar-item w3-hide-small w3-dark-gray channel_set">Lighting Control</a>
+        <a href="{{ url_for('qlab.qlab_control') }}"
+            class="w3-button w3-bar-item w3-hide-small w3-dark-gray qlab/">QLab Control</a>
+        <a href="{{ url_for('profile') }}"
+            class="w3-button w3-bar-item w3-hide-small w3-dark-gray profile">Profile</a>
+        <a href="{{ url_for('logout') }}"
+            class="w3-button w3-bar-item w3-hide-small w3-dark-gray logout">Logout</a>
+        <a href="javascript:void(0)" class="w3-bar-item w3-button w3-hide-large w3-hide-medium w3-blue"
+            onclick="menu_function()">{{ title }}</a>
+        <a href="javascript:void(0)" class="w3-bar-item w3-button w3-right w3-hide-large w3-hide-medium"
+            onclick="menu_function()">&#9776;</a>
+    </div>
+</div>
+
+
+
+    <!-- Sets up vertical menu for small screens -->
+    <div id="menubar"
+            class="w3-bar-block w3-dark-grey w3-hide w3-hide-large w3-hide-medium">
+        <a href="{{ url_for('index') }}" class="w3-bar-item w3-button index">Home</a>
+        <a href="{{ url_for('channel_set') }}" class="w3-bar-item w3-button channel_set">Lighting Control</a>
+        <a href="{{ url_for('qlab.qlab_control') }}" class="w3-bar-item w3-button qlab">QLab Control</a>
+        <a href="{{ url_for('logout') }}" class="w3-bar-item w3-button qlab_control">Logout</a>
+    </div>

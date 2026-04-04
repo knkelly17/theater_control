@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <!-- h1>Enter Channel Number to set Full or Out</h1 -->
+
+{% include 'user_menu.html' %} 
+
+<div class="w3-container">
+    <form>
+
+        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+        <div class="w3-row">
+        {{ form.hidden_tag() }}
+            <div class="w3-col m6 l4 w3-pale-green">GO on the select Cue</div>
+        </div>
+
+        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+
+        <div class="w3-row">
+            <div class="w3-col m6 l4">{{ form.go() }}</div>
+        </div>
+        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+
+        <div class="w3-row">
+            <div class="w3-col m6 l4 w3-pale-green">Stop All Cues</div>
+        </div>
+        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+        <div class="w3-row">
+            <div class="w3-col m6 l4">{{ form.panic() }}</div>
+        </div>
+        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+
+        <div class="w3-row">
+            <div class="w3-col m6 l4 w3-pale-green">Enter Cue Number</div>
+        </div>
+        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+        <div class="w3-row">
+            <div class="w3-col m3 l2">{{ form.cue.label }} {{ form.cue() }}</div>
+        </div>
+        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+        <div class="w3-row">
+            <div class="w3-col m6 l4">{{ form.fire_qlab_cue() }} {{ form.stop_qlab_cue() }}</div>
+        </div>
+        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+
+    </form>
+<div class="w3-row">
+    <div class="w3-col w3-panel w3-pale-blue alert-info" id="qlab_status">Most Recent Command</div>
+</div>
+</div>
+
+<script src="{{ url_for('qlab.static', filename='js/qlab.js') }}?v={{ version }}"></script>
+
+{% endblock %}
