@@ -1,7 +1,6 @@
 $(function(){
 	
 	$('.channel_set_button').on("click", function(){
-		console.log('button clicked')
 	    var set_button = $(this).attr('id')
 	    var level = 'full'
 
@@ -21,7 +20,11 @@ $(function(){
 		if (chanID >= 1 && chanID <=500) {
             var req_data = {level: level, chan_id: chanID};
             $.post('/etcconnect/channelSetAJAX', req_data).done(function(response) {
-                $('#etc_status').text(response['text']);
+				if (response['result'] == 1) {
+                	$('#etc_status').text(response['text']);
+				} else {
+					window.location.href = response['text'];
+				}
             }).fail(function() {
                 $('#etc_status').text('Action Failed. Contact Support');
             });
@@ -45,7 +48,11 @@ $(function(){
 		if (addrID >= 1 && addrID <=500) {
             var req_data = {level: level, addr_id: addrID};
             $.post('/etcconnect/addressSetAJAX', req_data).done(function(response) {
-                $('#etc_status').text(response['text']);
+                if (response['result'] == 1) {
+                	$('#etc_status').text(response['text']);
+				} else {
+					window.location.href = response['text'];
+				}
             }).fail(function() {
                 $('#etc_status').text('Action Failed. Contact Support');
             });
@@ -63,7 +70,11 @@ $(function(){
 	    }
 	    var req_data = {cue_number:cue_number}
 	    $.post('/etcconnect/cueFireAJAX', req_data).done(function(response) {
-                $('#etc_status').text(response['text']);
+                if (response['result'] == 1) {
+                	$('#etc_status').text(response['text']);
+				} else {
+					window.location.href = response['text'];
+				}
             }).fail(function() {
                 $('#etc_status').text('Action Failed. Contact Support');
             });

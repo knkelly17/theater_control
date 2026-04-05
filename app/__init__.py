@@ -1,8 +1,15 @@
-from flask import Flask
+from datetime import timedelta
+from flask import Flask, session
 from config import Config
 
 app = Flask(__name__)
 app.config.from_object(Config)
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=10)
+app.config['REMEMBER_COOKIE_DURATION'] = timedelta(minutes=10)
+
+@app.before_request
+def handle_user_activity():
+    session.permanent = True
 
 from .qlab import qlab_bp
 app.register_blueprint(qlab_bp, url_prefix='/qlab')

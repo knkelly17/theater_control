@@ -21,6 +21,8 @@ login_manager.login_view = 'login'
 
 currentDT = datetime.datetime.now()
 ver = currentDT.strftime("%Y-%m-%d-%H:%M:%S")
+session_start_time = currentDT.strftime("%Y%m%d%H%M%S")
+
 
 # --- DATABASE CONNECTION ---
 def get_db(dbconnection=app.dbconnection):
@@ -64,6 +66,9 @@ def login():
 
             if user_data and check_password_hash(user_data["password_hash"], request.form["password"]):
                 user = User(user_data["ID"], user_data["username"], user_data["password_hash"])
+                session_id = str(user.username) + ":" + session_start_time
+                cursor.execute("INSERT INTO sessionLog (sessionID, userID) VALUES (%s, %s)", (session_id, user.id))
+                db.commit()
                 login_user(user)
                 login_result = 1
                 return jsonify({

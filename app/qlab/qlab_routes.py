@@ -26,26 +26,33 @@ def qlab_control():
 
 
 @qlab_bp.route('/qlabAJAX', methods=['POST', 'GET'])
-@login_required
 def qlab_remote_ajax():
     """QLab control via AJAX route."""
-    this_text = "All Cues stopped"
-    ip = str(qlab_ip)
-    port = int(qlab_port)
-    client = SimpleUDPClient(ip, port)
-    action = request.form['action']
-    if action == 'fire_qlab_cue':
-        cue_number = request.form['cue_number']
-        message = '/cue/'+cue_number+'/start'
-        this_text = 'Cue '+cue_number+' has been triggered'
-    elif action == 'stop_qlab_cue':
-        cue_number = request.form['cue_number']
-        message = '/cue/' + cue_number + '/stop'
-        this_text = 'Cue ' + cue_number + ' has been stopped'
+    if current_user.is_authenticated:
+        output_result = 1
+        this_text = "All Cues stopped"
+        ip = str(qlab_ip)
+        port = int(qlab_port)
+        client = SimpleUDPClient(ip, port)
+        action = request.form['action']
+        if action == 'fire_qlab_cue':
+            cue_number = request.form['cue_number']
+            message = '/cue/'+cue_number+'/start'
+            this_text = 'Cue '+cue_number+' has been triggered'
+        elif action == 'stop_qlab_cue':
+            cue_number = request.form['cue_number']
+            message = '/cue/' + cue_number + '/stop'
+            this_text = 'Cue ' + cue_number + ' has been stopped'
+        else:
+            message = '/'+action
+        client.send_message(message, 1)
+        if action == 'go':
+            this_text = 'GO button pressed'
     else:
-        message = '/'+action
-    client.send_message(message, 1)
-    if action == 'go':
-        this_text = 'GO button pressed'
-    return jsonify({'text': this_text})
+        output_result = 0
+        this_text = url_for("index")
+    return jsonify({
+        'text': this_text,
+        'result': output_result
+    })
 

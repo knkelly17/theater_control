@@ -12,7 +12,11 @@ $(function(){
 	       var req_data = {action:action}
 	    }
 	    $.post('/qlab/qlabAJAX', req_data).done(function(response) {
-	            $('#qlab_status').text(response['text']);
+	            if (response['result'] == 1) {
+                	$('#etc_status').text(response['text']);
+				} else {
+					window.location.href = response['text'];
+				}
             }).fail(function() {
                 $('#qlab_status').text('Action Failed. Contact Support');
             });

@@ -28,7 +28,6 @@
             if (this_page == "") {
                 this_page = "index";
             }
-            console.log("Current page: " + this_page);
             document.getElementsByClassName(this_page)[0].classList.add("selected-button", "w3-blue");
             document.getElementsByClassName(this_page)[0].classList.remove("w3-dark-gray");
         </script>
@@ -38,7 +37,6 @@
         <script>
            function menu_function() {
                var x = document.getElementById("menubar");
-               console.log(x);
                if (x.className.indexOf("w3-show") == -1) {
                    x.className += " w3-show";
                } else {
