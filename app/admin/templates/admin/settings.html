@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <!-- h1>Enter Channel Number to set Full or Out</h1 -->
+
+{% include 'admin/admin_menu.html' %}
+
+{% if base %}
+<script>
+    base_page = "{{ base }}";
+    document.getElementsByClassName(base_page)[0].classList.add("selected-button", "w3-green");
+    document.getElementsByClassName(base_page)[0].classList.remove("w3-dark-gray");
+</script>
+{% endif %}
+
+<!-- Page Content -->
+<div style="margin-left:15%">
+  <div class="w3-container">
+    <h1>Manage App Settings</h1>
+    <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+    <div id="settings-table"></div>
+    <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+    {{ form.add_setting() }}
+  </div>
+  
+</div>
+
+<script>
+  //var tabledata = {{ page_content|tojson }};
+
+  const requiredFields = ["name", "description", "value", "the_order", "active"];
+
+  function isRowComplete(rowData) {
+    return requiredFields.every(field => {
+        return rowData[field] !== undefined && rowData[field] !== "";
+    });
+  }
+
+  const tabledata = "/admin/get_settings"
+
+  const settingsTable = new Tabulator("#settings-table", {
+    //height:205, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can
+    // data:tabledata, //assign data to table
+    ajaxURL: tabledata,
+    layout:"fitColumns", //fit columns to width of table (optional)
+    index:"ID",
+    tabEndNewRow: true,
+    columns:[ //Define Table Columns
+      {title:"ID", field:"ID", width:150},
+      {title:"Order", field:"the_order", hozAlign:"left", editor:"number", 
+        editorParams:{
+          min:0,
+        }
+      },
+      {title:"Item", field:"name", editor:"input"},
+      {title:"Description", field:"description", editor:"input"},
+      {title:"Value", field:"value", editor:"input"},
+      {title:"Active", field:"active", hozAlign:"center", editor:"list", 
+        editorParams:{
+          values:["Y", "N"],
+        }
+      }
+    ],
+    });
+
+  settingsTable.on("cellEdited", function(cell) {
+    editCell(cell, "settings")    
+  });
+
+
+async function sendNewRowToServer(rowData, row) {
+    const response = await fetch("/admin/insert_settings", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(rowData)
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+        // ✅ assign ID so it becomes a normal row
+        row.update({ ID: data.value });
+
+        row.getElement().style.backgroundColor = "#c8f7c5";
+    }
+}
+
+//Add row on "Add Row" button click
+document.getElementById("add_setting").addEventListener("click", function(){
+    settingsTable.addRow({});
+});
+</script>
+
+<script src="{{ url_for('admin.static', filename='js/admin.js') }}?v={{ version }}"></script>
+
+
+
+{% endblock %}

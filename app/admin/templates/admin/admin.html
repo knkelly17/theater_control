@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <!-- h1>Enter Channel Number to set Full or Out</h1 -->
+
+{% include 'admin/admin_menu.html' %}
+
+{% if base %}
+<script>
+    base_page = "{{ base }}";
+    document.getElementsByClassName(base_page)[0].classList.add("selected-button", "w3-green");
+    document.getElementsByClassName(base_page)[0].classList.remove("w3-dark-gray");
+</script>
+{% endif %}
+
+
+<!-- Page Content -->
+<div style="margin-left:15%">
+  <div class="w3-container">
+    <h1>Admin Tasks</h1>
+    <p>Choose item from menu on the left.</p>
+  </div>
+</div>
+
+<script src="{{ url_for('admin.static', filename='js/admin.js') }}?v={{ version }}"></script>
+
+
+{% endblock %}
