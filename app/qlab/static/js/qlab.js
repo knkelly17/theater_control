@@ -13,7 +13,7 @@ $(function(){
 	    }
 	    $.post('/qlab/qlabAJAX', req_data).done(function(response) {
 	            if (response['result'] == 1) {
-                	$('#etc_status').text(response['text']);
+                	$('#qlab_status').text(response['text']);
 				} else {
 					window.location.href = response['text'];
 				}

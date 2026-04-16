@@ -7,7 +7,10 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from app import app
 from .etcconnect_forms import ETCForm
 from . import etcconnect_bp
-from systems import etc_ip, etc_port
+# from systems import etc_ip, etc_port
+
+etc_ip = app.site_settings['etc_ip']
+etc_port = app.site_settings['etc_port']
 
 
 app.secret_key = app.config['SECRET_KEY']
@@ -22,7 +25,13 @@ ver = currentDT.strftime("%Y-%m-%d-%H:%M:%S")
 def etcconnect_control():
     """Lighting Control page route."""
     form = ETCForm()
-    return render_template('etcconnect/etcconnect.html', title='Lighting Control', form=form, version=ver)
+    return render_template(
+        'etcconnect/etcconnect.html', 
+        site_name=app.site_name, 
+        title='Lighting Control', 
+        form=form, 
+        version=ver, 
+        main_menu='etcconnect')
 
 
 @etcconnect_bp.route('/channelSetAJAX', methods=['POST', 'GET'])

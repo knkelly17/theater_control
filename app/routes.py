@@ -2,42 +2,26 @@
 import datetime
 from flask import render_template, request, jsonify, redirect, url_for
 from flask_login import LoginManager, current_user, login_required, UserMixin
-from pythonosc.udp_client import SimpleUDPClient
 from werkzeug.security import generate_password_hash, check_password_hash
-import mysql.connector
 from app import app
-from systems import etc_ip, etc_port, qlab_ip, qlab_port
-
+from app.functions import get_db, update_db, get_site_settings, insert_db
 
 app.secret_key = app.config['SECRET_KEY']
 app.dbconnection = app.config['DBCONNECTION']
+
+currentDT = datetime.datetime.now()
+ver = currentDT.strftime("%Y-%m-%d-%H:%M:%S")
 
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
-
-currentDT = datetime.datetime.now()
-ver = currentDT.strftime("%Y-%m-%d-%H:%M:%S")
-
-# --- DATABASE CONNECTION ---
-def get_db(dbconnection=app.dbconnection):
-    return mysql.connector.connect(
-        host=dbconnection['dbhost'],
-        user=dbconnection['dbuser'],
-        password=dbconnection['dbpassword'],
-        database=dbconnection['dbdatabase']
-    )
-
-
-
-# --- USER CLASS ---
 class User(UserMixin):
-    def __init__(self, id, username, password_hash):
+    def __init__(self, id, username, password_hash, sessionid=None):
         self.id = id
         self.username = username
         self.password_hash = password_hash
-
+        self.sessionid = sessionid
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -46,22 +30,50 @@ def load_user(user_id):
         cursor.execute("SELECT * FROM users WHERE ID=%s", (user_id,))
         data = cursor.fetchone()
         if data:
-            return User(data["ID"], data["username"], data["password_hash"])
-        return None
-
+            session_id = str(data["username"]) + ":" + datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+            return User(
+                data["ID"],
+                data["username"],
+                data["password_hash"],
+                session_id
+            )
+    return None
 
 @app.route("/")
 @app.route('/index')
 @login_required
 def index():
     """Home page route."""
-    return render_template('index.html', title='Home', version=ver)
+    return render_template('index.html', title='Home', version=ver, main_menu='index')
 
-
-@app.route("/admin", methods=["GET", "POST"])
+@app.route('/update_db_field', methods=['POST'])
 @login_required
-def admin():
-    form = LoginForm()
-    return render_template('admin.html', title='Admin', version=ver, form=form)
+def update_setting():
+    editRow = request.get_json()
+    table = editRow['table']
+    updateFields = {
+        editRow['field']: editRow['value'],
+        'sessionid': current_user.sessionid
+    }
+    updateResult = update_db(table, editRow['ID'], updateFields)
+    app.site_settings = get_site_settings()
+    app.site_name=app.site_settings['name']
+    return jsonify({
+        "status": "ok",
+        "value": updateResult
+    })
+
+@app.route('/insert_db_row', methods=['POST'])
+@login_required
+def insert_setting():
+    insertValues = request.get_json()
+    insertRow = insertValues['rowData']
+    table = insertValues['table']
+    insertRow['sessionid'] = current_user.sessionid
+    inserted_id = insert_db(table, insertRow)
+    return jsonify({
+        "status": "ok",
+        "value": inserted_id
+    })
 
 

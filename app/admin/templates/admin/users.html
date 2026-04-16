@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <!-- h1>Enter Channel Number to set Full or Out</h1 -->
+
+{% include 'admin/admin_menu.html' %}
+
+{% if base %}
+<script>
+    base_page = "{{ base }}";
+    document.getElementsByClassName(base_page)[0].classList.add("selected-button", "w3-green");
+    document.getElementsByClassName(base_page)[0].classList.remove("w3-dark-gray");
+</script>
+{% endif %}
+
+<!-- Page Content -->
+<div style="margin-left:15%">
+  <div class="w3-container">
+    <h1>Manage Users</h1>
+    <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+    <div id="users-table"></div>
+    <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+    {{ form.add_user() }}
+  </div>
+</div>
+
+<script>
+  const tabledata = "/admin/get_users"
+
+  const requiredFields = [
+    "username", 
+    "active"
+  ];
+
+  //ID, username, userType, first_name, last_name, email, active
+
+  const usersTable = new Tabulator("#users-table", {
+    //height:205, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can
+    // data:tabledata, //assign data to table
+    ajaxURL: tabledata,
+    layout:"fitColumns", //fit columns to width of table (optional)
+    index:"ID",
+    tabEndNewRow: true,
+    columns:[ //Define Table Columns
+      {title:"ID", field:"ID", width:150},
+      {title:"User Name (Required)", field:"username", editor:"input"},
+      {title:"User Type", field:"userType", editor:"input"},
+      {title:"First Name", field:"first_name", editor:"input"},
+      {title:"Last Name", field:"last_name", editor:"input"},
+      {title:"Email", field:"email", editor:"input"},
+      {title:"Active (Required)", field:"active", hozAlign:"center", editor:"list", 
+        editorParams:{
+          values:["Y", "N"],
+        }
+      }
+    ],
+  });
+
+  usersTable.on("cellEdited", function(cell) {
+    editCell(cell, "users", requiredFields)    
+  });
+
+  //Add row on "Add Row" button click
+document.getElementById("add_user").addEventListener("click", function(){
+    usersTable.addRow({});
+});
+  
+</script>
+
+
+
+{% endblock %}

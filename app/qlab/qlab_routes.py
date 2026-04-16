@@ -7,7 +7,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from app import app
 from .qlab_forms import QlabForm
 from . import qlab_bp
-from systems import qlab_ip, qlab_port
+
+qlab_ip = app.site_settings['qlab_ip']
+qlab_port = app.site_settings['qlab_port']
 
 
 app.secret_key = app.config['SECRET_KEY']
@@ -22,7 +24,14 @@ ver = currentDT.strftime("%Y-%m-%d-%H:%M:%S")
 def qlab_control():
     """QLab Control page route."""
     form = QlabForm()
-    return render_template('qlab/qlab.html', title='QLab Control', form=form, version=ver)
+    return render_template(
+        'qlab/qlab.html', 
+        title='QLab Control', 
+        site_name=app.site_name, 
+        form=form, 
+        version=ver, 
+        main_menu='qlab'
+    )
 
 
 @qlab_bp.route('/qlabAJAX', methods=['POST', 'GET'])

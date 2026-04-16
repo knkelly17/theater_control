@@ -9,25 +9,28 @@
         <title>Welcome to Mills Theater</title>
         {% endif %}
         <link rel="stylesheet" type="text/css" href="/static/css/w3.css">
+        <link rel="stylesheet" type="text/css" href="/static/css/myStyle.css">
+        <link href="/static/css/tabulator.min.css" rel="stylesheet">
         <link rel="icon" type="image/x-icon" href="/static/images/favicon.ico">
     </head>
 
     <body>
 
+        {{ the_title }}
+
    
         <script src="/static/js/jquery-4.0.0.min.js"></script>
+        <script type="text/javascript" src="/static/js/tabulator.min.js"></script>
         <script src="/static/js/script.js?v={{ version }}"></script>
+
 
         {% block content %} {% endblock %}
 
-        {% if current_user.is_authenticated %}
+        {% if current_user.is_authenticated and main_menu%}
 
 
         <script>
-            this_page = window.location.pathname.replace("/", "");
-            if (this_page == "") {
-                this_page = "index";
-            }
+            this_page = "{{ main_menu }}";
             document.getElementsByClassName(this_page)[0].classList.add("selected-button", "w3-blue");
             document.getElementsByClassName(this_page)[0].classList.remove("w3-dark-gray");
         </script>

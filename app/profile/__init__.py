@@ -5,5 +5,5 @@ from flask import Blueprint
 profile_bp = Blueprint('profile', __name__, template_folder='templates', static_folder='static')
 
 # 2. Import routes at the BOTTOM to prevent circular imports
-# This ensures qlab_bp is defined before routes try to import it
+# This ensures profile_bp is defined before routes try to import it
 from . import profile_routes
