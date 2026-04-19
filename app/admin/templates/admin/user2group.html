@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <!-- h1>Enter Channel Number to set Full or Out</h1 -->
+
+{% include 'admin/admin_menu.html' %}
+
+{% if base %}
+
+<style>
+  #matrix-table .tabulator-cell {
+    padding: 4px;
+}
+
+</style>
+
+<script>
+    base_page = "{{ base }}";
+    document.getElementsByClassName(base_page)[0].classList.add("selected-button", "w3-green");
+    document.getElementsByClassName(base_page)[0].classList.remove("w3-dark-gray");
+</script>
+{% endif %}
+
+<!-- Page Content -->
+<div style="margin-left:15%">
+  <div class="w3-container">
+    <h1>Add Users To Groups</h1>
+    <div class="w3-row">
+      <div class="w3-col m6 l4">&nbsp;</div>
+    </div>
+    <div id="matrix-table"></div>
+    
+  </div>
+</div>
+
+<script>
+
+  async function buildMatrix() {
+    const res = await fetch("/admin/permissions_matrix");
+    const data = await res.json();
+
+    const baseCols = [
+        { title: "User", field: "username", frozen: true }
+    ];
+
+    const groupCols = data.groups.map(g => ({
+        title: g.name,
+        field: `g_${g.id}`,
+        hozAlign: "center",
+        formatter: "tickCross",
+        cellClick: onToggleClick
+    }));
+
+    const table = new Tabulator("#matrix-table", {
+        layout: "fitColumns",
+        data: data.rows,
+        columns: [...baseCols, ...groupCols]
+    });
+
+    window.matrixTable = table; // optional global
+  }
+
+  buildMatrix();
+
+  async function onToggleClick(e, cell) {
+    const row = cell.getRow().getData();
+    const field = cell.getField();
+    const groupId = field.split("_")[1];
+    const userId = row.id;
+
+    const currentValue = cell.getValue();
+    const newValue = !currentValue;
+
+    // update UI immediately
+    cell.setValue(newValue);
+
+    try {
+        const res = await fetch("/admin/update_user_group", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                user_id: userId,
+                group_id: groupId,
+                assigned: newValue
+            })
+        });
+
+        if (!res.ok) throw new Error();
+
+        // success flash
+        cell.getElement().classList.add("w3-pale-green");
+        setTimeout(() => cell.getElement().classList.remove("w3-pale-green"), 200);
+
+    } catch (err) {
+        // revert on failure
+        cell.setValue(currentValue);
+        cell.getElement().classList.add("w3-pale-red");
+    }
+  }
+  
+</script>
+
+<script src="{{ url_for('admin.static', filename='js/admin.js') }}?v={{ version }}"></script>
+
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <!-- h1>Enter Channel Number to set Full or Out</h1 -->
+
+{% include 'admin/admin_menu.html' %}
+
+{% if base %}
+<script>
+    base_page = "{{ base }}";
+    document.getElementsByClassName(base_page)[0].classList.add("selected-button", "w3-green");
+    document.getElementsByClassName(base_page)[0].classList.remove("w3-dark-gray");
+</script>
+{% endif %}
+
+<!-- Page Content -->
+<div style="margin-left:15%">
+  <div class="w3-container">
+    <h1>Manage Groups</h1>
+    <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+    <div id="groups-table"></div>
+    <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+    {{ form.add_group() }}
+  </div>
+  
+</div>
+
+<script>
+
+  const requiredFields = ["name", "description", "active"];
+
+  const tabledata = "/admin/get_groups"
+
+  const groupsTable = new Tabulator("#groups-table", {
+    //height:205, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can
+    // data:tabledata, //assign data to table
+    ajaxURL: tabledata,
+    layout:"fitColumns", //fit columns to width of table (optional)
+    index:"ID",
+    tabEndNewRow: true,
+    columns:[ //Define Table Columns
+      {title:"ID", field:"ID", width:150},
+      {title:"Name", field:"name", editor:"input"},
+      {title:"Description", field:"description", editor:"input"},
+      {title:"Active", field:"active", hozAlign:"center", editor:"list", 
+        editorParams:{
+          values:["Y", "N"],
+        }
+      }
+    ],
+    });
+
+  groupsTable.on("cellEdited", function(cell) {
+    editCell(cell, "user_groups", requiredFields)    
+  });
+
+
+//Add row on "Add Row" button click
+document.getElementById("add_group").addEventListener("click", function(){
+    groupsTable.addRow({});
+});
+</script>
+
+<script src="{{ url_for('admin.static', filename='js/admin.js') }}?v={{ version }}"></script>
+
+
+
+{% endblock %}
