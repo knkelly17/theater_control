@@ -3,11 +3,11 @@
 from flask_wtf import FlaskForm
 from wtforms import (
     SubmitField,
-    IntegerField
+    IntegerField,
+    PasswordField
 )
-
+from wtforms.validators import DataRequired, EqualTo, Length
 from wtforms.widgets import NumberInput
-
 
 class AdminForm(FlaskForm):
     update_setting = SubmitField('Update Setting',
@@ -33,6 +33,17 @@ class AdminForm(FlaskForm):
                 'w3-small '
             }
         )
+    add_group = SubmitField('Add Group',
+        render_kw={
+            'class':
+                'admin_action '
+                'w3-button '
+                'w3-blue '
+                'w3-round '
+                'w3-hover-aqua '
+                'w3-small '
+            }
+        )
     
     add_user = SubmitField('Add User',
         render_kw={
@@ -46,33 +57,48 @@ class AdminForm(FlaskForm):
             }
         )
     
-    cue = IntegerField('Cue', id='cue',
+    new_password = PasswordField('New Password', 
+        validators=[
+            DataRequired(),
+            Length(min=6)
+        ], 
         render_kw={
-            'class':
-                'w3-border-black w3-round '
-        },
-        widget=NumberInput(min=0, max=1000))
+        'class':
+        'w3-border-black w3-round '
+    })
+
+    confirm_password = PasswordField('Confirm New Password', 
+        validators=[
+            DataRequired(),
+            EqualTo("new_password", message="Passwords must match")
+        ], 
+        render_kw={
+        'class':
+        'w3-border-black w3-round '
+    })
+
+    submit_change_password = SubmitField('Change Password', render_kw={
+        'class':
+            'w3-button '
+            'w3-blue '
+            'w3-round '
+            'w3-hover-aqua '
+            'w3-medium '
+    })
+
+    cancel_change_password = SubmitField('Cancel', render_kw={
+        'class':
+            'w3-button '
+            'w3-red '
+            'w3-round '
+            'w3-hover-pale-red '
+            'w3-medium '
+    })
     
-    fire_qlab_cue = SubmitField('Fire Cue',
+    row_id = IntegerField('Row ID', 
+        widget=NumberInput(), 
         render_kw={
-            'class':
-                'qlab_action '
-                'w3-button '
-                'w3-blue '
-                'w3-round '
-                'w3-hover-aqua '
-                'w3-xlarge '
-            }
-        )
-    
-    stop_qlab_cue = SubmitField('Stop Cue',
-        render_kw={
-            'class':
-                'qlab_action '
-                'w3-button '
-                'w3-blue '
-                'w3-round '
-                'w3-hover-aqua '
-                'w3-xlarge '
-            }
-        )
+            'readonly': True,
+            'hidden': True
+        }
+    )

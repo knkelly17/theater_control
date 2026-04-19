@@ -31,7 +31,7 @@ def check_password(this_user, password):
     return check_password_hash(user_data["password_hash"], password)
 
 
-@app.route("/", methods=["GET", "POST"])
+@app.route("/login", methods=["GET", "POST"])
 def login():
     """Login page route."""
     form = LoginForm()
@@ -43,8 +43,11 @@ def login():
             cursor.execute("SELECT * FROM users WHERE username=%s", (request.form["username"],))
             user_data = cursor.fetchone()
 
-            if user_data and check_password_hash(user_data["password_hash"], request.form["password"]):
-                session_id = str(user_data["username"]) + ":" + session_start_time
+            if user_data and check_password_hash(
+                    user_data["password_hash"], 
+                    request.form["password"]
+                ):
+                session_id = str(user_data["username"]) + ":" + request.form["timestamp"]
                 user = User(
                     user_data["ID"], 
                     user_data["username"], 
@@ -54,7 +57,7 @@ def login():
                 cursor.execute("INSERT INTO sessionLog (sessionID, userID) VALUES (%s, %s)", (session_id, user.id))
                 db.commit()
                 login_user(user)
-                print(current_user.sessionid)
+                #print(current_user.sessionid)
                 login_result = 1
                 return jsonify({
                     'text': url_for("index"),
@@ -67,8 +70,13 @@ def login():
                     'text': this_text,
                     'login_result': login_result
                 })
-
-    return render_template("profile/login.html", title="Login", form=form, version=ver)
+    return render_template(
+        "profile/login.html", 
+        title="Login",
+        session_start_time=session_start_time,
+        form=form, 
+        version=ver
+    )
 
 @app.route("/logout")
 @login_required

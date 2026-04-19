@@ -7,8 +7,16 @@ from wtforms import (
     StringField,
     PasswordField
 )
-from wtforms.validators import DataRequired
+from wtforms.validators import DataRequired, EqualTo, Length
 from wtforms.widgets import NumberInput
+
+class ChangePasswordForm(FlaskForm):
+    current_password = PasswordField("Current Password", validators=[DataRequired()])
+    new_password = PasswordField("New Password", validators=[DataRequired(), Length(min=6)])
+    confirm_password = PasswordField(
+        "Confirm Password",
+        validators=[DataRequired(), EqualTo("new_password", message="Passwords must match")]
+    )
 
 class LoginForm(FlaskForm):
     """Login Form"""

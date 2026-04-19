@@ -12,7 +12,6 @@ function editCell(cell, table, requiredFields) {
     // Only act on NEW rows (no id yet)
     if (!rowID) {
         if (isRowComplete(rowValues, requiredFields)) {
-            console.log("Should be Complete")
             sendNewRowToDB(rowValues, row, table);
         }
         return;
@@ -27,7 +26,6 @@ function editCell(cell, table, requiredFields) {
         sendFieldToDb(rowData, cell);
     }
 }
-
 
 
 async function sendNewRowToDB(rowData, row, table) {

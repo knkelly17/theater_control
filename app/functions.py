@@ -44,7 +44,7 @@ def insert_db(table_name, data_values):
             values_list.append("'"+str(data_values[field])+"'")
         field_string = ", ".join(field_list)
         values_string = ", ".join(values_list)
-        query = "INSERT INTO " + table_name + "(" + field_string + ")"
+        query = "INSERT INTO " + table_name + " (" + field_string + ")"
         query = query + " VALUES (" + values_string + ")"
         print (query)
         cursor.execute(query)

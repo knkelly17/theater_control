@@ -30,12 +30,6 @@
 
   const requiredFields = ["name", "description", "value", "the_order", "active"];
 
-  function isRowComplete(rowData) {
-    return requiredFields.every(field => {
-        return rowData[field] !== undefined && rowData[field] !== "";
-    });
-  }
-
   const tabledata = "/admin/get_settings"
 
   const settingsTable = new Tabulator("#settings-table", {
@@ -64,26 +58,9 @@
     });
 
   settingsTable.on("cellEdited", function(cell) {
-    editCell(cell, "settings")    
+    editCell(cell, "settings", requiredFields)    
   });
 
-
-async function sendNewRowToServer(rowData, row) {
-    const response = await fetch("/admin/insert_settings", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify(rowData)
-    });
-
-    const data = await response.json();
-
-    if (response.ok) {
-        // ✅ assign ID so it becomes a normal row
-        row.update({ ID: data.value });
-
-        row.getElement().style.backgroundColor = "#c8f7c5";
-    }
-}
 
 //Add row on "Add Row" button click
 document.getElementById("add_setting").addEventListener("click", function(){

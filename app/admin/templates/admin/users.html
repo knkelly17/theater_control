@@ -6,6 +6,18 @@
 {% include 'admin/admin_menu.html' %}
 
 {% if base %}
+
+<style>
+  #matrix-table.tabulator-cell {
+    padding: 4px;
+  }
+
+  .tabulator-cell {
+    cursor: pointer;
+  }
+
+</style>
+
 <script>
     base_page = "{{ base }}";
     document.getElementsByClassName(base_page)[0].classList.add("selected-button", "w3-green");
@@ -24,6 +36,54 @@
   </div>
 </div>
 
+<!-- The Modal -->
+
+<div id="id01" class="w3-modal">
+  <div class="w3-modal-content w3-card-4 w3-animate-zoom" style="max-width:400px">
+    <div class="w3-center"><br>
+      <span onclick="document.getElementById('id01').style.display='none'" class="w3-button w3-xlarge w3-transparent w3-display-topright" title="Close Modal">×</span>
+      <h2 class="w3-wide">Change Password</h2>
+      <p>User: <span id="username">Username</span></p>
+    </div>
+    
+    <div class="w3-container w3-modal-content w3-card-4 w3-animate-zoom" style="max-width:400px">
+      <div class="w3-row">
+        <div class="w3-col m6 l4">&nbsp;</div>
+      </div>
+    
+        {{ form.hidden_tag() }}
+
+        {{ form.row_id() }}
+
+        <p>
+            {{ form.new_password.label }}
+            {{ form.new_password(class="w3-input") }}
+
+            <span id="new_password_error" class="w3-text-red"></span>
+            {% if form.new_password.errors %}
+                {{ form.new_password.errors[0] }}
+            {% endif %}
+        </p>
+
+        <p>
+            {{ form.confirm_password.label }}
+            {{ form.confirm_password(class="w3-input") }}
+
+            <span id="confirm_password_error" class="w3-text-red"></span> 
+            {% if form.confirm_password.errors %}  
+              {{ form.confirm_password.errors[0] }}
+            {% endif %}
+        </p>
+
+        {{ form.submit_change_password() }}
+
+    <div class="w3-row"><div class="w3-col">&nbsp;</div></div>
+    <div class="w3-row">
+      <div class="w3-col w3-panel w3-pale-blue alert-info" id="change_status"></div>
+    </div>
+  </div>
+</div>
+
 <script>
   const tabledata = "/admin/get_users"
 
@@ -32,10 +92,10 @@
     "active"
   ];
 
-  //ID, username, userType, first_name, last_name, email, active
+  const currentUsername = {{ current_user.username|tojson }};
 
   const usersTable = new Tabulator("#users-table", {
-    //height:205, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can
+    // height:205, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can
     // data:tabledata, //assign data to table
     ajaxURL: tabledata,
     layout:"fitColumns", //fit columns to width of table (optional)
@@ -44,7 +104,24 @@
     columns:[ //Define Table Columns
       {title:"ID", field:"ID", width:150},
       {title:"User Name (Required)", field:"username", editor:"input"},
-      {title:"User Type", field:"userType", editor:"input"},
+      {title:"Password", field:"password", 
+        formatter:function(cell, formatterParams, onRendered){
+          return "********"; // Display masked value
+        },
+        cellClick:function(e, cell){
+            var data = cell.getRow().getData();
+            if (data.username == currentUsername) {
+                alert("You cannot change your own password from this page. Please go to your profile page to change your password.");
+                return;
+            }
+            document.getElementById('id01').style.display='block';
+            document.getElementById('username').innerText = data.username;
+            document.getElementById('row_id').value = data.ID;
+            document.getElementById('new_password').value = "";
+            document.getElementById('confirm_password').value = "";
+
+        }
+      },
       {title:"First Name", field:"first_name", editor:"input"},
       {title:"Last Name", field:"last_name", editor:"input"},
       {title:"Email", field:"email", editor:"input"},
@@ -53,7 +130,7 @@
           values:["Y", "N"],
         }
       }
-    ],
+    ]
   });
 
   usersTable.on("cellEdited", function(cell) {
@@ -61,12 +138,50 @@
   });
 
   //Add row on "Add Row" button click
-document.getElementById("add_user").addEventListener("click", function(){
+  document.getElementById("add_user").addEventListener("click", function(){
     usersTable.addRow({});
+  });
+
+  document.getElementById("submit_change_password").addEventListener(
+  "click", async function (e) {
+    e.preventDefault(); // replaces return false
+    const formData = {
+        ID: document.getElementById("row_id").value,
+        username: document.getElementById("username").innerText,
+        new_password: document.getElementById("new_password").value,
+        confirm_password: document.getElementById("confirm_password").value,
+        csrf_token: document.getElementById('csrf_token').value
+    };
+
+    const response = await fetch("/admin/change_password", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(formData)
+    });
+
+    const data = await response.json();
+
+    // clear old errors
+    document.querySelectorAll(".error-text").forEach(e => e.textContent = "");
+
+    if (!response.ok) {
+        // apply errors from Flask-WTF
+        for (const field in data.errors) {
+            const errorText = data.errors[field][0];
+            document.getElementById(field + "_error").textContent = errorText;
+        }
+        return;
+    }
+
+    // success
+    document.getElementById("change_status").textContent = data.message;
+    //window.location.href = data.text;
 });
+
+
   
 </script>
 
-
+<script src="{{ url_for('admin.static', filename='js/admin.js') }}?v={{ version }}"></script>
 
 {% endblock %}

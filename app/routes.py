@@ -17,29 +17,53 @@ login_manager.init_app(app)
 login_manager.login_view = 'login'
 
 class User(UserMixin):
-    def __init__(self, id, username, password_hash, sessionid=None):
+    def __init__(self, id, username, password_hash, groups=None, sessionid=None):
         self.id = id
         self.username = username
         self.password_hash = password_hash
         self.sessionid = sessionid
+        self.groups = groups or []
+
+    def has_group(self, group_name):
+        return group_name in self.groups
 
 @login_manager.user_loader
 def load_user(user_id):
     with get_db(dbconnection=app.dbconnection) as db:
         cursor = db.cursor(dictionary=True)
         cursor.execute("SELECT * FROM users WHERE ID=%s", (user_id,))
-        data = cursor.fetchone()
-        if data:
-            session_id = str(data["username"]) + ":" + datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-            return User(
-                data["ID"],
-                data["username"],
-                data["password_hash"],
-                session_id
-            )
-    return None
+        user_data = cursor.fetchone()
+        if not user_data:
+            return None
+        
+        groups_query = """SELECT g.name
+        FROM user_groups g
+        JOIN user2group ug ON g.ID = ug.groupID
+        WHERE ug.userID = %s"""
 
-@app.route("/")
+        cursor.execute(groups_query, (user_id,))
+        groups = [row["name"] for row in cursor.fetchall()]
+
+        # Get the most recent session_id for this user from sessionLog
+        cursor.execute("""
+            SELECT sessionID FROM sessionLog
+            WHERE userID = %s
+            ORDER BY sessionID DESC
+            LIMIT 1
+        """, (user_id,))
+        session_data = cursor.fetchone()
+        session_id = session_data['sessionID'] if session_data else None
+        
+        return User(
+            user_data["ID"],
+            user_data["username"],
+            user_data["password_hash"],
+            groups,                
+            session_id
+        )
+   
+
+@app.route('/')
 @app.route('/index')
 @login_required
 def index():
@@ -48,7 +72,7 @@ def index():
 
 @app.route('/update_db_field', methods=['POST'])
 @login_required
-def update_setting():
+def update_field_db():
     editRow = request.get_json()
     table = editRow['table']
     updateFields = {
@@ -65,7 +89,7 @@ def update_setting():
 
 @app.route('/insert_db_row', methods=['POST'])
 @login_required
-def insert_setting():
+def insert_row_db():
     insertValues = request.get_json()
     insertRow = insertValues['rowData']
     table = insertValues['table']
