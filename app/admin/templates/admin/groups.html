@@ -51,7 +51,13 @@
     });
 
   groupsTable.on("cellEdited", function(cell) {
-    editCell(cell, "user_groups", requiredFields)    
+    const row = cell.getRow();
+    const rowID = row.getIndex()
+    if (rowID) {
+      editCell(cell, "user_groups", "/admin/update_db_field"); 
+    } else {
+      addRow(cell, "user_groups", requiredFields, "/admin/insert_db_row")
+    }     
   });
 
 

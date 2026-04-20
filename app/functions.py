@@ -1,5 +1,22 @@
 from app import app
+from functools import wraps
+from flask_login import current_user
 import mysql.connector
+
+def group_required(*group_names):
+    def decorator(f):
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            if not current_user.is_authenticated:
+                return {"error": "Unauthorized"}, 401
+
+            if not any(current_user.has_group(g) for g in group_names):
+                return {"error": "Forbidden"}, 403
+
+            return f(*args, **kwargs)
+        return wrapper
+    return decorator
+
 
 # --- DATABASE CONNECTION ---
 def get_db(dbconnection=app.dbconnection):

@@ -4,36 +4,40 @@ function isRowComplete(rowData, requiredFields) {
     });
   }
 
-function editCell(cell, table, requiredFields) {
+function editCell(cell, table, endpoint) {
     const row = cell.getRow();
     const rowValues = row.getData();
     const rowID = row.getIndex()
 
-    // Only act on NEW rows (no id yet)
-    if (!rowID) {
-        if (isRowComplete(rowValues, requiredFields)) {
-            sendNewRowToDB(rowValues, row, table);
-        }
-        return;
-    } else {
-        const rowData = {
-          "ID": cell.getRow().getIndex(),
-          "table": table,
-          "field": cell.getField(),
-          "value": cell.getValue()
-        }
-      
-        sendFieldToDb(rowData, cell);
+
+    const rowData = {
+        "ID": cell.getRow().getIndex(),
+        "table": table,
+        "field": cell.getField(),
+        "value": cell.getValue()
+    };
+   
+    sendFieldToDb(rowData, cell, endpoint);
+}
+
+function addRow(cell, table, requiredFields, endpoint) {
+    const row = cell.getRow();
+    const rowValues = row.getData(); 
+
+    if (isRowComplete(rowValues, requiredFields)) {
+        sendNewRowToDB(rowValues, row, table, endpoint);
     }
+
+    return;
 }
 
 
-async function sendNewRowToDB(rowData, row, table) {
+async function sendNewRowToDB(rowData, row, table, endpoint) {
     sendItems = {
         table: table,
         rowData: rowData
     }
-    const response = await fetch("/insert_db_row", {
+    const response = await fetch(endpoint, {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify(sendItems)
@@ -49,9 +53,9 @@ async function sendNewRowToDB(rowData, row, table) {
     }
 }
 
-async function sendFieldToDb(rowData, cell) {
+async function sendFieldToDb(rowData, cell, endpoint) {
     try {
-        const response = await fetch("/update_db_field", {
+        const response = await fetch(endpoint, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"

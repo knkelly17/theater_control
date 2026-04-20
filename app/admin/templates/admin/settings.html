@@ -58,7 +58,13 @@
     });
 
   settingsTable.on("cellEdited", function(cell) {
-    editCell(cell, "settings", requiredFields)    
+    const row = cell.getRow();
+    const rowID = row.getIndex()
+    if (rowID) {
+      editCell(cell, "settings", "/admin/update_db_field"); 
+    } else {
+      addRow(cell, "settings", requiredFields, "/admin/insert_db_row")
+    }   
   });
 
 

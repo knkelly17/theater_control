@@ -6,14 +6,25 @@
     <div class="w3-bar">
         <a href="{{ url_for('index') }}"
             class="w3-button w3-bar-item w3-hide-small w3-left w3-dark-gray index">Home</a>
-        <a href="{{ url_for('etcconnect.etcconnect_control') }}"
+        
+        {% if current_user.has_group("etcconnect") %}
+            <a href="{{ url_for('etcconnect.etcconnect_control') }}"
             class="w3-button w3-bar-item w3-hide-small w3-dark-gray etcconnect">Lighting Control</a>
-        <a href="{{ url_for('qlab.qlab_control') }}"
+        {% endif %}
+
+        {% if current_user.has_group("qlab") %}    
+            <a href="{{ url_for('qlab.qlab_control') }}"
             class="w3-button w3-bar-item w3-hide-small w3-dark-gray qlab">QLab Control</a>
-        <a href="{{ url_for('profile.profile') }}"
+        {% endif %}
+
+            <a href="{{ url_for('profile.profile') }}"
             class="w3-button w3-bar-item w3-hide-small w3-dark-gray profile">Profile</a>
-        <a href="{{ url_for('admin.admin_tasks') }}"
+
+        {% if current_user.has_group("admin") %}
+            <a href="{{ url_for('admin.admin_tasks') }}"
             class="w3-button w3-bar-item w3-hide-small w3-dark-gray admin">Admin Tasks</a>
+        {% endif %}
+
         <a href="{{ url_for('logout') }}"
             class="w3-button w3-bar-item w3-hide-small w3-dark-gray logout">Logout</a>
         <a href="javascript:void(0)" class="w3-bar-item w3-button w3-hide-large w3-hide-medium w3-blue"

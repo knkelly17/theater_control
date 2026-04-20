@@ -5,6 +5,7 @@ from flask_login import login_required, current_user
 from pythonosc.udp_client import SimpleUDPClient
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import app
+from app.functions import group_required
 from .etcconnect_forms import ETCForm
 from . import etcconnect_bp
 # from systems import etc_ip, etc_port
@@ -22,6 +23,7 @@ ver = currentDT.strftime("%Y-%m-%d-%H:%M:%S")
 
 @etcconnect_bp.route('/', methods=['GET', 'POST'])
 @login_required
+@group_required("etcconnect")
 def etcconnect_control():
     """Lighting Control page route."""
     form = ETCForm()
@@ -35,6 +37,8 @@ def etcconnect_control():
 
 
 @etcconnect_bp.route('/channelSetAJAX', methods=['POST', 'GET'])
+@login_required
+@group_required("etcconnect")
 def channel_set_full_out():
     """Channel level setting via AJAX route."""
     if current_user.is_authenticated:
@@ -55,6 +59,8 @@ def channel_set_full_out():
         'result': output_result})
 
 @etcconnect_bp.route('/cueFireAJAX', methods=['POST', 'GET'])
+@login_required
+@group_required("etcconnect")
 def cue_fire():
     """Channel level setting via AJAX route."""
     if current_user.is_authenticated:
@@ -75,6 +81,8 @@ def cue_fire():
 
 
 @etcconnect_bp.route('/addressSetAJAX', methods=['POST', 'GET'])
+@login_required
+@group_required("etcconnect")
 def address_set_full_out():
     """Address level setting via AJAX route."""
     if current_user.is_authenticated:

@@ -128,7 +128,13 @@
   });
 
   usersTable.on("cellEdited", function(cell) {
-    editCell(cell, "users", requiredFields)    
+    const row = cell.getRow();
+    const rowID = row.getIndex()
+    if (rowID) {
+      editCell(cell, "users", "/admin/update_db_field"); 
+    } else {
+      addRow(cell, "users", requiredFields, "/admin/insert_db_row")
+    }
   });
 
   //Add row on "Add Row" button click

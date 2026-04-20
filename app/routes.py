@@ -68,36 +68,12 @@ def load_user(user_id):
 @login_required
 def index():
     """Home page route."""
-    return render_template('index.html', title='Home', version=ver, main_menu='index')
+    return render_template(
+        'index.html', 
+        title='Home', 
+        version=ver,
+        site_name=app.site_name,
+        main_menu='index')
 
-@app.route('/update_db_field', methods=['POST'])
-@login_required
-def update_field_db():
-    editRow = request.get_json()
-    table = editRow['table']
-    updateFields = {
-        editRow['field']: editRow['value'],
-        'sessionid': current_user.sessionid
-    }
-    updateResult = update_db(table, editRow['ID'], updateFields)
-    app.site_settings = get_site_settings()
-    app.site_name=app.site_settings['name']
-    return jsonify({
-        "status": "ok",
-        "value": updateResult
-    })
-
-@app.route('/insert_db_row', methods=['POST'])
-@login_required
-def insert_row_db():
-    insertValues = request.get_json()
-    insertRow = insertValues['rowData']
-    table = insertValues['table']
-    insertRow['sessionid'] = current_user.sessionid
-    inserted_id = insert_db(table, insertRow)
-    return jsonify({
-        "status": "ok",
-        "value": inserted_id
-    })
 
 
