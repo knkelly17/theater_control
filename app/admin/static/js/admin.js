@@ -1,6 +1,5 @@
 $(function(){
 	$('#add_setting_or_not').on("click", function(){
-		console.log("you clicked it")
 		return
 	    var action = $(this).attr('id')
 	    if (action == 'fire_qlab_cue' || action == 'stop_qlab_cue') {
