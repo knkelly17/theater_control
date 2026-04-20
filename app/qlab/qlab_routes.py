@@ -5,6 +5,7 @@ from flask_login import login_required, current_user
 from pythonosc.udp_client import SimpleUDPClient
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import app
+from app.functions import group_required
 from .qlab_forms import QlabForm
 from . import qlab_bp
 
@@ -21,6 +22,7 @@ ver = currentDT.strftime("%Y-%m-%d-%H:%M:%S")
 
 @qlab_bp.route('/', methods=['GET', 'POST'])
 @login_required
+@group_required("qlab")
 def qlab_control():
     """QLab Control page route."""
     form = QlabForm()
@@ -35,6 +37,8 @@ def qlab_control():
 
 
 @qlab_bp.route('/qlabAJAX', methods=['POST', 'GET'])
+@login_required
+@group_required("qlab")
 def qlab_remote_ajax():
     """QLab control via AJAX route."""
     if current_user.is_authenticated:
