@@ -13,11 +13,8 @@ from . import etcconnect_bp
 
 log = logging.getLogger(__name__)
 
-etc_ip = get_db_setting('etc_ip')
-etc_port = get_db_setting('etc_port')
-
-log.info("ETC IP: " + str(etc_ip))
-log.info("ETC Port: " + str(etc_port))
+etc_ip = str(get_db_setting('etc_ip'))
+etc_port = int(get_db_setting('etc_port'))
 
 
 app.secret_key = app.config['SECRET_KEY']
@@ -134,9 +131,7 @@ def fire_cue_rest():
         command = json_data['command']
         qlab_parameters = get_qlab_command_db(command)
         if qlab_parameters:
-            ip = str(etc_ip)
-            port = int(etc_port)
-            client = SimpleUDPClient(ip, port)
+            client = SimpleUDPClient(etc_ip, etc_port)
             message = '/eos'
             param1 = qlab_parameters.get('parameter_1')
             param2 = qlab_parameters.get('parameter_2')
@@ -147,7 +142,7 @@ def fire_cue_rest():
                 message += '/' + param2
 
             client.send_message(message, param3)
-        log.info(f"QLab trigger: {command} from {request.remote_addr}")
+        log.info(f"QLab trigger: {command} from {request.remote_addr} to {etc_ip}")
     
         return jsonify({
             'text': "Cue fired via REST endpoint with command: ",
@@ -171,4 +166,4 @@ def get_qlab_command_db(command_name):
         query = "SELECT * FROM qlab_commands WHERE name = %s and active = 'Y'" 
         cursor.execute(query, (command_name,))
         qlab_commands_data = cursor.fetchone()
-        return qlab_commands_data or None
+        return qlab_commands_data
