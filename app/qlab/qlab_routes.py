@@ -9,8 +9,8 @@ from app.functions import group_required
 from .qlab_forms import QlabForm
 from . import qlab_bp
 
-qlab_ip = app.site_settings['qlab_ip']
-qlab_port = app.site_settings['qlab_port']
+#qlab_ip = app.site_settings['qlab_ip']
+#qlab_port = app.site_settings['qlab_port']
 
 
 app.secret_key = app.config['SECRET_KEY']

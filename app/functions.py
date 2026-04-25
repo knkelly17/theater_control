@@ -27,10 +27,20 @@ def get_db(dbconnection=app.dbconnection):
         database=dbconnection['dbdatabase']
     )
 
+''' Get a setting value from the settings table '''
+
+def get_db_setting(this_value):
+    with get_db(dbconnection=app.dbconnection) as db:
+        cursor = db.cursor(dictionary=True)
+        query = "SELECT value FROM settings WHERE name = '" + this_value + "'"
+        cursor.execute(query)
+        output = cursor.fetchone()
+        return output['value'] if output else None
+
 def get_site_settings():
     with get_db(dbconnection=app.dbconnection) as db:
         cursor = db.cursor(dictionary=True)
-        query = "SELECT * FROM settings"
+        query = "SELECT name, value FROM settings where name in ('name', 'school_name', 'webmaster')"
         cursor.execute(query)
         settings_data = cursor.fetchall()
         output = {}
@@ -63,7 +73,6 @@ def insert_db(table_name, data_values):
         values_string = ", ".join(values_list)
         query = "INSERT INTO " + table_name + " (" + field_string + ")"
         query = query + " VALUES (" + values_string + ")"
-        print (query)
         cursor.execute(query)
         db.commit()
         inserted_id = cursor.lastrowid

@@ -1,4 +1,4 @@
-"""Routes for the Flask web application handling lighting and QLab control via OSC."""
+"""Routes top level functions."""
 import datetime
 from flask import render_template, request, jsonify, redirect, url_for
 from flask_login import LoginManager, current_user, login_required, UserMixin

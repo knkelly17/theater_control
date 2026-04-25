@@ -1,6 +1,12 @@
 from datetime import timedelta
 from flask import Flask, session
 from config import Config
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] [%(name)s] %(message)s"
+)
 
 
 app = Flask(__name__)

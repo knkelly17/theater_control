@@ -5,31 +5,31 @@
 <div class="w3-container w3-light-gray w3-center">
     <div class="w3-bar">
         <a href="{{ url_for('index') }}"
-            class="w3-button w3-bar-item w3-hide-small w3-left w3-dark-gray index">Home</a>
+            class="w3-button w3-bar-item w3-hide-medium w3-hide-small w3-left w3-dark-gray index">Home</a>
         
         {% if current_user.has_group("etcconnect") %}
             <a href="{{ url_for('etcconnect.etcconnect_control') }}"
-            class="w3-button w3-bar-item w3-hide-small w3-dark-gray etcconnect">Lighting Control</a>
+            class="w3-button w3-bar-item  w3-hide-medium w3-hide-small w3-dark-gray etcconnect">Lighting Control</a>
         {% endif %}
 
         {% if current_user.has_group("qlab") %}    
             <a href="{{ url_for('qlab.qlab_control') }}"
-            class="w3-button w3-bar-item w3-hide-small w3-dark-gray qlab">QLab Control</a>
+            class="w3-button w3-bar-item  w3-hide-medium w3-hide-small w3-dark-gray qlab">QLab Control</a>
         {% endif %}
 
             <a href="{{ url_for('profile.profile') }}"
-            class="w3-button w3-bar-item w3-hide-small w3-dark-gray profile">Profile</a>
+            class="w3-button w3-bar-item  w3-hide-medium w3-hide-small w3-dark-gray profile">Profile</a>
 
         {% if current_user.has_group("admin") %}
             <a href="{{ url_for('admin.admin_tasks') }}"
-            class="w3-button w3-bar-item w3-hide-small w3-dark-gray admin">Admin Tasks</a>
+            class="w3-button w3-bar-item  w3-hide-medium w3-hide-small w3-dark-gray admin">Admin Tasks</a>
         {% endif %}
 
         <a href="{{ url_for('logout') }}"
-            class="w3-button w3-bar-item w3-hide-small w3-dark-gray logout">Logout</a>
-        <a href="javascript:void(0)" class="w3-bar-item w3-button w3-hide-large w3-hide-medium w3-blue"
+            class="w3-button w3-bar-item w3-hide-medium w3-hide-small w3-dark-gray logout">Logout</a>
+        <a href="javascript:void(0)" class="w3-bar-item w3-button w3-hide-large w3-blue"
             onclick="menu_function()">{{ title }}</a>
-        <a href="javascript:void(0)" class="w3-bar-item w3-button w3-right w3-hide-large w3-hide-medium"
+        <a href="javascript:void(0)" class="w3-bar-item w3-button w3-right w3-hide-large"
             onclick="menu_function()">&#9776;</a>
     </div>
 </div>
@@ -38,10 +38,42 @@
 
     <!-- Sets up vertical menu for small screens -->
     <div id="menubar"
-            class="w3-bar-block w3-dark-grey w3-hide w3-hide-large w3-hide-medium">
+            class="w3-bar-block w3-dark-grey w3-hide w3-hide-large">
         <a href="{{ url_for('index') }}" class="w3-bar-item w3-button index">Home</a>
-        <a href="{{ url_for('etcconnect.etcconnect_control') }}" class="w3-bar-item w3-button etcconnect">Lighting Control</a>
-        <a href="{{ url_for('qlab.qlab_control') }}" class="w3-bar-item w3-button qlab">QLab Control</a>
+        {% if current_user.has_group("etcconnect") %}
+            <a href="{{ url_for('etcconnect.etcconnect_control') }}" 
+                class="w3-bar-item w3-button etcconnect">Lighting Control</a>
+        {% endif %}
+        {% if current_user.has_group("qlab") %}
+            <a href="{{ url_for('qlab.qlab_control') }}" class="w3-bar-item w3-button qlab">
+                QLab Control</a>
+        {% endif %}
+        {% if current_user.has_group("admin") %}
+            <a href="{{ url_for('admin.admin_tasks') }}" 
+                class="w3-bar-item w3-button admin">Admin Tasks</a>
+        {% endif %}
         <a href="{{ url_for('profile.profile') }}" class="w3-bar-item w3-button profile">Profile</a>
         <a href="{{ url_for('logout') }}" class="w3-bar-item w3-button logout">Logout</a>
     </div>
+
+    {% if current_user.is_authenticated and main_menu%}
+
+
+        <script>
+            this_page = "{{ main_menu }}";
+            document.getElementsByClassName(this_page)[0].classList.add("selected-button", "w3-blue");
+            document.getElementsByClassName(this_page)[0].classList.remove("w3-dark-gray");
+        </script>
+
+        {% endif %}
+
+        <script>
+           function menu_function() {
+               var x = document.getElementById("menubar");
+               if (x.className.indexOf("w3-show") == -1) {
+                   x.className += " w3-show";
+               } else {
+                   x.className = x.className.replace(" w3-show", "");
+               }
+           }
+         </script>

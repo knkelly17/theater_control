@@ -21,6 +21,7 @@ function editCell(cell, table, endpoint) {
 }
 
 function addRow(cell, table, requiredFields, endpoint) {
+    console.log("addRow called");
     const row = cell.getRow();
     const rowValues = row.getData(); 
 

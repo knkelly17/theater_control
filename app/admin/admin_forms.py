@@ -33,7 +33,8 @@ class AdminForm(FlaskForm):
                 'w3-small '
             }
         )
-    add_group = SubmitField('Add Group',
+    
+    add_qlab_command = SubmitField('Add QLAB Command',
         render_kw={
             'class':
                 'admin_action '

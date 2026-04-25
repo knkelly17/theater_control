@@ -26,6 +26,7 @@ def admin_tasks():
     return render_template(
         'admin/admin.html', 
         title='Admin Tasks',
+        sub_title='Admin Menu',
         site_name=app.site_name,  
         version=ver, 
         main_menu='admin')
@@ -39,7 +40,8 @@ def admin_users():
     form = AdminForm()
     return render_template(
         'admin/users.html', 
-        title='Admin Users', 
+        title='Admin Tasks', 
+        sub_title='Users',
         site_name=app.site_name,
         form=form,
         version=ver, 
@@ -107,7 +109,8 @@ def admin_groups():
     form = AdminForm()
     return render_template(
         'admin/groups.html', 
-        title='Admin Groups', 
+        title='Admin Tasks', 
+        sub_title='Groups',
         site_name=app.site_name,
         form=form,
         version=ver, 
@@ -141,7 +144,8 @@ def admin_user2group():
     form = AdminForm()
     return render_template(
         'admin/user2group.html', 
-        title='Admin Users to Groups', 
+        title='Admin Tasks', 
+        sub_title='Users to Groups',
         site_name=app.site_name,
         form=form,
         version=ver, 
@@ -242,7 +246,8 @@ def admin_settings():
     return render_template(
         'admin/settings.html', 
         form=form,
-        title='Admin Settings',
+        title='Admin Tasks',
+        sub_title='Settings',
         site_name=app.site_name, 
         version=ver, 
         main_menu='admin', 
@@ -264,6 +269,47 @@ def get_settings_db():
 def get_settings():
     settings = get_settings_db()
     return settings
+
+
+
+########### EXT QLAB COMMANDS##########
+
+@admin_bp.route('/qlab_commands', methods=['POST', 'GET'])
+@login_required
+@group_required("admin")
+def admin_qlab_commands():
+    """Admin Settings page route."""
+    qlab_commands = get_qlab_commands_db()
+    form = AdminForm()
+    return render_template(
+        'admin/qlab_commands.html', 
+        form=form,
+        title='Admin Tasks',
+        sub_title='QLAB Commands',
+        site_name=app.site_name, 
+        version=ver, 
+        main_menu='admin', 
+        base='admin_qlab_commands',
+        page_content=qlab_commands
+    )
+
+
+def get_qlab_commands_db():
+    with get_db(dbconnection=app.dbconnection) as db:
+        cursor = db.cursor(dictionary=True)
+        query = "SELECT * FROM qlab_commands ORDER BY name"
+        cursor.execute(query)
+        qlab_commands_data = cursor.fetchall()
+        return qlab_commands_data
+
+@admin_bp.route('/get_qlab_commands', methods=['POST', 'GET'])
+@login_required
+@group_required("admin")
+def get_qlab_commands():
+    qlab_commands = get_qlab_commands_db()
+    return qlab_commands
+
+##########END EXT QLAB COMMANDS##########
 
 
 @admin_bp.route('/update_db_field', methods=['POST'])

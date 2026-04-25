@@ -8,6 +8,7 @@
         {% else %}
         <title>Welcome to Mills Theater</title>
         {% endif %}
+        
         <link rel="stylesheet" type="text/css" href="/static/css/w3.css">
         <link rel="stylesheet" type="text/css" href="/static/css/myStyle.css">
         <link href="/static/css/tabulator.min.css" rel="stylesheet">
@@ -26,27 +27,6 @@
 
         {% block content %} {% endblock %}
 
-        {% if current_user.is_authenticated and main_menu%}
-
-
-        <script>
-            this_page = "{{ main_menu }}";
-            document.getElementsByClassName(this_page)[0].classList.add("selected-button", "w3-blue");
-            document.getElementsByClassName(this_page)[0].classList.remove("w3-dark-gray");
-        </script>
-
-        {% endif %}
-
-        <script>
-           function menu_function() {
-               var x = document.getElementById("menubar");
-               if (x.className.indexOf("w3-show") == -1) {
-                   x.className += " w3-show";
-               } else {
-                   x.className = x.className.replace(" w3-show", "");
-               }
-           }
-         </script>
      
     </body>
 </html>
