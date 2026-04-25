@@ -1,17 +1,23 @@
 """Routes for the Flask web application handling lighting and QLab control via OSC."""
+import logging
 import datetime
-from flask import render_template, request, jsonify, redirect, url_for
+from flask import abort, abort, render_template, request, jsonify, redirect, url_for
 from flask_login import login_required, current_user
 from pythonosc.udp_client import SimpleUDPClient
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import app
-from app.functions import group_required
+from app.functions import group_required, get_db_setting, get_db
 from .etcconnect_forms import ETCForm
 from . import etcconnect_bp
 # from systems import etc_ip, etc_port
 
-etc_ip = app.site_settings['etc_ip']
-etc_port = app.site_settings['etc_port']
+log = logging.getLogger(__name__)
+
+etc_ip = get_db_setting('etc_ip')
+etc_port = get_db_setting('etc_port')
+
+log.info("ETC IP: " + str(etc_ip))
+log.info("ETC Port: " + str(etc_port))
 
 
 app.secret_key = app.config['SECRET_KEY']
@@ -103,3 +109,66 @@ def address_set_full_out():
         'result': output_result
     })
 
+@etcconnect_bp.route('/fireCueRest', methods=['POST'])
+def fire_cue_rest():
+    """Address level setting via REST route."""
+    
+    qlab_ext_ip = get_db_setting('qlab_ext_ip')
+    qlab_ext_key = get_db_setting('qlab_ext_key')
+
+    if request.remote_addr != str(qlab_ext_ip):
+        log.warning(f"Unauthorized access attempt from IP")
+        abort(403)
+
+    api_key = request.headers.get('X-Api-Key')
+
+    if api_key != str(qlab_ext_key):
+        log.warning(f"Unauthorized access attempt with API key")
+        abort(403)
+    
+    
+    # Get JSON data - silent=True prevents 400 on parse failure
+    json_data = request.get_json(silent=True)
+    
+    if json_data and 'command' in json_data:
+        command = json_data['command']
+        qlab_parameters = get_qlab_command_db(command)
+        if qlab_parameters:
+            ip = str(etc_ip)
+            port = int(etc_port)
+            client = SimpleUDPClient(ip, port)
+            message = '/eos'
+            param1 = qlab_parameters.get('parameter_1')
+            param2 = qlab_parameters.get('parameter_2')
+            param3 = qlab_parameters.get('parameter_3')
+            if param1:
+                message += '/' + param1
+            if param2:
+                message += '/' + param2
+
+            client.send_message(message, param3)
+        log.info(f"QLab trigger: {command} from {request.remote_addr}")
+    
+        return jsonify({
+            'text': "Cue fired via REST endpoint with command: ",
+            'result': 1
+        })
+    #if not input_command:
+    #    return jsonify({'error': 'Missing command parameter'}), 400
+   
+
+    
+    log.info("Cue fired via REST endpoint with command: " + command)
+    log.info("Allowed IP: " + str(qlab_ext_ip))
+    return jsonify({
+        'text': "Cue fired via REST endpoint with command: " + command,
+        'result': 1
+    })
+
+def get_qlab_command_db(command_name):
+    with get_db(dbconnection=app.dbconnection) as db:
+        cursor = db.cursor(dictionary=True)
+        query = "SELECT * FROM qlab_commands WHERE name = %s and active = 'Y'" 
+        cursor.execute(query, (command_name,))
+        qlab_commands_data = cursor.fetchone()
+        return qlab_commands_data or None
