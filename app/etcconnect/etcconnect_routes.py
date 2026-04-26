@@ -128,6 +128,8 @@ def fire_cue_rest():
     json_data = request.get_json(silent=True)
     
     if json_data and 'command' in json_data:
+        etc_ip = str(get_db_setting('etc_ip'))
+        etc_port = int(get_db_setting('etc_port'))
         command = json_data['command']
         qlab_parameters = get_qlab_command_db(command)
         if qlab_parameters:
