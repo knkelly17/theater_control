@@ -58,6 +58,18 @@ class AdminForm(FlaskForm):
             }
         )
     
+    add_group = SubmitField('Add Group',
+        render_kw={
+            'class':
+                'admin_action '
+                'w3-button '
+                'w3-blue '
+                'w3-round '
+                'w3-hover-aqua '
+                'w3-small '
+            }
+        )
+    
     new_password = PasswordField('New Password', 
         validators=[
             DataRequired(),
