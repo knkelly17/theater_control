@@ -9,7 +9,7 @@ from app import app
 from app.routes import User
 from .profile_forms import LoginForm
 from . import profile_bp
-from app.functions import get_db
+from app.functions import get_db, get_setting
 
 
 app.secret_key = app.config['SECRET_KEY']
@@ -92,7 +92,7 @@ def profile():
     return render_template(
         'profile/profile.html', 
         title='Profile', 
-        site_name=app.site_name, 
+        site_name=get_setting('name'), 
         version=ver, 
         form=form, 
         main_menu='profile')

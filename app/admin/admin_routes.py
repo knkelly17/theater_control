@@ -7,7 +7,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from app import app
 from .admin_forms import AdminForm
 from . import admin_bp
-from app.functions import get_db, group_required, update_db, get_site_settings, insert_db
+from app.functions import get_db, get_setting, group_required, update_db, get_site_settings, insert_db
 
 
 app.secret_key = app.config['SECRET_KEY']
@@ -27,7 +27,7 @@ def admin_tasks():
         'admin/admin.html', 
         title='Admin Tasks',
         sub_title='Admin Menu',
-        site_name=app.site_name,  
+        site_name=get_setting('name'),  
         version=ver, 
         main_menu='admin')
 
@@ -42,7 +42,7 @@ def admin_users():
         'admin/users.html', 
         title='Admin Tasks', 
         sub_title='Users',
-        site_name=app.site_name,
+        site_name=get_setting('name'),
         form=form,
         version=ver, 
         main_menu='admin', 
@@ -111,7 +111,7 @@ def admin_groups():
         'admin/groups.html', 
         title='Admin Tasks', 
         sub_title='Groups',
-        site_name=app.site_name,
+        site_name=get_setting('name'),
         form=form,
         version=ver, 
         main_menu='admin', 
@@ -146,7 +146,7 @@ def admin_user2group():
         'admin/user2group.html', 
         title='Admin Tasks', 
         sub_title='Users to Groups',
-        site_name=app.site_name,
+        site_name=get_setting('name'),
         form=form,
         version=ver, 
         main_menu='admin', 
@@ -248,7 +248,7 @@ def admin_settings():
         form=form,
         title='Admin Tasks',
         sub_title='Settings',
-        site_name=app.site_name, 
+        site_name=get_setting('name'), 
         version=ver, 
         main_menu='admin', 
         base='admin_settings',
@@ -286,7 +286,7 @@ def admin_qlab_commands():
         form=form,
         title='Admin Tasks',
         sub_title='QLAB Commands',
-        site_name=app.site_name, 
+        site_name=get_setting('name'), 
         version=ver, 
         main_menu='admin', 
         base='admin_qlab_commands',
@@ -359,7 +359,7 @@ def admin_status():
         devices=app.device_last_seen,
         title='Admin Tasks',
         sub_title='System Status',
-        site_name=app.site_name, 
+        site_name=get_setting('name'), 
         version=ver, 
         main_menu='admin', 
         base='admin_status'

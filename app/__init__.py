@@ -15,12 +15,6 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=120)
 app.config['REMEMBER_COOKIE_DURATION'] = timedelta(minutes=120)
 app.dbconnection = app.config['DBCONNECTION']
 
-from app.functions import get_site_settings
-
-app.site_settings = get_site_settings()
-
-app.site_name=app.site_settings['name']
-
 
 @app.before_request
 def handle_user_activity():

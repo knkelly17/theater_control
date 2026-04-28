@@ -5,7 +5,7 @@ from flask_login import login_required, current_user
 from pythonosc.udp_client import SimpleUDPClient
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import app
-from app.functions import group_required
+from app.functions import group_required, get_setting
 from .qlab_forms import QlabForm
 from . import qlab_bp
 
@@ -29,7 +29,7 @@ def qlab_control():
     return render_template(
         'qlab/qlab.html', 
         title='QLab Control', 
-        site_name=app.site_name, 
+        site_name=get_setting('name'), 
         form=form, 
         version=ver, 
         main_menu='qlab'

@@ -32,7 +32,7 @@ def etcconnect_control():
     form = ETCForm()
     return render_template(
         'etcconnect/etcconnect.html', 
-        site_name=app.site_name, 
+        site_name=get_setting('name'), 
         title='Lighting Control', 
         form=form, 
         version=ver, 

@@ -12,8 +12,6 @@ app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1)
 app.site_settings = get_site_settings()
 app.settings_last_loaded = datetime.now(timezone.utc)
 
-app.site_name = get_setting('name')
-
 app.device_last_seen = {}
 
 def track_device(ip):
@@ -90,7 +88,7 @@ def index():
         'index.html', 
         title='Home', 
         version=ver,
-        site_name=app.site_name,
+        site_name=get_setting('name'),
         main_menu='index')
 
 
