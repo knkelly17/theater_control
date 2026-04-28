@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <!-- h1>Enter Channel Number to set Full or Out</h1 -->
+
+{% include 'admin/admin_menu.html' %}
+
+{% if base %}
+<script>
+    base_page = "{{ base }}";
+    document.getElementsByClassName(base_page)[0].classList.add("selected-button", "w3-green");
+    document.getElementsByClassName(base_page)[0].classList.remove("w3-dark-gray");
+</script>
+{% endif %}
+
+<!-- Page Content -->
+ <div class="w3-main" style="margin-left:200px">
+  <button class="w3-button w3-xlarge w3-hide-large" onclick="w3_open()">&#9776;</button>
+  <div class="w3-container">
+
+    <h2>System Status</h2>
+
+    <!-- Settings -->
+    <div class="w3-card w3-margin-bottom">
+        <header class="w3-container w3-blue">
+            <h3>Cached Settings</h3>
+        </header>
+
+        <div class="w3-container">
+            <p><strong>Last Reload:</strong> {{ last_loaded }}</p>
+
+            <table class="w3-table w3-striped">
+                <tr>
+                    <th>Key</th>
+                    <th>Value</th>
+                </tr>
+                {% for key, value in settings.items() %}
+                <tr>
+                    <td>{{ key }}</td>
+                    <td>{{ value }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+
+    <!-- Devices -->
+    <div class="w3-card">
+        <header class="w3-container w3-green">
+            <h3>Connected Devices (Recent Activity)</h3>
+        </header>
+
+        <div class="w3-container">
+            <table class="w3-table w3-striped">
+                <tr>
+                    <th>IP Address</th>
+                    <th>Last Seen</th>
+                </tr>
+                {% for ip, ts in devices.items() %}
+                <tr>
+                    <td>{{ ip }}</td>
+                    <td>{{ ts }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="{{ url_for('admin.static', filename='js/admin.js') }}?v={{ version }}"></script>
+
+
+
+{% endblock %}

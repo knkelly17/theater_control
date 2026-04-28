@@ -1,5 +1,5 @@
 """Routes for the Flask web application handling lighting and QLab control via OSC."""
-import datetime
+from datetime import datetime, timezone
 from flask import render_template, request, jsonify, redirect, url_for
 from flask_login import login_required, current_user
 from pythonosc.udp_client import SimpleUDPClient
@@ -14,7 +14,7 @@ app.secret_key = app.config['SECRET_KEY']
 app.dbconnection = app.config['DBCONNECTION']
 
 
-currentDT = datetime.datetime.now()
+currentDT = datetime.now()
 ver = currentDT.strftime("%Y-%m-%d-%H:%M:%S")
 
 
@@ -324,7 +324,7 @@ def update_field_db():
     }
     updateResult = update_db(table, editRow['ID'], updateFields)
     app.site_settings = get_site_settings()
-    app.site_name=app.site_settings['name']
+    app.settings_last_loaded = datetime.now(timezone.utc)
     return jsonify({
         "status": "ok",
         "value": updateResult
@@ -339,10 +339,31 @@ def insert_row_db():
     table = insertValues['table']
     insertRow['sessionid'] = current_user.sessionid
     inserted_id = insert_db(table, insertRow)
+    app.site_settings = get_site_settings()
+    app.settings_last_loaded = datetime.now(timezone.utc)
     return jsonify({
         "status": "ok",
         "value": inserted_id
     })
+
+
+##########Status page routes##########
+@admin_bp.route("/admin_status")
+@login_required
+@group_required("admin")
+def admin_status():
+    return render_template(
+        "admin/status.html",
+        settings=app.site_settings,
+        last_loaded=app.settings_last_loaded,
+        devices=app.device_last_seen,
+        title='Admin Tasks',
+        sub_title='System Status',
+        site_name=app.site_name, 
+        version=ver, 
+        main_menu='admin', 
+        base='admin_status'
+    )
 
 
 

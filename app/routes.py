@@ -1,15 +1,29 @@
 """Routes top level functions."""
-import datetime
+from datetime import datetime, timezone
 from flask import render_template, request, jsonify, redirect, url_for
 from flask_login import LoginManager, current_user, login_required, UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.middleware.proxy_fix import ProxyFix
 from app import app
-from app.functions import get_db, update_db, get_site_settings, insert_db
+from app.functions import get_db, get_setting, get_site_settings, insert_db
+
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1)
+
+app.site_settings = get_site_settings()
+app.settings_last_loaded = datetime.now(timezone.utc)
+
+app.site_name = get_setting('name')
+
+app.device_last_seen = {}
+
+def track_device(ip):
+    app.device_last_seen[ip] = datetime.now(timezone.utc)
+
 
 app.secret_key = app.config['SECRET_KEY']
 app.dbconnection = app.config['DBCONNECTION']
 
-currentDT = datetime.datetime.now()
+currentDT = datetime.now()
 ver = currentDT.strftime("%Y-%m-%d-%H:%M:%S")
 
 login_manager = LoginManager()
@@ -62,6 +76,10 @@ def load_user(user_id):
             session_id
         )
    
+@app.before_request
+def log_device():
+    if request.remote_addr:
+        track_device(request.remote_addr)
 
 @app.route('/')
 @app.route('/index')

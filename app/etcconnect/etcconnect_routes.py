@@ -6,15 +6,15 @@ from flask_login import login_required, current_user
 from pythonosc.udp_client import SimpleUDPClient
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import app
-from app.functions import group_required, get_db_setting, get_db
+from app.functions import group_required, get_db, get_setting
 from .etcconnect_forms import ETCForm
 from . import etcconnect_bp
 # from systems import etc_ip, etc_port
 
 log = logging.getLogger(__name__)
 
-etc_ip = str(get_db_setting('etc_ip'))
-etc_port = int(get_db_setting('etc_port'))
+etc_ip = str(get_setting('etc_ip'))
+etc_port = int(get_setting('etc_port'))
 
 
 app.secret_key = app.config['SECRET_KEY']
@@ -110,11 +110,11 @@ def address_set_full_out():
 def fire_cue_rest():
     """Address level setting via REST route."""
     
-    qlab_ext_ip = get_db_setting('qlab_ext_ip')
-    qlab_ext_key = get_db_setting('qlab_ext_key')
+    qlab_ext_ip = get_setting('qlab_ext_ip')
+    qlab_ext_key = get_setting('qlab_ext_key')
 
     if request.remote_addr != str(qlab_ext_ip):
-        log.warning(f"Unauthorized access attempt from IP")
+        log.warning(f"Unauthorized access attempt from IP " + request.remote_addr)
         abort(403)
 
     api_key = request.headers.get('X-Api-Key')
@@ -128,8 +128,8 @@ def fire_cue_rest():
     json_data = request.get_json(silent=True)
     
     if json_data and 'command' in json_data:
-        etc_ip = str(get_db_setting('etc_ip'))
-        etc_port = int(get_db_setting('etc_port'))
+        etc_ip = str(get_setting('etc_ip'))
+        etc_port = int(get_setting('etc_port'))
         command = json_data['command']
         qlab_parameters = get_qlab_command_db(command)
         if qlab_parameters:
@@ -147,7 +147,7 @@ def fire_cue_rest():
         log.info(f"QLab trigger: {command} from {request.remote_addr} to {etc_ip}")
     
         return jsonify({
-            'text': "Cue fired via REST endpoint with command: ",
+            'text': "Cue fired via REST endpoint with command: " + command,
             'result': 1
         })
     #if not input_command:

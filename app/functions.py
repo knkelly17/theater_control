@@ -40,13 +40,16 @@ def get_db_setting(this_value):
 def get_site_settings():
     with get_db(dbconnection=app.dbconnection) as db:
         cursor = db.cursor(dictionary=True)
-        query = "SELECT name, value FROM settings where name in ('name', 'school_name', 'webmaster')"
+        query = "SELECT name, value FROM settings where active = 'Y'"
         cursor.execute(query)
-        settings_data = cursor.fetchall()
-        output = {}
-        for setting in settings_data:
-            output[setting['name']] = setting['value']
+        output = {
+            row["name"]: row["value"]
+            for row in cursor.fetchall()
+        }
         return output
+
+def get_setting(key, default=None):
+    return app.site_settings.get(key, default)
     
 def update_db(table_name, thisID, data_values):
     with get_db(dbconnection=app.dbconnection) as db:
