@@ -5,17 +5,29 @@ from flask_login import LoginManager, current_user, login_required, UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.middleware.proxy_fix import ProxyFix
 from app import app
-from app.functions import get_db, get_setting, get_site_settings, insert_db
+from app.functions import get_db, get_setting, get_site_settings, insert_db, get_db_value
 
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1)
 
 app.site_settings = get_site_settings()
-app.settings_last_loaded = datetime.now(timezone.utc)
+# app.settings_last_loaded = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
 
-app.device_last_seen = {}
+app.settings_last_loaded = get_db_value("MAX(timestamp)", "settings", "1")
+
+app.device_last_seen = []
 
 def track_device(ip):
-    app.device_last_seen[ip] = datetime.now(timezone.utc)
+    for device in app.device_last_seen:
+        if device["ip"] == ip:
+            device["last_seen"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            break
+    else:
+        app.device_last_seen.append(
+            {
+                "ip": ip,
+                "last_seen": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            }
+        )
 
 
 app.secret_key = app.config['SECRET_KEY']

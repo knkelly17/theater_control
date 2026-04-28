@@ -1,5 +1,6 @@
 """Routes for the Flask web application handling lighting and QLab control via OSC."""
-from datetime import datetime, timezone
+import logging
+from datetime import datetime
 from flask import render_template, request, jsonify, redirect, url_for
 from flask_login import login_required, current_user
 from pythonosc.udp_client import SimpleUDPClient
@@ -7,12 +8,13 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from app import app
 from .admin_forms import AdminForm
 from . import admin_bp
-from app.functions import get_db, get_setting, group_required, update_db, get_site_settings, insert_db
+from app.functions import get_db, get_db_value, get_setting, group_required, update_db, get_site_settings, insert_db
 
 
 app.secret_key = app.config['SECRET_KEY']
 app.dbconnection = app.config['DBCONNECTION']
 
+log = logging.getLogger(__name__)
 
 currentDT = datetime.now()
 ver = currentDT.strftime("%Y-%m-%d-%H:%M:%S")
@@ -323,8 +325,7 @@ def update_field_db():
         'sessionid': current_user.sessionid
     }
     updateResult = update_db(table, editRow['ID'], updateFields)
-    app.site_settings = get_site_settings()
-    app.settings_last_loaded = datetime.now(timezone.utc)
+    app.settings_last_loaded = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
     return jsonify({
         "status": "ok",
         "value": updateResult
@@ -339,8 +340,7 @@ def insert_row_db():
     table = insertValues['table']
     insertRow['sessionid'] = current_user.sessionid
     inserted_id = insert_db(table, insertRow)
-    app.site_settings = get_site_settings()
-    app.settings_last_loaded = datetime.now(timezone.utc)
+    app.settings_last_loaded = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
     return jsonify({
         "status": "ok",
         "value": inserted_id
@@ -352,10 +352,10 @@ def insert_row_db():
 @login_required
 @group_required("admin")
 def admin_status():
+    log.info(app.device_last_seen)
     return render_template(
         "admin/status.html",
-        settings=app.site_settings,
-        last_loaded=app.settings_last_loaded,
+        last_loaded=get_db_value("MAX(timestamp)", "settings", "1"),
         devices=app.device_last_seen,
         title='Admin Tasks',
         sub_title='System Status',

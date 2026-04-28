@@ -44,8 +44,8 @@ def qlab_remote_ajax():
     if current_user.is_authenticated:
         output_result = 1
         this_text = "All Cues stopped"
-        ip = str(qlab_ip)
-        port = int(qlab_port)
+        ip = str(get_setting('qlab_ip'))
+        port = int(get_setting('qlab_port'))
         client = SimpleUDPClient(ip, port)
         action = request.form['action']
         if action == 'fire_qlab_cue':

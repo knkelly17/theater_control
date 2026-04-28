@@ -29,13 +29,13 @@ def get_db(dbconnection=app.dbconnection):
 
 ''' Get a setting value from the settings table '''
 
-def get_db_setting(this_value):
+def get_db_value(field, table, where):
     with get_db(dbconnection=app.dbconnection) as db:
         cursor = db.cursor(dictionary=True)
-        query = "SELECT value FROM settings WHERE name = '" + this_value + "'"
+        query = f"SELECT {field} FROM {table} WHERE {where}"
         cursor.execute(query)
         output = cursor.fetchone()
-        return output['value'] if output else None
+        return output[field] if output else None
 
 def get_site_settings():
     with get_db(dbconnection=app.dbconnection) as db:
@@ -49,7 +49,11 @@ def get_site_settings():
         return output
 
 def get_setting(key, default=None):
-    return app.site_settings.get(key, default)
+    with get_db(dbconnection=app.dbconnection) as db:
+        cursor = db.cursor(dictionary=True)
+        cursor.execute("SELECT value FROM settings WHERE name = %s AND active = 'Y'", (key,))
+        row = cursor.fetchone()
+        return row['value'] if row else default
     
 def update_db(table_name, thisID, data_values):
     with get_db(dbconnection=app.dbconnection) as db:

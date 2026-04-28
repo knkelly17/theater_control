@@ -23,24 +23,13 @@
     <!-- Settings -->
     <div class="w3-card w3-margin-bottom">
         <header class="w3-container w3-blue">
-            <h3>Cached Settings</h3>
+            <h3>Current App Settings</h3>
         </header>
 
         <div class="w3-container">
             <p><strong>Last Reload:</strong> {{ last_loaded }}</p>
 
-            <table class="w3-table w3-striped">
-                <tr>
-                    <th>Key</th>
-                    <th>Value</th>
-                </tr>
-                {% for key, value in settings.items() %}
-                <tr>
-                    <td>{{ key }}</td>
-                    <td>{{ value }}</td>
-                </tr>
-                {% endfor %}
-            </table>
+            <div id="settings-table"></div>
         </div>
     </div>
 
@@ -49,25 +38,56 @@
         <header class="w3-container w3-green">
             <h3>Connected Devices (Recent Activity)</h3>
         </header>
+        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
 
         <div class="w3-container">
-            <table class="w3-table w3-striped">
-                <tr>
-                    <th>IP Address</th>
-                    <th>Last Seen</th>
-                </tr>
-                {% for ip, ts in devices.items() %}
-                <tr>
-                    <td>{{ ip }}</td>
-                    <td>{{ ts }}</td>
-                </tr>
-                {% endfor %}
-            </table>
+            <div id="devices-table"></div>
         </div>
     </div>
   </div>
+    
 
 </div>
+
+<script>
+  const tabledata = "/admin/get_settings"
+
+  const settingsTable = new Tabulator("#settings-table", {
+    //height:205, // set height of table (in CSS or here), this enables the Virtual DOM 
+    // and improves render speed dramatically (can
+    // data:tabledata, //assign data to table
+    ajaxURL: tabledata,
+    layout:"fitDataTable",
+    index:"ID",
+    tabEndNewRow: true,
+    responsiveLayout:true,
+    pagination: "local",
+    paginationSize: 5, // Max rows shown per page
+    columns:[ //Define Table Columns
+      {title:"ID", field:"ID",  visible:false},
+      {title:"Order", field:"the_order", visible:false}, 
+      {title:"Active", field:"active", visible:false},
+      {title:"Item", field:"name", editor:"input", width: 150, responsive:0},
+      {title:"Description", field:"description", visible:false},
+      {title:"Value", field:"value", editor:"input", width: 200,responsive:0},
+    ],
+  });
+
+  settingsTable.setFilter("active", "=", "Y");
+
+  const all_devices = {{ devices|tojson }};
+
+  const devicesTable = new Tabulator("#devices-table", {
+    layout:"fitDataTable",
+    index:"ip",
+    columns:[
+      {title:"IP Address", field:"ip"},
+      {title:"Last Seen", field:"last_seen"},
+    ],
+    data: all_devices,
+  });
+
+</script>
 
 <script src="{{ url_for('admin.static', filename='js/admin.js') }}?v={{ version }}"></script>
 
