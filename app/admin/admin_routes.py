@@ -1,14 +1,21 @@
 """Routes for the Flask web application handling lighting and QLab control via OSC."""
 import logging
 from datetime import datetime
-from flask import render_template, request, jsonify, redirect, url_for
+from flask import render_template, request, jsonify
 from flask_login import login_required, current_user
-from pythonosc.udp_client import SimpleUDPClient
-from werkzeug.security import generate_password_hash, check_password_hash
+# from pythonosc.udp_client import SimpleUDPClient
+from werkzeug.security import generate_password_hash
 from app import app
+from app.functions import (
+    get_db,
+    get_db_value,
+    get_setting,
+    group_required,
+    update_db,
+    insert_db
+)
 from .admin_forms import AdminForm
 from . import admin_bp
-from app.functions import get_db, get_db_value, get_setting, group_required, update_db, get_site_settings, insert_db
 
 
 app.secret_key = app.config['SECRET_KEY']
@@ -29,8 +36,8 @@ def admin_tasks():
         'admin/admin.html', 
         title='Admin Tasks',
         sub_title='Admin Menu',
-        site_name=get_setting('name'),  
-        version=ver, 
+        site_name=get_setting('name'),
+        version=ver,
         main_menu='admin')
 
 @admin_bp.route('/admin_users', methods=['POST', 'GET'])
@@ -42,12 +49,12 @@ def admin_users():
     form = AdminForm()
     return render_template(
         'admin/users.html', 
-        title='Admin Tasks', 
+        title='Admin Tasks',
         sub_title='Users',
         site_name=get_setting('name'),
         form=form,
-        version=ver, 
-        main_menu='admin', 
+        version=ver,
+        main_menu='admin',
         base='admin_users',
         page_content=contents
     )
@@ -57,10 +64,12 @@ def admin_users():
 @login_required
 @group_required("admin")
 def get_users():
+    '''Fetches the list of users from the database and returns it as JSON.'''
     users = get_users_db()
     return users
 
 def get_users_db():
+    '''Fetches the list of users from the database.'''
     with get_db(dbconnection=app.dbconnection) as db:
         cursor = db.cursor(dictionary=True)
         user_fields = 'ID, username, first_name, last_name, email, active'
@@ -68,23 +77,25 @@ def get_users_db():
         cursor.execute(query)
         settings_data = cursor.fetchall()
         return settings_data
-    
+
 @admin_bp.route("/change_password", methods=["GET", "POST"])
 @login_required
 @group_required("admin")
 def change_password():
+    '''Allows an admin to change a user's password. 
+    Expects a JSON payload with the new password and user ID.'''
     form = AdminForm()
 
-    editRow = request.get_json()
+    edit_row = request.get_json()
 
     if form.validate_on_submit():
-        new_password = editRow["new_password"]
-        user_id = editRow["ID"]
+        new_password = edit_row["new_password"]
+        user_id = edit_row["ID"]
         hashed_password = generate_password_hash(new_password)
 
         with get_db(dbconnection=app.dbconnection) as db:
             cursor = db.cursor()
-            cursor.execute("UPDATE users SET password_hash=%s WHERE ID=%s", 
+            cursor.execute("UPDATE users SET password_hash=%s WHERE ID=%s",
                            (hashed_password, user_id))
             db.commit()
             # do password update logic here
@@ -111,12 +122,12 @@ def admin_groups():
     form = AdminForm()
     return render_template(
         'admin/groups.html', 
-        title='Admin Tasks', 
+        title='Admin Tasks',
         sub_title='Groups',
         site_name=get_setting('name'),
         form=form,
-        version=ver, 
-        main_menu='admin', 
+        version=ver,
+        main_menu='admin',
         base='admin_groups',
         page_content=contents
     )
@@ -124,10 +135,12 @@ def admin_groups():
 @admin_bp.route('/get_groups', methods=['POST', 'GET'])
 @login_required
 def get_groups():
+    '''Fetches the list of user groups from the database and returns it as JSON.'''
     groups = get_groups_db()
     return groups
 
 def get_groups_db():
+    '''Fetches the list of user groups from the database.'''
     with get_db(dbconnection=app.dbconnection) as db:
         cursor = db.cursor(dictionary=True)
         group_fields = 'ID, name, description, active'
@@ -146,12 +159,12 @@ def admin_user2group():
     form = AdminForm()
     return render_template(
         'admin/user2group.html', 
-        title='Admin Tasks', 
+        title='Admin Tasks',
         sub_title='Users to Groups',
         site_name=get_setting('name'),
         form=form,
-        version=ver, 
-        main_menu='admin', 
+        version=ver,
+        main_menu='admin',
         base='admin_user2group',
         page_content=contents
     )
@@ -160,6 +173,9 @@ def admin_user2group():
 @login_required
 @group_required("admin")
 def get_user_groups():
+    '''Fetches all groups and the groups assigned to a specific user, 
+    returning the data as JSON.'''
+
     user_id = request.args.get("user_id")
 
     with get_db(dbconnection=app.dbconnection) as db:
@@ -185,6 +201,7 @@ def get_user_groups():
 @login_required
 @group_required("admin")
 def update_user_group():
+    '''Update the user's group assignment based on the provided data.'''
     data = request.get_json()
 
     user_id = data["user_id"]
@@ -213,6 +230,7 @@ def update_user_group():
 @login_required
 @group_required("admin")
 def permissions_matrix():
+    '''Admin Permissions Matrix page route.'''
     with get_db(dbconnection=app.dbconnection) as db:
         cur = db.cursor(dictionary=True)
 
@@ -250,14 +268,15 @@ def admin_settings():
         form=form,
         title='Admin Tasks',
         sub_title='Settings',
-        site_name=get_setting('name'), 
-        version=ver, 
-        main_menu='admin', 
+        site_name=get_setting('name'),
+        version=ver,
+        main_menu='admin',
         base='admin_settings',
         page_content=settings
     )
 
 def get_settings_db():
+    '''Fetches the list of settings from the database.'''
     with get_db(dbconnection=app.dbconnection) as db:
         cursor = db.cursor(dictionary=True)
         query = "SELECT * FROM settings ORDER BY the_order"
@@ -269,6 +288,7 @@ def get_settings_db():
 @login_required
 @group_required("admin")
 def get_settings():
+    '''Fetches the list of settings from the database and returns it as JSON.'''
     settings = get_settings_db()
     return settings
 
@@ -288,15 +308,16 @@ def admin_qlab_commands():
         form=form,
         title='Admin Tasks',
         sub_title='QLAB Commands',
-        site_name=get_setting('name'), 
-        version=ver, 
-        main_menu='admin', 
+        site_name=get_setting('name'),
+        version=ver,
+        main_menu='admin',
         base='admin_qlab_commands',
         page_content=qlab_commands
     )
 
 
 def get_qlab_commands_db():
+    '''Fetches the list of QLab commands from the database.'''
     with get_db(dbconnection=app.dbconnection) as db:
         cursor = db.cursor(dictionary=True)
         query = "SELECT * FROM qlab_commands ORDER BY name"
@@ -308,6 +329,7 @@ def get_qlab_commands_db():
 @login_required
 @group_required("admin")
 def get_qlab_commands():
+    '''Fetches the list of QLab commands from the database and returns it as JSON.'''
     qlab_commands = get_qlab_commands_db()
     return qlab_commands
 
@@ -318,28 +340,34 @@ def get_qlab_commands():
 @login_required
 @group_required("admin")
 def update_field_db():
-    editRow = request.get_json()
-    table = editRow['table']
-    updateFields = {
-        editRow['field']: editRow['value'],
+    '''Update a specific field in the specified table for the given ID. 
+    The sessionid of the current user is automatically included in the update.'''
+    edit_row = request.get_json()
+    table = edit_row['table']
+    update_fields = {
+        edit_row['field']: edit_row['value'],
         'sessionid': current_user.sessionid
     }
-    updateResult = update_db(table, editRow['ID'], updateFields)
+    update_result = update_db(table, edit_row['ID'], update_fields)
     app.settings_last_loaded = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
     return jsonify({
         "status": "ok",
-        "value": updateResult
+        "value": update_result
     })
 
 @admin_bp.route('/insert_db_row', methods=['POST'])
 @login_required
 @group_required("admin")
 def insert_row_db():
-    insertValues = request.get_json()
-    insertRow = insertValues['rowData']
-    table = insertValues['table']
-    insertRow['sessionid'] = current_user.sessionid
-    inserted_id = insert_db(table, insertRow)
+    '''Insert a new row into the specified table 
+    with the provided data. The sessionid of the current user 
+    is automatically included in the inserted data.'''
+
+    insert_values = request.get_json()
+    insert_row = insert_values['rowData']
+    table = insert_values['table']
+    insert_row['sessionid'] = current_user.sessionid
+    inserted_id = insert_db(table, insert_row)
     app.settings_last_loaded = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
     return jsonify({
         "status": "ok",
@@ -352,19 +380,15 @@ def insert_row_db():
 @login_required
 @group_required("admin")
 def admin_status():
-    log.info(app.device_last_seen)
+    '''Admin Status page route.'''
     return render_template(
         "admin/status.html",
         last_loaded=get_db_value("MAX(timestamp)", "settings", "1"),
         devices=app.device_last_seen,
         title='Admin Tasks',
         sub_title='System Status',
-        site_name=get_setting('name'), 
-        version=ver, 
-        main_menu='admin', 
+        site_name=get_setting('name'),
+        version=ver,
+        main_menu='admin',
         base='admin_status'
     )
-
-
-
-
