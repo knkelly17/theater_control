@@ -40,7 +40,7 @@ class ETCForm(FlaskForm):
                 'w3-xlarge '
         }
     )
-    
+
     channelLevel = IntegerField('Channel', id='channel_level',
         render_kw={
             'class':
@@ -104,7 +104,7 @@ class ETCForm(FlaskForm):
         widget=NumberInput(min=0, max=1000)
     )
 
-    fire_cue = SubmitField('Go To Cue', 
+    fire_cue = SubmitField('Go To Cue',
         render_kw={
             'class':
                 'w3-button '

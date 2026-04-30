@@ -3,14 +3,13 @@
 from flask_wtf import FlaskForm
 from wtforms import (
     SubmitField,
-    IntegerField,
     StringField,
     PasswordField
 )
 from wtforms.validators import DataRequired, EqualTo, Length
-from wtforms.widgets import NumberInput
 
 class ChangePasswordForm(FlaskForm):
+    '''Change Password Form'''
     current_password = PasswordField("Current Password", validators=[DataRequired()])
     new_password = PasswordField("New Password", validators=[DataRequired(), Length(min=6)])
     confirm_password = PasswordField(
@@ -20,28 +19,28 @@ class ChangePasswordForm(FlaskForm):
 
 class LoginForm(FlaskForm):
     """Login Form"""
-    username = StringField('Username', 
+    username = StringField('Username',
         validators=[DataRequired()],
         render_kw={
             'class':
             'w3-border-black w3-round '
         })
-    
+
     password = PasswordField('Password', validators=[DataRequired()],
         render_kw={
             'class':
             'w3-border-black w3-round '
         })
-    
-    new_password = PasswordField('New Password', 
-        validators=[DataRequired()], 
+
+    new_password = PasswordField('New Password',
+        validators=[DataRequired()],
         render_kw={
         'class':
         'w3-border-black w3-round '
     })
 
-    confirm_password = PasswordField('Confirm New Password', 
-        validators=[DataRequired()], 
+    confirm_password = PasswordField('Confirm New Password',
+        validators=[DataRequired()],
         render_kw={
         'class':
         'w3-border-black w3-round '
@@ -64,4 +63,3 @@ class LoginForm(FlaskForm):
             'w3-hover-aqua '
             'w3-medium '
     })
-

@@ -1,11 +1,10 @@
 """Routes for the Flask web application handling lighting and QLab control via OSC."""
 import logging
 from datetime import datetime
-from flask import render_template, request, jsonify
+from flask import current_app, render_template, request, jsonify
 from flask_login import login_required, current_user
 # from pythonosc.udp_client import SimpleUDPClient
 from werkzeug.security import generate_password_hash
-from app import app
 from app.functions import (
     get_db,
     get_db_value,
@@ -14,12 +13,10 @@ from app.functions import (
     update_db,
     insert_db
 )
+from config import DBCONNECTION
 from .admin_forms import AdminForm
 from . import admin_bp
 
-
-app.secret_key = app.config['SECRET_KEY']
-app.dbconnection = app.config['DBCONNECTION']
 
 log = logging.getLogger(__name__)
 
@@ -70,7 +67,7 @@ def get_users():
 
 def get_users_db():
     '''Fetches the list of users from the database.'''
-    with get_db(dbconnection=app.dbconnection) as db:
+    with get_db(dbconnection=DBCONNECTION) as db:
         cursor = db.cursor(dictionary=True)
         user_fields = 'ID, username, first_name, last_name, email, active'
         query = "SELECT " + user_fields + " FROM users ORDER BY username"
@@ -93,7 +90,7 @@ def change_password():
         user_id = edit_row["ID"]
         hashed_password = generate_password_hash(new_password)
 
-        with get_db(dbconnection=app.dbconnection) as db:
+        with get_db(dbconnection=DBCONNECTION) as db:
             cursor = db.cursor()
             cursor.execute("UPDATE users SET password_hash=%s WHERE ID=%s",
                            (hashed_password, user_id))
@@ -141,7 +138,7 @@ def get_groups():
 
 def get_groups_db():
     '''Fetches the list of user groups from the database.'''
-    with get_db(dbconnection=app.dbconnection) as db:
+    with get_db(dbconnection=DBCONNECTION) as db:
         cursor = db.cursor(dictionary=True)
         group_fields = 'ID, name, description, active'
         query = "SELECT " + group_fields + " FROM user_groups ORDER BY name"
@@ -178,7 +175,7 @@ def get_user_groups():
 
     user_id = request.args.get("user_id")
 
-    with get_db(dbconnection=app.dbconnection) as db:
+    with get_db(dbconnection=DBCONNECTION) as db:
         cursor = db.cursor(dictionary=True)
 
         cursor.execute("SELECT ID, name FROM user_groups")
@@ -208,7 +205,7 @@ def update_user_group():
     group_id = data["group_id"]
     assigned = data["assigned"]
 
-    with get_db(dbconnection=app.dbconnection) as db:
+    with get_db(dbconnection=DBCONNECTION) as db:
         cursor = db.cursor()
 
         if assigned:
@@ -231,7 +228,7 @@ def update_user_group():
 @group_required("admin")
 def permissions_matrix():
     '''Admin Permissions Matrix page route.'''
-    with get_db(dbconnection=app.dbconnection) as db:
+    with get_db(dbconnection=DBCONNECTION) as db:
         cur = db.cursor(dictionary=True)
 
         cur.execute("SELECT id, username FROM users")
@@ -277,7 +274,7 @@ def admin_settings():
 
 def get_settings_db():
     '''Fetches the list of settings from the database.'''
-    with get_db(dbconnection=app.dbconnection) as db:
+    with get_db(dbconnection=DBCONNECTION) as db:
         cursor = db.cursor(dictionary=True)
         query = "SELECT * FROM settings ORDER BY the_order"
         cursor.execute(query)
@@ -291,7 +288,6 @@ def get_settings():
     '''Fetches the list of settings from the database and returns it as JSON.'''
     settings = get_settings_db()
     return settings
-
 
 
 ########### EXT QLAB COMMANDS##########
@@ -318,7 +314,7 @@ def admin_qlab_commands():
 
 def get_qlab_commands_db():
     '''Fetches the list of QLab commands from the database.'''
-    with get_db(dbconnection=app.dbconnection) as db:
+    with get_db(dbconnection=DBCONNECTION) as db:
         cursor = db.cursor(dictionary=True)
         query = "SELECT * FROM qlab_commands ORDER BY name"
         cursor.execute(query)
@@ -349,7 +345,7 @@ def update_field_db():
         'sessionid': current_user.sessionid
     }
     update_result = update_db(table, edit_row['ID'], update_fields)
-    app.settings_last_loaded = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
+    current_app.settings_last_loaded = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
     return jsonify({
         "status": "ok",
         "value": update_result
@@ -368,7 +364,7 @@ def insert_row_db():
     table = insert_values['table']
     insert_row['sessionid'] = current_user.sessionid
     inserted_id = insert_db(table, insert_row)
-    app.settings_last_loaded = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
+    current_app.settings_last_loaded = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
     return jsonify({
         "status": "ok",
         "value": inserted_id
@@ -384,7 +380,7 @@ def admin_status():
     return render_template(
         "admin/status.html",
         last_loaded=get_db_value("MAX(timestamp)", "settings", "1"),
-        devices=app.device_last_seen,
+        devices=getattr(current_app, 'device_last_seen', []),
         title='Admin Tasks',
         sub_title='System Status',
         site_name=get_setting('name'),

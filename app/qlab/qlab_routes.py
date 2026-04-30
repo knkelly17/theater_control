@@ -1,20 +1,11 @@
-"""Routes for the Flask web application handling lighting and QLab control via OSC."""
+"""Routes for the Flask web application handling QLab control via OSC."""
 import datetime
-from flask import render_template, request, jsonify, redirect, url_for
+from flask import render_template, request, jsonify, url_for
 from flask_login import login_required, current_user
 from pythonosc.udp_client import SimpleUDPClient
-from werkzeug.security import generate_password_hash, check_password_hash
-from app import app
 from app.functions import group_required, get_setting
 from .qlab_forms import QlabForm
 from . import qlab_bp
-
-#qlab_ip = app.site_settings['qlab_ip']
-#qlab_port = app.site_settings['qlab_port']
-
-
-app.secret_key = app.config['SECRET_KEY']
-app.dbconnection = app.config['DBCONNECTION']
 
 
 currentDT = datetime.datetime.now()
@@ -28,10 +19,10 @@ def qlab_control():
     form = QlabForm()
     return render_template(
         'qlab/qlab.html', 
-        title='QLab Control', 
-        site_name=get_setting('name'), 
-        form=form, 
-        version=ver, 
+        title='QLab Control',
+        site_name=get_setting('name'),
+        form=form,
+        version=ver,
         main_menu='qlab'
     )
 
@@ -68,4 +59,3 @@ def qlab_remote_ajax():
         'text': this_text,
         'result': output_result
     })
-

@@ -1,24 +1,19 @@
 """Routes for the Flask web application handling lighting and QLab control via OSC."""
 import logging
 import datetime
-from flask import abort, abort, render_template, request, jsonify, redirect, url_for
+from flask import abort, render_template, request, jsonify, url_for
 from flask_login import login_required, current_user
 from pythonosc.udp_client import SimpleUDPClient
-from werkzeug.security import generate_password_hash, check_password_hash
-from app import app
 from app.functions import group_required, get_db, get_setting
+from config import DBCONNECTION
 from .etcconnect_forms import ETCForm
 from . import etcconnect_bp
 # from systems import etc_ip, etc_port
 
 log = logging.getLogger(__name__)
 
-etc_ip = str(get_setting('etc_ip'))
-etc_port = int(get_setting('etc_port'))
-
-
-app.secret_key = app.config['SECRET_KEY']
-app.dbconnection = app.config['DBCONNECTION']
+ETC_IP = str(get_setting('etc_ip'))
+ETC_PORT = int(get_setting('etc_port'))
 
 
 currentDT = datetime.datetime.now()
@@ -32,10 +27,10 @@ def etcconnect_control():
     form = ETCForm()
     return render_template(
         'etcconnect/etcconnect.html', 
-        site_name=get_setting('name'), 
-        title='Lighting Control', 
-        form=form, 
-        version=ver, 
+        site_name=get_setting('name'),
+        title='Lighting Control',
+        form=form,
+        version=ver,
         main_menu='etcconnect')
 
 
@@ -45,8 +40,8 @@ def etcconnect_control():
 def channel_set_full_out():
     """Channel level setting via AJAX route."""
     if current_user.is_authenticated:
-        ip = str(etc_ip)
-        port = int(etc_port)
+        ip = str(ETC_IP)
+        port = int(ETC_PORT)
         client = SimpleUDPClient(ip, port)
         level = request.form['level']
         chan_id = request.form['chan_id']
@@ -67,8 +62,8 @@ def channel_set_full_out():
 def cue_fire():
     """Channel level setting via AJAX route."""
     if current_user.is_authenticated:
-        ip = str(etc_ip)
-        port = int(etc_port)
+        ip = str(ETC_IP)
+        port = int(ETC_PORT)
         client = SimpleUDPClient(ip, port)
         cue_number = request.form['cue_number']
         message = "/eos/cue/fire"
@@ -89,8 +84,8 @@ def cue_fire():
 def address_set_full_out():
     """Address level setting via AJAX route."""
     if current_user.is_authenticated:
-        ip = str(etc_ip)
-        port = int(etc_port)
+        ip = str(ETC_IP)
+        port = int(ETC_PORT)
         client = SimpleUDPClient(ip, port)
         level = request.form['level']
         addr_id = request.form['addr_id']
@@ -109,24 +104,24 @@ def address_set_full_out():
 @etcconnect_bp.route('/fireCueRest', methods=['POST'])
 def fire_cue_rest():
     """Address level setting via REST route."""
-    
+
     qlab_ext_ip = get_setting('qlab_ext_ip')
     qlab_ext_key = get_setting('qlab_ext_key')
 
     if request.remote_addr != str(qlab_ext_ip):
-        log.warning(f"Unauthorized access attempt from IP " + request.remote_addr)
+        log.warning("Unauthorized access attempt from IP %s", request.remote_addr)
         abort(403)
 
     api_key = request.headers.get('X-Api-Key')
 
     if api_key != str(qlab_ext_key):
-        log.warning(f"Unauthorized access attempt with API key")
+        log.warning("Unauthorized access attempt with API key")
         abort(403)
-    
-    
+
+
     # Get JSON data - silent=True prevents 400 on parse failure
     json_data = request.get_json(silent=True)
-    
+
     if json_data and 'command' in json_data:
         etc_ip = str(get_setting('etc_ip'))
         etc_port = int(get_setting('etc_port'))
@@ -144,28 +139,29 @@ def fire_cue_rest():
                 message += '/' + param2
 
             client.send_message(message, param3)
-        log.info(f"QLab trigger: {command} from {request.remote_addr} to {etc_ip}")
-    
+        log.info("QLab trigger: %s from %s to %s", command, request.remote_addr, etc_ip)
+
         return jsonify({
             'text': "Cue fired via REST endpoint with command: " + command,
             'result': 1
         })
     #if not input_command:
     #    return jsonify({'error': 'Missing command parameter'}), 400
-   
 
-    
-    log.info("Cue fired via REST endpoint with command: " + command)
-    log.info("Allowed IP: " + str(qlab_ext_ip))
+
+
+    log.info("Cue fired via REST endpoint with command: %s", command)
+    log.info("Allowed IP: %s", qlab_ext_ip)
     return jsonify({
         'text': "Cue fired via REST endpoint with command: " + command,
         'result': 1
     })
 
 def get_qlab_command_db(command_name):
-    with get_db(dbconnection=app.dbconnection) as db:
+    '''Fetch QLab command parameters from the database based on the command name.'''
+    with get_db(dbconnection=DBCONNECTION) as db:
         cursor = db.cursor(dictionary=True)
-        query = "SELECT * FROM qlab_commands WHERE name = %s and active = 'Y'" 
+        query = "SELECT * FROM qlab_commands WHERE name = %s and active = 'Y'"
         cursor.execute(query, (command_name,))
         qlab_commands_data = cursor.fetchone()
         return qlab_commands_data

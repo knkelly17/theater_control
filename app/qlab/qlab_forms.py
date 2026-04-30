@@ -22,7 +22,7 @@ class QlabForm(FlaskForm):
                 'w3-xxlarge '
             }
         )
-    
+
     panic = SubmitField('Stop All Cues',
         render_kw={
             'class':
@@ -34,14 +34,14 @@ class QlabForm(FlaskForm):
                 'w3-xxlarge '
             }
         )
-    
+
     cue = IntegerField('Cue', id='cue',
         render_kw={
             'class':
                 'w3-border-black w3-round '
         },
         widget=NumberInput(min=0, max=1000))
-    
+
     fire_qlab_cue = SubmitField('Fire Cue',
         render_kw={
             'class':
@@ -53,7 +53,7 @@ class QlabForm(FlaskForm):
                 'w3-xlarge '
             }
         )
-    
+
     stop_qlab_cue = SubmitField('Stop Cue',
         render_kw={
             'class':
