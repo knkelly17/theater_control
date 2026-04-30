@@ -19,7 +19,8 @@ class QlabForm(FlaskForm):
                 'w3-blue '
                 'w3-round '
                 'w3-hover-aqua '
-                'w3-xxlarge '
+                'w3-xxlarge ',
+            'data-action': 'go'
             }
         )
 
@@ -31,7 +32,8 @@ class QlabForm(FlaskForm):
                 'w3-blue '
                 'w3-round '
                 'w3-hover-aqua '
-                'w3-xxlarge '
+                'w3-xxlarge ',
+            'data-action': 'panic'
             }
         )
 
@@ -50,7 +52,8 @@ class QlabForm(FlaskForm):
                 'w3-blue '
                 'w3-round '
                 'w3-hover-aqua '
-                'w3-xlarge '
+                'w3-xlarge ',
+            'data-action': 'fire_qlab_cue'
             }
         )
 
@@ -62,6 +65,7 @@ class QlabForm(FlaskForm):
                 'w3-blue '
                 'w3-round '
                 'w3-hover-aqua '
-                'w3-xlarge '
+                'w3-xlarge ',
+            'data-action': 'stop_qlab_cue'
             }
         )

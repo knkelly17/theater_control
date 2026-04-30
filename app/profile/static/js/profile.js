@@ -17,7 +17,7 @@ $(function(){
 		const formattedDate = `${year}${month}${day}${hours}${minutes}${seconds}`;
 	    var req_data = {username: username, password: password, timestamp: formattedDate}
 		
-	    $.post('/login', req_data).done(function(response) {
+	    $.post('/profile/login', req_data).done(function(response) {
 				if (response['login_result'] == 1) {
 					window.location.href = response['text'];
 				} else {

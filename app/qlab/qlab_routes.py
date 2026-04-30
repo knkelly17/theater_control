@@ -1,11 +1,14 @@
 """Routes for the Flask web application handling QLab control via OSC."""
+import logging
 import datetime
 from flask import render_template, request, jsonify, url_for
 from flask_login import login_required, current_user
 from pythonosc.udp_client import SimpleUDPClient
 from app.functions import group_required, get_setting
 from .qlab_forms import QlabForm
-from . import qlab_bp
+from . import qlab_bp # pylint: disable=cyclic-import
+
+log = logging.getLogger(__name__)
 
 
 currentDT = datetime.datetime.now()
@@ -33,18 +36,21 @@ def qlab_control():
 def qlab_remote_ajax():
     """QLab control via AJAX route."""
     if current_user.is_authenticated:
+        log.info("QLab action received: %s", request.get_json())
         output_result = 1
         this_text = "All Cues stopped"
         ip = str(get_setting('qlab_ip'))
         port = int(get_setting('qlab_port'))
         client = SimpleUDPClient(ip, port)
-        action = request.form['action']
+        action = request.get_json()['action']
+        log.info("QLab action received: %s", request.get_json())
+        log.info("QLab connection is %s:%s", ip, port)
         if action == 'fire_qlab_cue':
-            cue_number = request.form['cue_number']
+            cue_number = str(request.get_json()['cue_number'])
             message = '/cue/'+cue_number+'/start'
             this_text = 'Cue '+cue_number+' has been triggered'
         elif action == 'stop_qlab_cue':
-            cue_number = request.form['cue_number']
+            cue_number = str(request.get_json()['cue_number'])
             message = '/cue/' + cue_number + '/stop'
             this_text = 'Cue ' + cue_number + ' has been stopped'
         else:

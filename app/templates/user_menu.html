@@ -25,7 +25,7 @@
             class="w3-button w3-bar-item  w3-hide-medium w3-hide-small w3-dark-gray admin">Admin Tasks</a>
         {% endif %}
 
-        <a href="{{ url_for('logout') }}"
+        <a href="{{ url_for('profile.logout') }}"
             class="w3-button w3-bar-item w3-hide-medium w3-hide-small w3-dark-gray logout">Logout</a>
         <a href="javascript:void(0)" class="w3-bar-item w3-button w3-hide-large w3-blue"
             onclick="menu_function()">{{ title }}</a>
@@ -53,7 +53,7 @@
                 class="w3-bar-item w3-button admin">Admin Tasks</a>
         {% endif %}
         <a href="{{ url_for('profile.profile') }}" class="w3-bar-item w3-button profile">Profile</a>
-        <a href="{{ url_for('logout') }}" class="w3-bar-item w3-button logout">Logout</a>
+        <a href="{{ url_for('profile.logout') }}" class="w3-bar-item w3-button logout">Logout</a>
     </div>
 
     {% if current_user.is_authenticated and main_menu%}

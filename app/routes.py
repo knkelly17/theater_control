@@ -53,7 +53,7 @@ ver = currentDT.strftime("%Y-%m-%d-%H:%M:%S")
 
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = 'login'
+login_manager.login_view = 'profile.login'
 
 @dataclass
 class User(UserMixin):
@@ -71,7 +71,7 @@ class User(UserMixin):
 @login_manager.user_loader
 def load_user(user_id):
     '''Load user from the database by ID.'''
-    with get_db(dbconnection=app.dbconnection) as db:
+    with get_db() as db:
         cursor = db.cursor(dictionary=True)
         cursor.execute("SELECT * FROM users WHERE ID=%s", (user_id,))
         user_data = cursor.fetchone()

@@ -56,7 +56,7 @@ def login():
                 return jsonify({
                     'text': url_for("index"),
                     'login_result': login_result
-                    })
+                })
             login_result = 0
             this_text = "Invalid username or password. Please try again."
             return jsonify({
@@ -121,7 +121,7 @@ def change_password():
     logout_user()
     login_result = 1
     return jsonify({
-        'text': url_for("login"),
+        'text': url_for("profile.login"),
         'login_result': login_result
         }
     )
