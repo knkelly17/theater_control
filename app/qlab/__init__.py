@@ -7,4 +7,5 @@ qlab_bp = Blueprint('qlab', __name__, template_folder='templates', static_folder
 
 # 2. Import routes at the BOTTOM to prevent circular imports
 # This ensures qlab_bp is defined before routes try to import it
+
 from . import qlab_routes # pylint: disable=wrong-import-position

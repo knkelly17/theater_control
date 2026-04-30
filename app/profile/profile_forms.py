@@ -49,10 +49,11 @@ class LoginForm(FlaskForm):
     submit_login = SubmitField('Login', render_kw={
         'class':
             'w3-button '
-            'w3-blue '
             'w3-round '
+            'w3-blue '
             'w3-hover-aqua '
-            'w3-medium '
+            'w3-medium ',
+        'data-action': 'submit_login'
     })
 
     submit_change_password = SubmitField('Change Password', render_kw={
@@ -60,6 +61,7 @@ class LoginForm(FlaskForm):
             'w3-button '
             'w3-blue '
             'w3-round '
-            'w3-hover-aqua '
             'w3-medium '
+            'w3-hover-aqua ',
+        'data-action': 'submit_change_password'
     })

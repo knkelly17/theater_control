@@ -91,13 +91,14 @@ class AdminForm(FlaskForm):
         'w3-border-black w3-round '
     })
 
-    submit_change_password = SubmitField('Change Password', render_kw={
+    admin_change_password = SubmitField('Change Password', render_kw={
         'class':
             'w3-button '
             'w3-blue '
             'w3-round '
             'w3-hover-aqua '
-            'w3-medium '
+            'w3-medium ',
+        'data-action': 'admin_change_password'
     })
 
     cancel_change_password = SubmitField('Cancel', render_kw={

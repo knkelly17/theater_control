@@ -70,7 +70,7 @@
             {% endif %}
         </p>
 
-        {{ form.submit_change_password() }}
+        {{ form.admin_change_password() }}
 
     <div class="w3-row"><div class="w3-col">&nbsp;</div></div>
     <div class="w3-row">
@@ -143,7 +143,7 @@
     usersTable.addRow({});
   });
 
-  document.getElementById("submit_change_password").addEventListener(
+  document.getElementById("admin_change_password").addEventListener(
   "click", async function (e) {
     e.preventDefault(); // replaces return false
     const formData = {

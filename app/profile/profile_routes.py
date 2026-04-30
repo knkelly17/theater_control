@@ -3,11 +3,11 @@ import datetime
 from flask import render_template, request, jsonify, redirect, url_for
 from flask_login import current_user, login_user, login_required, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
+from config import DBCONNECTION
 from app.routes import User
 from app.functions import get_db, get_setting
-from config import DBCONNECTION
 from .profile_forms import LoginForm
-from . import profile_bp
+from . import profile_bp # pylint: disable=cyclic-import
 
 
 currentDT = datetime.datetime.now()

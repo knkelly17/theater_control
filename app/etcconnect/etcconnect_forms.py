@@ -8,6 +8,8 @@ from wtforms import (
 
 from wtforms.widgets import NumberInput
 
+BLUE_BUTTON_CLASS = 'w3-button w3-blue w3-round w3-hover-aqua w3-xlarge'
+
 
 class ETCForm(FlaskForm):
     """ETC_Control Form"""
@@ -106,11 +108,7 @@ class ETCForm(FlaskForm):
 
     fire_cue = SubmitField('Go To Cue',
         render_kw={
-            'class':
-                'w3-button '
-                'w3-blue '
-                'w3-round '
-                'w3-hover-aqua '
-                'w3-xlarge '
+            'data-action': 'fire_cue',
+            'class': BLUE_BUTTON_CLASS
         }
     )

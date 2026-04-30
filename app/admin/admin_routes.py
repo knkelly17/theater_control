@@ -3,8 +3,8 @@ import logging
 from datetime import datetime
 from flask import current_app, render_template, request, jsonify
 from flask_login import login_required, current_user
-# from pythonosc.udp_client import SimpleUDPClient
 from werkzeug.security import generate_password_hash
+from config import DBCONNECTION
 from app.functions import (
     get_db,
     get_db_value,
@@ -13,9 +13,8 @@ from app.functions import (
     update_db,
     insert_db
 )
-from config import DBCONNECTION
 from .admin_forms import AdminForm
-from . import admin_bp
+from . import admin_bp # pylint: disable=cyclic-import
 
 
 log = logging.getLogger(__name__)

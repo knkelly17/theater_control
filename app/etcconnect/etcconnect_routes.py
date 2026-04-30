@@ -4,11 +4,10 @@ import datetime
 from flask import abort, render_template, request, jsonify, url_for
 from flask_login import login_required, current_user
 from pythonosc.udp_client import SimpleUDPClient
-from app.functions import group_required, get_db, get_setting
 from config import DBCONNECTION
+from app.functions import group_required, get_db, get_setting
 from .etcconnect_forms import ETCForm
-from . import etcconnect_bp
-# from systems import etc_ip, etc_port
+from . import etcconnect_bp # pylint: disable=cyclic-import
 
 log = logging.getLogger(__name__)
 
@@ -47,14 +46,14 @@ def channel_set_full_out():
         chan_id = request.form['chan_id']
         message = "/eos/chan/" + chan_id + "/"
         client.send_message(message, level)
-        output_result = 1
+        etc_result = 1
         this_text = 'Channel '+chan_id+' is @ '+request.form['level']
     else:
-        output_result = 0
+        etc_result = 0
         this_text = url_for("index")
     return jsonify({
         'text': this_text,
-        'result': output_result})
+        'result': etc_result})
 
 @etcconnect_bp.route('/cueFireAJAX', methods=['POST', 'GET'])
 @login_required
@@ -68,14 +67,14 @@ def cue_fire():
         cue_number = request.form['cue_number']
         message = "/eos/cue/fire"
         client.send_message(message, cue_number)
-        output_result = 1
+        etc_result = 1
         this_text = 'Cue '+cue_number+' is active'
     else:
-        output_result = 0
+        etc_result = 0
         this_text = url_for("index")
     return jsonify({
         'text': this_text,
-        'result': output_result})
+        'result': etc_result})
 
 
 @etcconnect_bp.route('/addressSetAJAX', methods=['POST', 'GET'])
@@ -91,14 +90,14 @@ def address_set_full_out():
         addr_id = request.form['addr_id']
         message = "/eos/addr/" + addr_id + "/"
         client.send_message(message, level)
-        output_result = 1
+        etc_result = 1
         this_text = 'Address '+addr_id+' is @ '+request.form['level']
     else:
-        output_result = 0
+        etc_result = 0
         this_text = url_for("index")
     return jsonify({
         'text': this_text, 
-        'result': output_result
+        'result': etc_result
     })
 
 @etcconnect_bp.route('/fireCueRest', methods=['POST'])
