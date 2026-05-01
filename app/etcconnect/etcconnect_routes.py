@@ -33,21 +33,36 @@ def etcconnect_control():
         main_menu='etcconnect')
 
 
-@etcconnect_bp.route('/channelSetAJAX', methods=['POST', 'GET'])
+@etcconnect_bp.route('/level_set', methods=['POST', 'GET'])
 @login_required
 @group_required("etcconnect")
-def channel_set_full_out():
+def level_set():
     """Channel level setting via AJAX route."""
     if current_user.is_authenticated:
         ip = str(ETC_IP)
         port = int(ETC_PORT)
         client = SimpleUDPClient(ip, port)
-        level = request.form['level']
-        chan_id = request.form['chan_id']
-        message = "/eos/chan/" + chan_id + "/"
+        request.get_json()
+
+        mode = request.get_json()['mode']
+        target = str(request.get_json()['target'])
+        level = str(request.get_json()['level'])
+
+        mode_code = ''
+        mode_display = ''
+
+        if mode == 'channel':
+            mode_code = 'chan'
+            mode_display = 'Channel'
+        elif mode == 'address':
+            mode_code = 'addr'
+            mode_display = 'Address'
+
+        message = "/eos/"+ mode_code + "/" + target + "/"
+        log.info("Message sent: %s", message)
         client.send_message(message, level)
         etc_result = 1
-        this_text = 'Channel '+chan_id+' is @ '+request.form['level']
+        this_text = mode_display + ' ' + target +' is @ '+ level
     else:
         etc_result = 0
         this_text = url_for("index")

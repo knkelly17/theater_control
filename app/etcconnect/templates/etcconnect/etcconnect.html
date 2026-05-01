@@ -4,53 +4,85 @@
     <!-- h1>Enter Channel Number to set Full or Out</h1 -->
 
 {% include 'user_menu.html' %} 
- <div class="w3-container">
+ <div data-etcconnect-container class="w3-container">
     <form>
 
         <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
         <div class="w3-row">
+            <div class="w3-col w3-pale-blue">
+                {{ form.choose_channel_address.label }} {{ form.choose_channel_address() }}
+            </div>
+        </div>
+        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+        <div class="w3-row">
         {{ form.hidden_tag() }}
-            <div class="w3-col w3-pale-green">Enter Channel Number to set Full or Out</div>
+            <div class="w3-col w3-pale-green">Enter 
+                <label data-role="target-label"
+                    data-channel="Channel"
+                    data-address="Address">Channel
+                </label> 
+                Number
+            </div>
         </div>
         <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
         <div class="w3-row">
-            <div class="w3-col m12 l6">{{ form.channel_full_out.label }} {{ form.channel_full_out() }}</div>
-        </div>
-        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
-        <div class="w3-row">
-            <div class="w3-col m6 l4">{{ form.channelFull() }}</div>
-        </div>
-        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
-        <div class="w3-row">
-            <div class="w3-col m6 l4">{{ form.channelOut() }}</div>
-        </div>
-        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
-
-        <div class="w3-row">
-            <div class="w3-col w3-pale-green">Enter Channel Number And Level</div>
-        </div>
-        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
-        <div class="w3-row">
-            <div class="w3-col s6 m6 l3">{{ form.channelLevel.label }} {{ form.channelLevel(size=5) }}</div>
-            <div class="w3-col s6 m6 l3">{{ form.setLevel.label }} {{ form.setLevel() }}</div>
-        </div>
-        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
-        <div class="w3-row">
-            <div class="w3-col m6 l4">{{ form.channelLevelButton() }}</div>
+            <div class="w3-col m12 l6">
+                <label data-role="target-label"
+                    data-channel="Channel"
+                    data-address="Address">Channel
+                </label>  {{ form.channel_number() }}
+            </div>
         </div>
         <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
 
         <div class="w3-row">
-            <div class="w3-col w3-pale-green">Enter Address Number And Level</div>
+            <div class="w3-col w3-pale-green">
+                Click Full/Out or enter and set a level.
+            </div>
         </div>
         <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
         <div class="w3-row">
-            <div class="w3-col s6 m6 l3">{{ form.address.label }} {{ form.address(size=5) }}</div>
-            <div class="w3-col s6 m6 l3">{{ form.addressLevel.label }} {{ form.addressLevel() }}</div>
+            <div class="w3-col m6 l4">
+                <button 
+                    class="etc_action w3-button w3-blue w3-round w3-hover-aqua w3-large "
+                    data-action="set_level_full"
+                    data-channel="Channel @ Full"
+                    data-address="Address @ Full">
+                    Channel @ Full
+                </button>
+            </div>
         </div>
         <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
         <div class="w3-row">
-            <div class="w3-col m6 l4">{{ form.addressLevelButton() }}</div>
+            <div class="w3-col m6 l4">
+                <button 
+                    class="etc_action w3-button w3-blue w3-round w3-hover-aqua w3-large "
+                    data-action="set_level_out"
+                    data-channel="Channel @ Out"
+                    data-address="Address @ Out">
+                    Channel @ Out
+                </button>
+            </div>
+        </div>
+        <div class="w3-row w3-border-bottom w3-border-green"><div class="w3-col m6 l4">&nbsp;</div></div>
+        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+        <div class="w3-row">
+            <div class="w3-col s6 m6 l3">
+                {{ form.relative_channel_level.label }} 
+                {{ form.relative_channel_level(size=5) }}
+            </div>
+        </div>
+        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+        <div class="w3-row">
+            <div class="w3-col m6 l4">
+                <button 
+                    class="etc_action w3-button w3-blue w3-round w3-hover-aqua w3-large "
+                    data-action="set_level"
+                    data-channel="Set Channel Level"
+                    data-address="Set Address Level">
+                    Set Channel Level
+                </button>
+            </div>
         </div>
         <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
 
@@ -69,7 +101,7 @@
 
     </form>
 <div class="w3-row">
-    <div class="w3-col w3-panel w3-pale-blue alert-info" id="etc_status">Most Recent Command</div>
+    <div class="w3-col w3-panel w3-pale-red alert-info" data-role="status">Most Recent Command</div>
 </div>
 </div>
 
