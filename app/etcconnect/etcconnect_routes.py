@@ -42,32 +42,33 @@ def level_set():
         ip = str(ETC_IP)
         port = int(ETC_PORT)
         client = SimpleUDPClient(ip, port)
-        request.get_json()
 
         mode = request.get_json()['mode']
         target = str(request.get_json()['target'])
         level = str(request.get_json()['level'])
 
         mode_code = ''
-        mode_display = ''
+        return_text = ''
 
         if mode == 'channel':
             mode_code = 'chan'
-            mode_display = 'Channel'
+            return_text = 'Channel ' + target +' is @ '+ level
         elif mode == 'address':
             mode_code = 'addr'
-            mode_display = 'Address'
+            return_text = 'Address ' + target +' is @ '+ level
+        elif mode == 'cue':
+            mode_code = mode
+            return_text = 'Cue ' + level + ' is active'
 
         message = "/eos/"+ mode_code + "/" + target + "/"
-        log.info("Message sent: %s", message)
+
         client.send_message(message, level)
         etc_result = 1
-        this_text = mode_display + ' ' + target +' is @ '+ level
     else:
         etc_result = 0
-        this_text = url_for("index")
+        return_text = url_for("index")
     return jsonify({
-        'text': this_text,
+        'text': return_text,
         'result': etc_result})
 
 @etcconnect_bp.route('/cueFireAJAX', methods=['POST', 'GET'])

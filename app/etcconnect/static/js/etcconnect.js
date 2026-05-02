@@ -2,12 +2,29 @@ document.addEventListener('DOMContentLoaded', () => {
 	const container = document.querySelector('[data-etcconnect-container]');
     if (!container) return;
 
+
 	const modeEl = container.querySelector('[data-role="mode"]');
-	console.log("Mode is: " + modeEl)
-
+	
     function updateLabels() {
-    	const mode = modeEl.value; // "channel" or "address"
+		const mode = modeEl.value; // "channel", "address" or "cue"
 
+		//show or hid the relevant sections
+		const activeBlock = (mode === 'cue') ? 'cue' : 'channel';
+		
+		container.querySelectorAll(".etc_block").forEach(el => {
+			const isActive = el.dataset.block === activeBlock;
+			el.style.display = isActive ? 'block' : 'none';
+
+			el.querySelectorAll('input, select, button').forEach(child => {
+				child.disabled = !isActive;
+			});
+		});
+		
+
+		const this_block = container.querySelector(`[data-block="${activeBlock}"]`);
+    	if (this_block) this_block.style.display = "block";
+
+		//Set the labels for the channel/address block
     	container.querySelectorAll('[data-channel]').forEach(el => {
         	el.textContent = el.dataset[mode];
     	});
@@ -32,20 +49,28 @@ document.addEventListener('DOMContentLoaded', () => {
         const action = targetBtn.dataset.action;
 
         // Pull current UI state
+		const mode = modeEl.value; // "channel", "address" or "cue"
+		const sel_level = (mode === 'cue') ? 'cue' : 'channel';
         const targetEl = container.querySelector('[data-role="target"]');
-        const levelEl = container.querySelector('[data-role="level"]');
+        const levelEl = container.querySelector(`[data-role="${sel_level}_level"]`);
         const statusEl = container.querySelector('[data-role="status"]');
 
+		let target;
 
-        const mode = modeEl.value; // "channel" or "address"
-        const target = parseInt(targetEl.value, 10);
-		let level;
-		 if (action === 'set_level_full') {
-			level = 'full';
-		} else if (action === 'set_level_out') {
-			level = 'out';
+		if (action === 'fire_cue') {
+			target = 'fire'
 		} else {
-			level = parseInt(levelEl.value, 10);
+			target = parseFloat(targetEl.value);
+		}
+
+		let level;
+
+		if (action === 'set_level_full') {
+			level = 100;
+		} else if (action === 'set_level_out') {
+			level = 0;
+		} else {
+			level = parseFloat(levelEl.value);
 		}
 
         // Basic validation
@@ -54,8 +79,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        if (!level || level < 0 || level > 100) {
-            statusEl.textContent = 'Enter a valid level (0–100)';
+        if (Number.isNaN(level) || level < 0 || level > 100) {
+            statusEl.textContent = 'Enter a valid level (0–100)' + level;
             return;
         }
 

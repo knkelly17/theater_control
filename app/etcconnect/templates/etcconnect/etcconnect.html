@@ -5,14 +5,12 @@
 
 {% include 'user_menu.html' %} 
  <div data-etcconnect-container class="w3-container">
-    <form>
-
-        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
-        <div class="w3-row">
-            <div class="w3-col w3-pale-blue">
-                {{ form.choose_channel_address.label }} {{ form.choose_channel_address() }}
-            </div>
+    <div class="w3-row">
+        <div class="w3-col w3-pale-blue">
+            {{ form.choose_channel_address.label }} {{ form.choose_channel_address() }}
         </div>
+    </div>
+    <div data-block="channel" class="w3-container etc_block">
         <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
         <div class="w3-row">
         {{ form.hidden_tag() }}
@@ -85,24 +83,36 @@
             </div>
         </div>
         <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+    </div>
+    <div data-block="cue" class="w3-container etc_block">
+        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
 
         <div class="w3-row">
             <div class="w3-col w3-pale-green">Enter Cue Number</div>
         </div>
         <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
         <div class="w3-row">
-            <div class="w3-col s6 m6 l3">{{ form.cue.label }} {{ form.cue() }}</div>
+            <div class="w3-col s6 m6 l3">
+                {{ form.cue.label}}
+                {{ form.cue}}
+            </div>
         </div>
         <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
         <div class="w3-row">
-            <div class="w3-col m6 l4">{{ form.fire_cue() }}</div>
+            <div class="w3-col m6 l4">
+                <button 
+                    class="etc_action w3-button w3-blue w3-round w3-hover-aqua w3-large "
+                    data-action="fire_cue">
+                    Go To Cue
+                </button>
+            </div>
         </div>
         <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+    </div>
 
-    </form>
-<div class="w3-row">
-    <div class="w3-col w3-panel w3-pale-red alert-info" data-role="status">Most Recent Command</div>
-</div>
+    <div class="w3-row">
+        <div class="w3-col w3-panel w3-pale-red alert-info" data-role="status">Most Recent Command</div>
+    </div>
 </div>
 
 <script src="{{ url_for('etcconnect.static', filename='js/etcconnect.js') }}?v={{ version }}"></script>
