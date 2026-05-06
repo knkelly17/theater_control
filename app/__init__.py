@@ -27,7 +27,7 @@ def create_app(config_object="app.config.Config"):
     from app.main import main_bp
 
     app.register_blueprint(admin_bp, url_prefix="/admin")
-    app.register_blueprint(etcconnect_bp, url_prefix="/etc")
+    app.register_blueprint(etcconnect_bp, url_prefix="/etcconnect")
     app.register_blueprint(profile_bp, url_prefix="/profile")  # maybe handles "/login"
     app.register_blueprint(qlab_bp, url_prefix="/qlab")
     app.register_blueprint(main_bp, url_profile="/main")
