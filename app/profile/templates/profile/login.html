@@ -3,44 +3,61 @@
 
 {% block content %}
 
-<div class="w3-container">
-    <form  class="w3-container w3-card-4 w3-light-gray 
-            w3-margin-top w3-margin-bottom" 
-            method="POST" 
-            onsubmit="setTimestamp()">
-        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+<div data-login-container class="w3-modal">
+    <div class="w3-modal-content w3-round-large w3-card-4" style="max-width:600px">
 
-        {{ form.hidden_tag() }}
+      <div class="w3-center"><br>
+        <span onclick="document.querySelector('[data-login-container]').style.display='none'" 
+		class="w3-button w3-xlarge w3-hover-red w3-display-topright" 
+		title="Close Modal">&times;</span>
+      </div>
 
-        <div class="w3-row">
-            <div class="w3-col m3 l2 w3-pale-green">Username</div>
+      <form class="w3-container">
+        <div class="w3-section">
+          <label><b>Username</b></label>
+          <input
+			data-role="username"
+		  	class="w3-input w3-border w3-margin-bottom" 
+		  	type="text" 
+			placeholder="Enter Username" 
+			name="username" 
+			required>
+          <label><b>Password</b></label>
+          <input 
+			data-role="password"
+		  	class="w3-input w3-border" 
+		  	type="password" 
+			placeholder="Enter Password" 
+			name="password" 
+			required>
+          <button 
+			data-action="submit_login"
+		  	class="login_action w3-button w3-block w3-green w3-section w3-padding" 
+			type="submit">
+			Login
+		</button>
+          <!-- input class="w3-check w3-margin-top" 
+		  	type="checkbox" 
+			checked="checked"> Remember me -->
         </div>
-        <div class="w3-row">
-            <div class="w3-col m3 l2">{{ form.username() }}</div>
-        </div>
+      </form>
 
-        <div class="w3-row">
-            <div class="w3-col m3 l2 w3-pale-green">Password</div>
-        </div>
-        <div class="w3-row">
-            <div class="w3-col m3 l2">{{ form.password() }}</div>
-        </div>
+      <div class="w3-container w3-border-top w3-padding-16 w3-light-grey">
+        <button onclick="document.querySelector('[data-login-container]').style.display='none'" 
+			type="button" 
+			class="w3-button w3-red">Cancel</button>
+        <!-- span class="w3-right w3-padding w3-hide-small">Forgot <a href="#">password?</a></span -->
+      </div>
 
-        <div class="w3-row"><div class="w3-col m3 l2">&nbsp;</div></div>
+    </div>
+  </div>
 
-        <div class="w3-row">
-            <div class="w3-col m3 l2">{{ form.submit_login() }}</div>
-        </div>
+<script>
+    document.querySelector('[data-login-container]').style.display='block'
+</script>
 
-        <div class="w3-row"><div class="w3-col m3 l2">&nbsp;</div></div>
-
-    </form>
-    <div class="w3-row">
-    <div class="w3-col w3-panel w3-pale-blue alert-info" id="login_status"></div>
-</div>
-
-</div>
-
-<script src="{{ url_for('profile.static', filename='js/profile.js') }}?v={{ version }}"></script>
+<script 
+    src="{{ url_for('profile.static', filename='js/profile.js') }}?v={{ version }}">
+</script>
 
 {% endblock %}

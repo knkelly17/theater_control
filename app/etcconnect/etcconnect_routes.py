@@ -1,18 +1,23 @@
 """Routes for the Flask web application handling lighting and QLab control via OSC."""
 import logging
 import datetime
-from flask import abort, render_template, request, jsonify, url_for
+from flask import (
+    abort,
+    render_template,
+    request,
+    jsonify,
+    url_for,
+    current_app)
 from flask_login import login_required, current_user
 from pythonosc.udp_client import SimpleUDPClient
-from config import DBCONNECTION
 from app.functions import group_required, get_db, get_setting
 from .etcconnect_forms import ETCForm
 from . import etcconnect_bp # pylint: disable=cyclic-import
 
 log = logging.getLogger(__name__)
 
-ETC_IP = str(get_setting('etc_ip'))
-ETC_PORT = int(get_setting('etc_port'))
+#ETC_IP = str(get_setting(current_app.config,'etc_ip'))
+#ETC_PORT = int(get_setting(current_app.config,'etc_port'))
 
 
 currentDT = datetime.datetime.now()
@@ -26,7 +31,7 @@ def etcconnect_control():
     form = ETCForm()
     return render_template(
         'etcconnect/etcconnect.html', 
-        site_name=get_setting('name'),
+        site_name=get_setting(current_app.config,'name'),
         title='Lighting Control',
         form=form,
         version=ver,
@@ -37,10 +42,10 @@ def etcconnect_control():
 @login_required
 @group_required("etcconnect")
 def level_set():
-    """Channel level setting via AJAX route."""
+    """Channel/Address level setting or Cue fire."""
     if current_user.is_authenticated:
-        ip = str(ETC_IP)
-        port = int(ETC_PORT)
+        ip = str(get_setting(current_app.config,'etc_ip'))
+        port = int(get_setting(current_app.config,'etc_port'))
         client = SimpleUDPClient(ip, port)
 
         mode = request.get_json()['mode']
@@ -71,57 +76,13 @@ def level_set():
         'text': return_text,
         'result': etc_result})
 
-@etcconnect_bp.route('/cueFireAJAX', methods=['POST', 'GET'])
-@login_required
-@group_required("etcconnect")
-def cue_fire():
-    """Channel level setting via AJAX route."""
-    if current_user.is_authenticated:
-        ip = str(ETC_IP)
-        port = int(ETC_PORT)
-        client = SimpleUDPClient(ip, port)
-        cue_number = request.form['cue_number']
-        message = "/eos/cue/fire"
-        client.send_message(message, cue_number)
-        etc_result = 1
-        this_text = 'Cue '+cue_number+' is active'
-    else:
-        etc_result = 0
-        this_text = url_for("index")
-    return jsonify({
-        'text': this_text,
-        'result': etc_result})
-
-
-@etcconnect_bp.route('/addressSetAJAX', methods=['POST', 'GET'])
-@login_required
-@group_required("etcconnect")
-def address_set_full_out():
-    """Address level setting via AJAX route."""
-    if current_user.is_authenticated:
-        ip = str(ETC_IP)
-        port = int(ETC_PORT)
-        client = SimpleUDPClient(ip, port)
-        level = request.form['level']
-        addr_id = request.form['addr_id']
-        message = "/eos/addr/" + addr_id + "/"
-        client.send_message(message, level)
-        etc_result = 1
-        this_text = 'Address '+addr_id+' is @ '+request.form['level']
-    else:
-        etc_result = 0
-        this_text = url_for("index")
-    return jsonify({
-        'text': this_text, 
-        'result': etc_result
-    })
 
 @etcconnect_bp.route('/fireCueRest', methods=['POST'])
 def fire_cue_rest():
     """Address level setting via REST route."""
 
-    qlab_ext_ip = get_setting('qlab_ext_ip')
-    qlab_ext_key = get_setting('qlab_ext_key')
+    qlab_ext_ip = get_setting(current_app.config,'qlab_ext_ip')
+    qlab_ext_key = get_setting(current_app.config,'qlab_ext_key')
 
     if request.remote_addr != str(qlab_ext_ip):
         log.warning("Unauthorized access attempt from IP %s", request.remote_addr)
@@ -138,8 +99,8 @@ def fire_cue_rest():
     json_data = request.get_json(silent=True)
 
     if json_data and 'command' in json_data:
-        etc_ip = str(get_setting('etc_ip'))
-        etc_port = int(get_setting('etc_port'))
+        etc_ip = str(get_setting(current_app.config, 'etc_ip'))
+        etc_port = int(get_setting(current_app.config, 'etc_port'))
         command = json_data['command']
         qlab_parameters = get_qlab_command_db(command)
         if qlab_parameters:
@@ -174,7 +135,7 @@ def fire_cue_rest():
 
 def get_qlab_command_db(command_name):
     '''Fetch QLab command parameters from the database based on the command name.'''
-    with get_db(dbconnection=DBCONNECTION) as db:
+    with get_db(current_app.config) as db:
         cursor = db.cursor(dictionary=True)
         query = "SELECT * FROM qlab_commands WHERE name = %s and active = 'Y'"
         cursor.execute(query, (command_name,))

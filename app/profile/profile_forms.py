@@ -22,12 +22,14 @@ class LoginForm(FlaskForm):
     username = StringField('Username',
         validators=[DataRequired()],
         render_kw={
+            'data-role': 'username',
             'class':
-            'w3-border-black w3-round '
+                'w3-border-black w3-round '
         })
 
     password = PasswordField('Password', validators=[DataRequired()],
         render_kw={
+            'data-role': 'password',
             'class':
             'w3-border-black w3-round '
         })
@@ -35,19 +37,22 @@ class LoginForm(FlaskForm):
     new_password = PasswordField('New Password',
         validators=[DataRequired()],
         render_kw={
-        'class':
-        'w3-border-black w3-round '
+            'data-role': 'new_password',
+            'class':
+                'w3-border-black w3-round '
     })
 
     confirm_password = PasswordField('Confirm New Password',
         validators=[DataRequired()],
         render_kw={
-        'class':
-        'w3-border-black w3-round '
+            'data-role': 'confirm_password',
+            'class':
+                'profile_action w3-border-black w3-round '
     })
 
     submit_login = SubmitField('Login', render_kw={
         'class':
+            'login_action '
             'w3-button '
             'w3-round '
             'w3-blue '
@@ -58,6 +63,7 @@ class LoginForm(FlaskForm):
 
     submit_change_password = SubmitField('Change Password', render_kw={
         'class':
+            'profile_action '
             'w3-button '
             'w3-blue '
             'w3-round '

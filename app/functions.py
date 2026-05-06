@@ -4,17 +4,15 @@ from flask_login import current_user
 import mysql.connector
 
 # --- DATABASE CONNECTION ---
-def get_db(dbconnection=None):
+def get_db(config):
     '''Get a database connection using the provided dbconnection configuration.'''
-    if dbconnection is None:
-        from app import app # pylint: disable=import-outside-toplevel
-        dbconnection = app.dbconnection
 
     return mysql.connector.connect(
-        host=dbconnection['dbhost'],
-        user=dbconnection['dbuser'],
-        password=dbconnection['dbpassword'],
-        database=dbconnection['dbdatabase']
+        host=config["DB_HOST"],
+        port=config["DB_PORT"],
+        user=config["DB_USER"],
+        password=config["DB_PASSWORD"],
+        database=config["DB_NAME"],
     )
 
 def group_required(*group_names):
@@ -33,19 +31,19 @@ def group_required(*group_names):
     return decorator
 
 
-def get_db_value(field, table, where):
+def get_db_value(config, field, table, where):
     '''Get a single value from the database based on 
     the provided field, table, and where clause.'''
-    with get_db() as db:
+    with get_db(config) as db:
         cursor = db.cursor(dictionary=True)
         query = f"SELECT {field} FROM {table} WHERE {where}"
         cursor.execute(query)
         output = cursor.fetchone()
         return output[field] if output else None
 
-def get_site_settings():
+def get_site_settings(config):
     '''Get all settings from the DB'''
-    with get_db() as db:
+    with get_db(config) as db:
         cursor = db.cursor(dictionary=True)
         query = "SELECT name, value FROM settings where active = 'Y'"
         cursor.execute(query)
@@ -55,17 +53,17 @@ def get_site_settings():
         }
         return output
 
-def get_setting(key, default=None):
+def get_setting(config, key, default=None):
     '''Get a specific setting value from the settings table.'''
-    with get_db() as db:
+    with get_db(config) as db:
         cursor = db.cursor(dictionary=True)
         cursor.execute("SELECT value FROM settings WHERE name = %s AND active = 'Y'", (key,))
         row = cursor.fetchone()
         return row['value'] if row else default
 
-def update_db(table_name, this_id, data_values):
+def update_db(config, table_name, this_id, data_values):
     '''Update a record in the specified table with the provided data values.'''
-    with get_db() as db:
+    with get_db(config) as db:
         cursor = db.cursor(dictionary=True)
         query = "UPDATE " + table_name + " SET "
         update_list = []
@@ -77,10 +75,10 @@ def update_db(table_name, this_id, data_values):
         db.commit()
         return cursor.rowcount
 
-def insert_db(table_name, data_values):
+def insert_db(config, table_name, data_values):
     '''Insert a new record into the 
     specified table with the provided data values.'''
-    with get_db() as db:
+    with get_db(config) as db:
         cursor = db.cursor(dictionary=True)
         field_list = []
         values_list = []

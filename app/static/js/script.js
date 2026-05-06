@@ -21,7 +21,6 @@ function editCell(cell, table, endpoint) {
 }
 
 function addRow(cell, table, requiredFields, endpoint) {
-    console.log("addRow called");
     const row = cell.getRow();
     const rowValues = row.getData(); 
 
@@ -34,15 +33,28 @@ function addRow(cell, table, requiredFields, endpoint) {
 
 
 async function sendNewRowToDB(rowData, row, table, endpoint) {
-    sendItems = {
+    const sendItems = {
         table: table,
         rowData: rowData
     }
     const response = await fetch(endpoint, {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
         body: JSON.stringify(sendItems)
     });
+
+    if (response.status === 401) {
+        window.location.href = '/profile/login?next=' + encodeURIComponent(window.location.pathname + window.location.search);
+        return;
+    }
+
+    if (!response.ok) {
+        return;
+    }
 
     const data = await response.json();
 
@@ -59,10 +71,21 @@ async function sendFieldToDb(rowData, cell, endpoint) {
         const response = await fetch(endpoint, {
             method: "POST",
             headers: {
-                "Content-Type": "application/json"
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
             },
             body: JSON.stringify(rowData)
         });
+
+        if (response.status === 401) {
+            window.location.href = '/profile/login?next=' + encodeURIComponent(window.location.pathname + window.location.search);
+            return;
+        }
+
+        if (!response.ok) {
+            return;
+        }
 
         const data = await response.json();
         
@@ -83,3 +106,5 @@ async function sendFieldToDb(rowData, cell, endpoint) {
     }
     
 }
+
+

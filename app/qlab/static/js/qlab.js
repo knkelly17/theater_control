@@ -3,6 +3,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const container = document.querySelector('[data-qlab-container]');
     if (!container) return; // fail gracefully if not present
 
+
+
     container.addEventListener('click', async (event) => {
         // Find the closest element with .qlab_action (handles nested elements)
         const target = event.target.closest('.qlab_action');
@@ -11,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
         event.preventDefault();
 
 		const action = target.dataset.action;
+        const statusEl = document.getElementById('qlab_status')
         let req_data = {};
 
         if (action === 'fire_qlab_cue' || action === 'stop_qlab_cue') {
@@ -31,20 +34,33 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch('/qlab/qlabAJAX', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
                 },
                 body: JSON.stringify(req_data)
             });
 
+            if (response.status === 401) {
+                statusEl.textContent = 'Session expired. Redirecting to login...';
+                window.location.href = '/profile/login?next=' + encodeURIComponent(window.location.pathname + window.location.search);
+                return;
+            }
+
+            if (!response.ok) {
+                statusEl.textContent = 'Server error. Please try again.';
+                return;
+            }
+
             const data = await response.json();
 
             if (data.result === 1) {
-                document.getElementById('qlab_status').textContent = data.text;
+                statusEl.textContent = data.text;
             } else {
                 window.location.href = data.text;
             }
         } catch (err) {
-            document.getElementById('qlab_status').textContent = 'Action Failed. Contact Support';
+            statusEl.textContent = 'Action Failed. Contact Support';
         }
     });
 });

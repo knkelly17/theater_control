@@ -5,7 +5,7 @@
 
 {% include 'user_menu.html' %} 
 
-<div class="w3-container">
+<div data-profile-container class="w3-container">
     <form  class="w3-container w3-card-4 w3-light-gray w3-margin-top w3-margin-bottom">
         <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
 
@@ -55,7 +55,11 @@
 
     </form>
     <div class="w3-row">
-    <div class="w3-col w3-panel w3-pale-blue alert-info" id="login_status"></div>
+        <div 
+            class="w3-col w3-panel w3-pale-blue alert-info" 
+            data-role="profile_status" 
+            id="profile_status">
+        </div>
     </div>
 
 </div>

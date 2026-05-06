@@ -1,46 +1,41 @@
-'''
-This module initializes the Flask application, 
-sets up configuration, 
-and registers blueprints for different parts of'''
+"""Start the App"""
 
-from datetime import timedelta
-import logging
-from flask import Flask, session
-import config
+from flask import Flask
+from app.extensions import login_manager
+from app.hooks import register_hooks
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] [%(name)s] %(message)s"
-)
+def create_app(config_object="app.config.Config"):
+    """Create the app"""
+    app = Flask(__name__)
 
-# pylint: disable=too-few-public-methods
-class Config:
-    '''Base configuration class'''
-    SECRET_KEY = config.SECRET_KEY
-    DBCONNECTION = config.DBCONNECTION
+    # Load config
+    app.config.from_object(config_object)
 
-app = Flask(__name__)
-app.config.from_object(Config)
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=120)
-app.config['REMEMBER_COOKIE_DURATION'] = timedelta(minutes=120)
-app.dbconnection = app.config['DBCONNECTION']
+    # --- Initialize extensions here ---
+    # e.g. db.init_app(app), login_manager.init_app(app)
+
+    login_manager.init_app(app)
+    login_manager.login_view = 'profile.login' # Where to redirect unauthorized users
 
 
-@app.before_request
-def handle_user_activity():
-    '''Set session to permanent and reset the lifetime on each request.'''
-    session.permanent = True
+    # --- Register blueprints ---
+    # pylint: disable=import-outside-toplevel
+    from app.admin import admin_bp
+    from app.etcconnect import etcconnect_bp
+    from app.profile import profile_bp
+    from app.qlab import qlab_bp
+    from app.main import main_bp
 
-from .qlab import qlab_bp # pylint: disable=wrong-import-position
-app.register_blueprint(qlab_bp, url_prefix='/qlab')
+    app.register_blueprint(admin_bp, url_prefix="/admin")
+    app.register_blueprint(etcconnect_bp, url_prefix="/etc")
+    app.register_blueprint(profile_bp, url_prefix="/profile")  # maybe handles "/login"
+    app.register_blueprint(qlab_bp, url_prefix="/qlab")
+    app.register_blueprint(main_bp, url_profile="/main")
 
-from .profile import profile_bp # pylint: disable=wrong-import-position
-app.register_blueprint(profile_bp, url_prefix='/profile')
+    # register hooks
+    register_hooks(app)
 
-from .etcconnect import etcconnect_bp # pylint: disable=wrong-import-position
-app.register_blueprint(etcconnect_bp, url_prefix='/etcconnect')
+    import logging
+    logging.basicConfig(level=logging.INFO)
 
-from .admin import admin_bp # pylint: disable=wrong-import-position
-app.register_blueprint(admin_bp, url_prefix='/admin')
-
-from app import routes # pylint: disable=wrong-import-position
+    return app

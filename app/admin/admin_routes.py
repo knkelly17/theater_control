@@ -4,7 +4,6 @@ from datetime import datetime
 from flask import current_app, render_template, request, jsonify
 from flask_login import login_required, current_user
 from werkzeug.security import generate_password_hash
-from config import DBCONNECTION
 from app.functions import (
     get_db,
     get_db_value,
@@ -13,6 +12,7 @@ from app.functions import (
     update_db,
     insert_db
 )
+from app.services.device_service import get_devices
 from .admin_forms import AdminForm
 from . import admin_bp # pylint: disable=cyclic-import
 
@@ -32,7 +32,7 @@ def admin_tasks():
         'admin/admin.html', 
         title='Admin Tasks',
         sub_title='Admin Menu',
-        site_name=get_setting('name'),
+        site_name=get_setting(current_app.config,'name'),
         version=ver,
         main_menu='admin')
 
@@ -47,7 +47,7 @@ def admin_users():
         'admin/users.html', 
         title='Admin Tasks',
         sub_title='Users',
-        site_name=get_setting('name'),
+        site_name=get_setting(current_app.config,'name'),
         form=form,
         version=ver,
         main_menu='admin',
@@ -66,7 +66,7 @@ def get_users():
 
 def get_users_db():
     '''Fetches the list of users from the database.'''
-    with get_db(dbconnection=DBCONNECTION) as db:
+    with get_db(current_app.config) as db:
         cursor = db.cursor(dictionary=True)
         user_fields = 'ID, username, first_name, last_name, email, active'
         query = "SELECT " + user_fields + " FROM users ORDER BY username"
@@ -89,7 +89,7 @@ def change_password():
         user_id = edit_row["ID"]
         hashed_password = generate_password_hash(new_password)
 
-        with get_db(dbconnection=DBCONNECTION) as db:
+        with get_db(current_app.config) as db:
             cursor = db.cursor()
             cursor.execute("UPDATE users SET password_hash=%s WHERE ID=%s",
                            (hashed_password, user_id))
@@ -120,7 +120,7 @@ def admin_groups():
         'admin/groups.html', 
         title='Admin Tasks',
         sub_title='Groups',
-        site_name=get_setting('name'),
+        site_name=get_setting(current_app.config,'name'),
         form=form,
         version=ver,
         main_menu='admin',
@@ -137,7 +137,7 @@ def get_groups():
 
 def get_groups_db():
     '''Fetches the list of user groups from the database.'''
-    with get_db(dbconnection=DBCONNECTION) as db:
+    with get_db(current_app.config) as db:
         cursor = db.cursor(dictionary=True)
         group_fields = 'ID, name, description, active'
         query = "SELECT " + group_fields + " FROM user_groups ORDER BY name"
@@ -157,7 +157,7 @@ def admin_user2group():
         'admin/user2group.html', 
         title='Admin Tasks',
         sub_title='Users to Groups',
-        site_name=get_setting('name'),
+        site_name=get_setting(current_app.config, 'name'),
         form=form,
         version=ver,
         main_menu='admin',
@@ -174,7 +174,7 @@ def get_user_groups():
 
     user_id = request.args.get("user_id")
 
-    with get_db(dbconnection=DBCONNECTION) as db:
+    with get_db(current_app.config) as db:
         cursor = db.cursor(dictionary=True)
 
         cursor.execute("SELECT ID, name FROM user_groups")
@@ -204,7 +204,7 @@ def update_user_group():
     group_id = data["group_id"]
     assigned = data["assigned"]
 
-    with get_db(dbconnection=DBCONNECTION) as db:
+    with get_db(current_app.config) as db:
         cursor = db.cursor()
 
         if assigned:
@@ -227,7 +227,7 @@ def update_user_group():
 @group_required("admin")
 def permissions_matrix():
     '''Admin Permissions Matrix page route.'''
-    with get_db(dbconnection=DBCONNECTION) as db:
+    with get_db(current_app.config) as db:
         cur = db.cursor(dictionary=True)
 
         cur.execute("SELECT id, username FROM users")
@@ -264,7 +264,7 @@ def admin_settings():
         form=form,
         title='Admin Tasks',
         sub_title='Settings',
-        site_name=get_setting('name'),
+        site_name=get_setting(current_app.config, 'name'),
         version=ver,
         main_menu='admin',
         base='admin_settings',
@@ -273,7 +273,7 @@ def admin_settings():
 
 def get_settings_db():
     '''Fetches the list of settings from the database.'''
-    with get_db(dbconnection=DBCONNECTION) as db:
+    with get_db(current_app.config) as db:
         cursor = db.cursor(dictionary=True)
         query = "SELECT * FROM settings ORDER BY the_order"
         cursor.execute(query)
@@ -303,7 +303,7 @@ def admin_qlab_commands():
         form=form,
         title='Admin Tasks',
         sub_title='QLAB Commands',
-        site_name=get_setting('name'),
+        site_name=get_setting(current_app.config, 'name'),
         version=ver,
         main_menu='admin',
         base='admin_qlab_commands',
@@ -313,7 +313,7 @@ def admin_qlab_commands():
 
 def get_qlab_commands_db():
     '''Fetches the list of QLab commands from the database.'''
-    with get_db(dbconnection=DBCONNECTION) as db:
+    with get_db(current_app.config) as db:
         cursor = db.cursor(dictionary=True)
         query = "SELECT * FROM qlab_commands ORDER BY name"
         cursor.execute(query)
@@ -343,7 +343,7 @@ def update_field_db():
         edit_row['field']: edit_row['value'],
         'sessionid': current_user.sessionid
     }
-    update_result = update_db(table, edit_row['ID'], update_fields)
+    update_result = update_db(current_app.config, table, edit_row['ID'], update_fields)
     current_app.settings_last_loaded = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
     return jsonify({
         "status": "ok",
@@ -362,7 +362,7 @@ def insert_row_db():
     insert_row = insert_values['rowData']
     table = insert_values['table']
     insert_row['sessionid'] = current_user.sessionid
-    inserted_id = insert_db(table, insert_row)
+    inserted_id = insert_db(current_app.config, table, insert_row)
     current_app.settings_last_loaded = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
     return jsonify({
         "status": "ok",
@@ -378,11 +378,11 @@ def admin_status():
     '''Admin Status page route.'''
     return render_template(
         "admin/status.html",
-        last_loaded=get_db_value("MAX(timestamp)", "settings", "1"),
-        devices=getattr(current_app, 'device_last_seen', []),
+        last_loaded=get_db_value(current_app.config, "MAX(timestamp)", "settings", "1"),
+        devices=get_devices(),
         title='Admin Tasks',
         sub_title='System Status',
-        site_name=get_setting('name'),
+        site_name=get_setting(current_app.config, 'name'),
         version=ver,
         main_menu='admin',
         base='admin_status'

@@ -95,9 +95,24 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch('/etcconnect/level_set', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
                 body: JSON.stringify(req_data)
             });
+
+            if (response.status === 401) {
+                statusEl.textContent = 'Session expired. Redirecting to login...';
+                window.location.href = '/profile/login?next=' + encodeURIComponent(window.location.pathname + window.location.search);
+                return;
+            }
+
+            if (!response.ok) {
+                statusEl.textContent = 'Server error. Please try again.';
+                return;
+            }
 
             const data = await response.json();
 
@@ -111,178 +126,3 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
-
-/* const selectElement = document.getElementById('fruitSelect');
-const textElement = document.getElementById('displayText');
-
-// Listen for the "change" event
-selectElement.addEventListener('change', (event) => {
-  const selectedValue = event.target.value;
-  
-  if (selectedValue) {
-    textElement.textContent = `You selected: ${selectedValue}`;
-  } else {
-    textElement.textContent = "Choose a fruit to see it here!";
-  }
-});
-/*
-document.addEventListener('DOMContentLoaded', () => {
-	// Pick a stable parent that contains all your buttons
-	const container = document.querySelector('[data-etcconnect-container]');
-	if (!container) return; // fail gracefully if not present	
-
-	container.addEventListener('click', async (event) => {
-		// Find the closest element with .channel_set_button (handles nested elements)
-		const target = event.target.closest('.etcconnect_action');
-		if (!target) return; // click wasn't on a relevant element
-
-		event.preventDefault();
-		
-		const action = target.dataset.action;
-		let req_data = {};
-		if (action === 'channel_set') {
-			const chanID = parseInt(document.getElementById('channel_full_out').value, 10);
-			const level = action === 'channel_set' ? 'full' : document.getElementById('set_level').value;
-
-			if (isNaN(chanID) || chanID < 1 || chanID > 500) {
-				alert('Please enter Channel Number between 1 - 500');
-				return;
-			}
-			if (level !== 'full' && (isNaN(level) || level < 0 || level > 100)) {
-				alert('Please set level between 0 - 100');
-				return;
-			}
-
-			req_data = { action, chan_id: chanID, level };
-		} else if (action === 'address_set') {
-			const addrID = parseInt(document.getElementById('address').value, 10);
-			const level = document.getElementById('addressLevel').value;
-
-			if (isNaN(addrID) || addrID < 1 || addrID > 500) {
-				alert('Please enter an Address Number between 1 - 500');
-				return;
-			}
-			if (isNaN(level) || level < 0 || level > 100) {
-				alert('Please set level between 0 - 100');
-				return;
-			}
-
-			req_data = { action, addr_id: addrID, level };
-		} else if (action === 'cue_fire') {
-			const cue_number = parseInt(document.getElementById('cue').value, 10);
-			if (isNaN(cue_number) || cue_number < 1 || cue_number > 500) {
-				alert('Please enter a cue number between 1 - 500');
-				return;
-			}
-			req_data = { action, cue_number };
-		} else {
-			return; // unrecognized action
-		}
-
-		try {
-			const response = await fetch(`/etcconnect/${action}AJAX`, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify(req_data)
-			});
-
-			const data = await response.json();
-
-			if (data.result === 1) {
-				document.getElementById('etc_status').textContent = data.text;
-			} else {
-				window.location.href = data.text;
-			}
-		} catch (err) {
-			document.getElementById('etc_status').textContent = 'Action Failed. Contact Support';
-		}
-	});
-}
-
-$(function(){
-	
-	$('.channel_set_button').on("click", function(){
-	    var set_button = $(this).attr('id')
-	    var level = 'full'
-
-	    var chanID = $("#channel_full_out").val();
-
-	    if (set_button == 'channelOut'){
-	        level = 'out'
-	    } else if (set_button == 'channelLevelButton'){
-	        chanID = $("#channel_level").val();
-	        level = $("#set_level").val();
-	        if (!(level >=0 && level <=100)) {
-	            alert('Please set level between 1 - 100')
-	            return false
-	        }
-	    }
-
-		if (chanID >= 1 && chanID <=500) {
-            var req_data = {level: level, chan_id: chanID};
-            $.post('/etcconnect/channelSetAJAX', req_data).done(function(response) {
-				if (response['result'] == 1) {
-                	$('#etc_status').text(response['text']);
-				} else {
-					window.location.href = response['text'];
-				}
-            }).fail(function() {
-                $('#etc_status').text('Action Failed. Contact Support');
-            });
-        } else {
-            alert('Please enter Channel Number between 1 - 500')
-        }
-        return false
-	});
-
-	$('#addressLevelButton').on("click", function(){
-
-	    var addrID = $("#address").val();
-
-	    level = $("#addressLevel").val();
-
-	    if (!(level >=0 && level <=100)) {
-	        alert('Please set level between 1 - 100')
-	        return false
-	    }
-
-		if (addrID >= 1 && addrID <=500) {
-            var req_data = {level: level, addr_id: addrID};
-            $.post('/etcconnect/addressSetAJAX', req_data).done(function(response) {
-                if (response['result'] == 1) {
-                	$('#etc_status').text(response['text']);
-				} else {
-					window.location.href = response['text'];
-				}
-            }).fail(function() {
-                $('#etc_status').text('Action Failed. Contact Support');
-            });
-        } else {
-            alert('Please enter an Address Number between 1 - 500')
-        }
-        return false
-	});
-
-	$('#fire_cue').on("click", function(){
-	    var cue_number = $("#cue").val();
-	    if (!(cue_number >=1 && cue_number<=500)) {
-	        alert('Please enter a cue number')
-	        return false
-	    }
-	    var req_data = {cue_number:cue_number}
-	    $.post('/etcconnect/cueFireAJAX', req_data).done(function(response) {
-                if (response['result'] == 1) {
-                	$('#etc_status').text(response['text']);
-				} else {
-					window.location.href = response['text'];
-				}
-            }).fail(function() {
-                $('#etc_status').text('Action Failed. Contact Support');
-            });
-        return false
-	});
-
-});
-*/

@@ -49,6 +49,10 @@
 
 </div>
 
+<script id="device-data" type="application/json">
+    {{ devices|tojson }}
+</script>
+
 <script>
   const tabledata = "/admin/get_settings"
 
@@ -71,11 +75,14 @@
       {title:"Description", field:"description", visible:false},
       {title:"Value", field:"value", editor:"input", width: 200,responsive:0},
     ],
+    initialFilter: [
+        {field: "active", type: "=", value: "Y"},
+    ]
   });
 
-  settingsTable.setFilter("active", "=", "Y");
-
-  const all_devices = {{ devices|tojson }};
+  const all_devices = JSON.parse(
+    document.getElementById("device-data").textContent
+  );
 
   const devicesTable = new Tabulator("#devices-table", {
     layout:"fitDataTable",
@@ -86,6 +93,8 @@
     ],
     data: all_devices,
   });
+
+  
 
 </script>
 

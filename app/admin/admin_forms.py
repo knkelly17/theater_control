@@ -11,6 +11,15 @@ from wtforms.widgets import NumberInput
 
 class AdminForm(FlaskForm):
     '''Form for admin actions'''
+
+    row_id = IntegerField('Row ID',
+            widget=NumberInput(),
+            render_kw={
+                'readonly': True,
+                'hidden': True
+            }
+    )
+
     update_setting = SubmitField('Update Setting',
         render_kw={
             'class':
@@ -109,11 +118,3 @@ class AdminForm(FlaskForm):
             'w3-hover-pale-red '
             'w3-medium '
     })
-
-    row_id = IntegerField('Row ID',
-        widget=NumberInput(),
-        render_kw={
-            'readonly': True,
-            'hidden': True
-        }
-   )

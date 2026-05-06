@@ -4,7 +4,7 @@
 
 <div class="w3-container w3-light-gray w3-center">
     <div class="w3-bar">
-        <a href="{{ url_for('index') }}"
+        <a href="{{ url_for('main.index') }}"
             class="w3-button w3-bar-item w3-hide-medium w3-hide-small w3-left w3-dark-gray index">Home</a>
         
         {% if current_user.has_group("etcconnect") %}
@@ -39,7 +39,7 @@
     <!-- Sets up vertical menu for small screens -->
     <div id="menubar"
             class="w3-bar-block w3-dark-grey w3-hide w3-hide-large">
-        <a href="{{ url_for('index') }}" class="w3-bar-item w3-button index">Home</a>
+        <a href="{{ url_for('main.index') }}" class="w3-bar-item w3-button index">Home</a>
         {% if current_user.has_group("etcconnect") %}
             <a href="{{ url_for('etcconnect.etcconnect_control') }}" 
                 class="w3-bar-item w3-button etcconnect">Lighting Control</a>
