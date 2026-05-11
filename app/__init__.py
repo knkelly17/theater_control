@@ -1,5 +1,6 @@
 """Start the App"""
-
+import logging
+from datetime import timedelta
 from flask import Flask
 from app.extensions import login_manager
 from app.hooks import register_hooks
@@ -10,6 +11,9 @@ def create_app(config_object="app.config.Config"):
 
     # Load config
     app.config.from_object(config_object)
+
+    #app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=1)
+    #app.config['REMEMBER_COOKIE_DURATION'] = timedelta(minutes=1)
 
     # --- Initialize extensions here ---
     # e.g. db.init_app(app), login_manager.init_app(app)
@@ -35,7 +39,11 @@ def create_app(config_object="app.config.Config"):
     # register hooks
     register_hooks(app)
 
-    import logging
-    logging.basicConfig(level=logging.INFO)
+
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+        )
+
 
     return app

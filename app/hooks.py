@@ -1,6 +1,7 @@
 '''Hooks used throughout the app'''
 import threading
-from flask import request
+from flask import request, session
+from flask_login import current_user
 from app.services.device_service import track_device
 
 def register_hooks(app):
@@ -15,3 +16,9 @@ def register_hooks(app):
                 args=(ip,),
                 daemon=True
             ).start()
+
+    @app.before_request
+    def refresh_session_timeout():
+        if current_user.is_authenticated:
+            session.permanent = True
+            session.modified = True
