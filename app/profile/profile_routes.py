@@ -140,7 +140,6 @@ def login():
                 if not next_page or urlparse(next_page).netloc != '':
                     next_page = url_for('index')
                 login_result = 1
-                log.warning("Next page: %s", next_page)
                 return jsonify({
                     'text': next_page,
                     'login_result': login_result

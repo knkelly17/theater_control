@@ -17,7 +17,6 @@ ver = currentDT.strftime("%Y-%m-%d-%H:%M:%S")
 def index():
     """Home page route."""
 
-    log.warning("any different")
     return render_template(
         'index.html', 
         title='Home',
