@@ -11,7 +11,7 @@ device_last_seen = {}
 
 def track_device(ip_address):
     """Record or update a device connection"""
-    log.info("Device connected: %s", ip_address)
+    # log.info("Device connected: %s", ip_address)
     device_last_seen[ip_address] = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
 
 
