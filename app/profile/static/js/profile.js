@@ -18,7 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!nextPage && window.location.pathname !== '/profile/login') {
             nextPage = window.location.pathname + window.location.search;
         }
-		console.log(nextPage)
 
         if (!(username && password)) {
             alert('Please enter both username and password');
