@@ -29,12 +29,14 @@ def create_app(config_object="app.config.Config"):
     from app.profile import profile_bp
     from app.qlab import qlab_bp
     from app.main import main_bp
+    from app.dm7 import dm7_bp
 
     app.register_blueprint(admin_bp, url_prefix="/admin")
     app.register_blueprint(etcconnect_bp, url_prefix="/etcconnect")
     app.register_blueprint(profile_bp, url_prefix="/profile")  # maybe handles "/login"
     app.register_blueprint(qlab_bp, url_prefix="/qlab")
-    app.register_blueprint(main_bp, url_profile="/main")
+    app.register_blueprint(main_bp, url_prefix="/")
+    app.register_blueprint(dm7_bp, url_prefix="/dm7")
 
     # register hooks
     register_hooks(app)

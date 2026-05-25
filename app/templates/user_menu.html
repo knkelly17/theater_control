@@ -17,6 +17,11 @@
             class="w3-button w3-bar-item  w3-hide-medium w3-hide-small w3-dark-gray qlab">QLab Control</a>
         {% endif %}
 
+        {% if current_user.has_group("dm7") %}    
+            <a href="{{ url_for('dm7.dm7_control') }}"
+            class="w3-button w3-bar-item  w3-hide-medium w3-hide-small w3-dark-gray dm7">DM7 Control</a>
+        {% endif %}
+
             <a href="{{ url_for('profile.profile') }}"
             class="w3-button w3-bar-item  w3-hide-medium w3-hide-small w3-dark-gray profile">Profile</a>
 
@@ -48,6 +53,12 @@
             <a href="{{ url_for('qlab.qlab_control') }}" class="w3-bar-item w3-button qlab">
                 QLab Control</a>
         {% endif %}
+
+        {% if current_user.has_group("dm7") %}
+            <a href="{{ url_for('dm7.dm7_control') }}" class="w3-bar-item w3-button dm7">
+                DM7 Control</a>
+        {% endif %}
+
         {% if current_user.has_group("admin") %}
             <a href="{{ url_for('admin.admin_tasks') }}" 
                 class="w3-bar-item w3-button admin">Admin Tasks</a>

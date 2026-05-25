@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <!-- h1>Enter Channel Number to set Full or Out</h1 -->
+
+{% include 'dm7/dm7_menu.html' %}
+
+{% if base %}
+<script>
+    base_page = "{{ base }}";
+    document.getElementsByClassName(base_page)[0].classList.add("selected-button", "w3-green");
+    document.getElementsByClassName(base_page)[0].classList.remove("w3-dark-gray");
+</script>
+{% endif %}
+
+<!-- Page Content -->
+<div class="w3-main" style="margin-left:200px">
+  <button class="w3-button w3-xlarge w3-hide-large" onclick="w3_open()">&#9776;</button>
+  <div class="w3-container">
+    <h1>Run Actor Mic Checks</h1>
+    <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+    <div id="mic_check-table"></div>
+    <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+  </div>
+  
+</div>
+
+<script>
+  //var tabledata = {{ page_content|tojson }};
+
+  const requiredFields = ["name", "description", "value", "the_order", "active"];
+
+  //const tabledata = "/admin/get_settings"
+
+  async function loadMicCheckTable() {
+    const response = await fetch("/dm7/get_actor_channels");
+    const actorChannels = await response.json();
+
+    const actorByChannel = {};
+    actorChannels.forEach(function (item) {
+      actorByChannel[item.channel] = item.actor;
+    });
+
+    const tabledata = Array.from({ length: 32 }, function (_, i) {
+      const channel = i + 1;
+
+      return {
+        channel: channel,
+        actor: actorByChannel[channel] || "",
+        on: false,
+        cue: false,
+      };
+    });
+
+    new Tabulator("#mic_check-table", {
+      data: tabledata,
+      layout: "fitDataTable",
+      index: "channel",
+      columns: [
+        {
+          title: "Channel Number",
+          field: "channel",
+          width: 160,
+        },
+        {
+          title: "Actor",
+          field: "actor",
+          width: 220,
+        },
+        {
+          title: "On",
+          field: "on",
+          hozAlign: "center",
+          formatter: "tickCross",
+          cellClick: function (e, cell) {
+            cell.setValue(!cell.getValue());
+            channelUpdate(cell)
+          },
+        },
+        {
+          title: "Cue",
+          field: "cue",
+          hozAlign: "center",
+          formatter: "tickCross",
+          cellClick: function (e, cell) {
+            cell.setValue(!cell.getValue());
+            channelUpdate(cell)
+          },
+        },
+      ],
+    });
+  }
+
+loadMicCheckTable();
+
+async function channelUpdate(cell) {
+    const sendItems = {
+        channel: cell.getRow().getIndex(),
+        field: cell.getField(),
+        value: cell.getValue()
+    }
+    const response = await fetch('/dm7/update_channel', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify(sendItems)
+    });
+
+    if (response.status === 401) {
+        window.location.href = '/profile/login?next=' + encodeURIComponent(window.location.pathname + window.location.search);
+        return;
+    }
+
+    if (!response.ok) {
+        return;
+    }
+
+    const data = await response.json();
+
+    if (response.ok) {
+        console.log("ok");
+    }
+}
+
+
+//Add row on "Add Row" button click
+//document.getElementById("add_setting").addEventListener("click", function(){
+//    settingsTable.addRow({});
+//});
+</script>
+
+<script src="{{ url_for('dm7.static', filename='js/dm7.js') }}?v={{ version }}"></script>
+
+
+
+{% endblock %}
