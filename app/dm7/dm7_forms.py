@@ -46,7 +46,7 @@ class Dm7Form(FlaskForm):
         },
         validators=[
             FileRequired(),
-            FileAllowed(['tmix'], 'Only Theatermix Files allowed!')
+            FileAllowed(['tmix'], 'Only Theatremix Files allowed!')
         ]
     )
 

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <!-- h1>Enter Channel Number to set Full or Out</h1 -->
+
+{% include 'dm7/dm7_menu.html' %}
+
+{% if base %}
+<script>
+    base_page = "{{ base }}";
+    document.getElementsByClassName(base_page)[0].classList.add("selected-button", "w3-green");
+    document.getElementsByClassName(base_page)[0].classList.remove("w3-dark-gray");
+</script>
+{% endif %}
+
+<!-- Page Content -->
+<div class="w3-main" style="margin-left:200px">
+  <button class="w3-button w3-xlarge w3-hide-large" onclick="w3_open()">&#9776;</button>
+  <div class="w3-container">
+    <h1>Upload Actors From a Theatremix File</h1>
+    <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+    
+    <!-- Crucial: enctype must be multipart/form-data -->
+    <form action="/dm7/upload_actors" method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+
+        {{ form.tmix_file.label }}
+        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+            {{ form.tmix_file() }}
+            
+            <!-- Display validation errors if the user uploads the wrong file type -->
+            {% if form.tmix_file.errors %}
+                {% for error in form.tmix_file.errors %}
+                    <span style="color: red;">[{{ error }}]</span>
+                {% endfor %}
+            {% endif %}
+        <div class="w3-row">
+          <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+
+            {{ form.upload_actors }}
+        </div>
+      
+        
+    </form>
+
+    <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+    
+  </div>
+  
+</div>
+
+<script>
+  
+</script>
+
+<script src="{{ url_for('dm7.static', filename='js/dm7.js') }}?v={{ version }}"></script>
+
+
+
+{% endblock %}
