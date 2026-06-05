@@ -2,21 +2,19 @@
 import logging
 import datetime
 from flask import (
-    abort,
     render_template,
     request,
     jsonify,
-    url_for,
     current_app)
 from flask_login import login_required, current_user
 from pythonosc.udp_client import SimpleUDPClient
 from app.functions import (
     get_db,
-    #get_db_value,
     get_setting,
     group_required,
     update_db,
-    insert_db
+    insert_db,
+    upload_file
 )
 from .dm7_forms import Dm7Form
 from . import dm7_bp # pylint: disable=cyclic-import
@@ -31,6 +29,9 @@ ver = currentDT.strftime("%Y-%m-%d-%H:%M:%S")
 @group_required("dm7")
 def dm7_control():
     """DM7 Control page route."""
+    upload_folder = current_app.config.get("UPLOAD_FOLDER")
+    log.warning(upload_folder)
+
     form = Dm7Form()
     return render_template(
         'dm7/dm7.html', 
@@ -95,25 +96,6 @@ def mic_checks():
         page_content="TDB"
     )
 
-@dm7_bp.route('/update_db_field', methods=['POST'])
-@login_required
-@group_required("dm7")
-def update_field_db():
-    '''Update a specific field in the specified table for the given ID. 
-    The sessionid of the current user is automatically included in the update.'''
-    edit_row = request.get_json()
-    table = edit_row['table']
-    update_fields = {
-        edit_row['field']: edit_row['value'],
-        'sessionid': current_user.sessionid
-    }
-    update_result = update_db(current_app.config, table, edit_row['ID'], update_fields)
-    current_app.settings_last_loaded = currentDT.strftime("%Y-%m-%d-%H:%M:%S")
-    return jsonify({
-        "status": "ok",
-        "value": update_result
-    })
-
 @dm7_bp.route('/update_channel', methods=['POST'])
 @login_required
 @group_required("dm7")
@@ -140,6 +122,66 @@ def update_channel():
         "value": "testing"
     })
 
+@dm7_bp.route('/upload_actors', methods=['POST', 'GET'])
+@login_required
+@group_required("dm7")
+@group_required("admin")
+def upload_actors():
+    '''Upload actors from tmix file'''
+    form = Dm7Form()
+
+    if form.validate_on_submit():
+        uploaded_file = form.tmix_file.data
+        file_path = upload_file(uploaded_file)
+        log.warning("Uploaded file saved to: %s", file_path)
+
+        # process/save uploaded_file here
+
+    return render_template(
+        'dm7/upload_actors.html', 
+        form=form,
+        title='DM7 Control',
+        sub_title='Upload Actors From Theatermix File',
+        site_name=get_setting(current_app.config, 'name'),
+        version=ver,
+        main_menu='dm7',
+        base='upload_actors'
+    )
+
+@dm7_bp.route('/get_actor_channels', methods=['POST', 'GET'])
+@login_required
+@group_required("dm7")
+def get_actor_channels():
+    '''Get Channel and actor name if assigned'''
+    with get_db(current_app.config) as db:
+        cursor = db.cursor(dictionary=True)
+        query = "SELECT c.ID, c.channel, a.name as actor " \
+                "FROM `channels` c " \
+                "LEFT JOIN actors a on " \
+	            "c.actor = a.ID;"
+        log.warning(query)
+        cursor.execute(query)
+        actors_data = cursor.fetchall()
+        return jsonify(actors_data)
+
+@dm7_bp.route('/update_db_field', methods=['POST'])
+@login_required
+@group_required("dm7")
+def update_field_db():
+    '''Update a specific field in the specified table for the given ID. 
+    The sessionid of the current user is automatically included in the update.'''
+    edit_row = request.get_json()
+    table = edit_row['table']
+    update_fields = {
+        edit_row['field']: edit_row['value'],
+        'sessionid': current_user.sessionid
+    }
+    update_result = update_db(current_app.config, table, edit_row['ID'], update_fields)
+    current_app.settings_last_loaded = currentDT.strftime("%Y-%m-%d-%H:%M:%S")
+    return jsonify({
+        "status": "ok",
+        "value": update_result
+    })
 
 @dm7_bp.route('/insert_db_row', methods=['POST'])
 @login_required
@@ -159,19 +201,3 @@ def insert_row_db():
         "status": "ok",
         "value": inserted_id
     })
-
-@dm7_bp.route('/get_actor_channels', methods=['POST', 'GET'])
-@login_required
-@group_required("dm7")
-def get_actor_channels():
-    '''Get Channel and actor name if assigned'''
-    with get_db(current_app.config) as db:
-        cursor = db.cursor(dictionary=True)
-        query = "SELECT c.ID, c.channel, a.name as actor " \
-                "FROM `channels` c " \
-                "LEFT JOIN actors a on " \
-	            "c.actor = a.ID;"
-        log.warning(query)
-        cursor.execute(query)
-        actors_data = cursor.fetchall()
-        return jsonify(actors_data)

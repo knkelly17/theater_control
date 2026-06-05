@@ -1,4 +1,6 @@
 """Start the App"""
+import os
+from pathlib import Path
 import logging
 from datetime import timedelta
 from flask import Flask
@@ -11,6 +13,11 @@ def create_app(config_object="app.config.Config"):
 
     # Load config
     app.config.from_object(config_object)
+
+    app.config["UPLOAD_FOLDER"] = str(
+            Path(app.root_path).parent / app.config["UPLOAD_FOLDER_NAME"]
+        )
+
 
     #app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=1)
     #app.config['REMEMBER_COOKIE_DURATION'] = timedelta(minutes=1)

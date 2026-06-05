@@ -1,6 +1,9 @@
 '''Utility functions for the app.'''
+import os
 from functools import wraps
+from flask import current_app
 from flask_login import current_user
+from werkzeug.utils import secure_filename
 import mysql.connector
 
 # --- DATABASE CONNECTION ---
@@ -93,3 +96,14 @@ def insert_db(config, table_name, data_values):
         db.commit()
         inserted_id = cursor.lastrowid
         return inserted_id
+
+def upload_file(file):
+    '''Upload a file for temporary action'''
+    upload_folder = current_app.config["UPLOAD_FOLDER"]
+    os.makedirs(upload_folder, exist_ok=True)
+
+    filename = secure_filename(file.filename)
+    file_path = os.path.join(upload_folder, filename)
+
+    file.save(file_path)
+    return file_path

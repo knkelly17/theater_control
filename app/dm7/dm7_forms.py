@@ -1,6 +1,7 @@
 """Build the webpages"""
 
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileField, FileAllowed, FileRequired
 from wtforms import (
     SubmitField,
     IntegerField
@@ -21,6 +22,33 @@ class Dm7Form(FlaskForm):
                 'w3-small '
             }
         )
+
+    upload_actors = SubmitField('Upload And Process',
+        render_kw={
+            'class':
+                'dm7_action '
+                'w3-button '
+                'w3-blue '
+                'w3-round '
+                'w3-hover-aqua '
+                'w3-small '
+            }
+        )
+
+    tmix_file = FileField('Select Theatremix File',
+        render_kw={
+            'class': (
+                'actor_upload '
+                'w3-small '
+            ),
+            'accept': '.tmix',
+            'required': True
+        },
+        validators=[
+            FileRequired(),
+            FileAllowed(['tmix'], 'Only Theatermix Files allowed!')
+        ]
+    )
 
     panic = SubmitField('Stop All Cues',
         render_kw={

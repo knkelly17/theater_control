@@ -19,22 +19,11 @@
                 class="w3-button w3-bar-item 
                     w3-dark-gray dm7 actors">Actors</a>
 
-            <a href="{{ url_for('admin.admin_user2group') }}"
-                class="w3-button w3-bar-item 
-                w3-dark-gray admin admin_user2group">
-                Users to Groups</a>
-
-            <a href="{{ url_for('admin.admin_settings') }}"
-                class="w3-button w3-bar-item 
-                w3-dark-gray admin admin_settings">Settings</a>
-
-            <a href="{{ url_for('admin.admin_qlab_commands') }}"
-                class="w3-button w3-bar-item 
-                w3-dark-gray admin admin_qlab_commands">QLAB Commands</a>
-
-            <a href="{{ url_for('admin.admin_status') }}"
-                class="w3-button w3-bar-item 
-                w3-dark-gray admin admin_status">System Status</a> 
+        {% if current_user.has_group("admin") %}
+            <a href="{{ url_for('dm7.upload_actors') }}"
+            class="w3-button w3-bar-item 
+                    w3-dark-gray dm7 upload_actors">Upload Actors</a>
+        {% endif %}
 
         </div>
     </div>
