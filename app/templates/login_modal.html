@@ -1,0 +1,94 @@
+<!-- div data-login-container class="w3-modal">
+    <div class="w3-modal-content w3-round-large w3-card-4 w3-animate-zoom" style="max-width:600px">
+		<div class="w3-center"><br>
+			<span onclick="document.querySelector('[data-login-container]').style.display='none'" 
+				class="w3-button w3-xlarge w3-hover-red w3-display-topright" 
+				title="Close Modal">&times;</span>
+		</div>
+
+        <div class="w3-section">
+          <label><b>Username</b></label>
+          <input class="w3-border-black w3-round" 
+					data-role="username" 
+					id="username" 
+					name="username" 
+					required="" 
+					type="text" 
+					value="">
+          <label><b>Password</b></label>
+          
+          <input class="w3-border-black w3-round " 
+					data-role="password" 
+					id="password" 
+					name="password" 
+					required="" 
+					type="password" 
+					value="">
+					
+          <button class="login_action w3-button w3-round w3-blue w3-hover-aqua w3-medium" 
+					data-action="submit_login" 
+					id="submit_login" 
+					name="submit_login" 
+					type="submit" 
+					value="Login">Login
+		  </button>
+          <input class="w3-check w3-margin-top" type="checkbox" checked="checked"> Remember me>
+        </div>
+
+      	<div class="w3-container w3-border-top w3-padding-16 w3-light-grey">
+			<button onclick="document.querySelector('[data-login-container]').style.display='none'" 
+				type="button" 
+				class="w3-button w3-red">Cancel
+			</button>
+      	</div>
+    </div>
+</div -->
+
+<div data-login-container class="w3-modal">
+    <div class="w3-modal-content w3-round-large w3-card-4 w3-animate-zoom" style="max-width:600px">
+
+      <div class="w3-center"><br>
+        <span onclick="document.querySelector('[data-login-container]').style.display='none'" 
+		class="w3-button w3-xlarge w3-hover-red w3-display-topright" 
+		title="Close Modal">&times;</span>
+      </div>
+
+      <form class="w3-container">
+        <div class="w3-section">
+          <label><b>Username</b></label>
+          <input
+			data-role="username"
+		  	class="w3-input w3-border w3-margin-bottom" 
+		  	type="text" 
+			placeholder="Enter Username" 
+			name="username" 
+			required>
+          <label><b>Password</b></label>
+          <input 
+			data-role="password"
+		  	class="w3-input w3-border" 
+		  	type="password" 
+			placeholder="Enter Password" 
+			name="password" 
+			required>
+          <button 
+			data-action="submit_login"
+		  	class="login_action w3-button w3-block w3-green w3-section w3-padding" 
+			type="submit">
+			Login
+		</button>
+          <!-- input class="w3-check w3-margin-top" 
+		  	type="checkbox" 
+			checked="checked"> Remember me -->
+        </div>
+      </form>
+
+      <div class="w3-container w3-border-top w3-padding-16 w3-light-grey">
+        <button onclick="document.querySelector('[data-login-container]').style.display='none'" 
+			type="button" 
+			class="w3-button w3-red">Cancel</button>
+        <!-- span class="w3-right w3-padding w3-hide-small">Forgot <a href="#">password?</a></span -->
+      </div>
+
+    </div>
+  </div>

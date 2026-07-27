@@ -1,6 +1,7 @@
 """Routes for the Flask web application handling DM7 control via OSC."""
 import logging
 import datetime
+import sqlite3
 from flask import (
     render_template,
     request,
@@ -15,6 +16,10 @@ from app.functions import (
     update_db,
     insert_db,
     upload_file
+)
+from app.google_drive_user import (
+    get_credentials,
+    run_gas_api
 )
 from .dm7_forms import Dm7Form
 from . import dm7_bp # pylint: disable=cyclic-import
@@ -135,6 +140,12 @@ def upload_actors():
         file_path = upload_file(uploaded_file)
         log.warning("Uploaded file saved to: %s", file_path)
 
+        conn = sqlite3.connect(file_path)
+        cursor = conn.cursor()
+        cursor.execute("select channel, name from profiles where `default` = 1;")
+        tables = cursor.fetchall()
+        log.warning(tables)
+
         # process/save uploaded_file here
 
     return render_template(
@@ -147,6 +158,11 @@ def upload_actors():
         main_menu='dm7',
         base='upload_actors'
     )
+
+def upload_actors_sheet():
+    '''Upload a show from Google Sheet'''
+    log.error("uploading a google sheet")
+
 
 @dm7_bp.route('/get_actor_channels', methods=['POST', 'GET'])
 @login_required
@@ -201,3 +217,5 @@ def insert_row_db():
         "status": "ok",
         "value": inserted_id
     })
+
+
