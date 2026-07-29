@@ -17,10 +17,12 @@ from app.functions import (
     insert_db,
     upload_file
 )
+
 from app.google_drive_user import (
     get_credentials,
     run_gas_api
 )
+
 from .dm7_forms import Dm7Form
 from . import dm7_bp # pylint: disable=cyclic-import
 

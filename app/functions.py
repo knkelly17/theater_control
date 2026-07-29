@@ -44,6 +44,16 @@ def get_db_value(config, field, table, where):
         output = cursor.fetchone()
         return output[field] if output else None
 
+def check_row_exists(config, table, where_column, target_value):
+    '''Check for a row in table based on field value'''
+    with get_db(config) as db:
+        cursor = db.cursor(dictionary=True)
+        query = f"SELECT EXISTS(SELECT 1 FROM {table} WHERE {where_column} = %s) AS row_exists"
+        cursor.execute(query, (target_value,))
+        result = cursor.fetchone()
+        return bool(result["row_exists"]) if result else False
+
+
 def get_site_settings(config):
     '''Get all settings from the DB'''
     with get_db(config) as db:
