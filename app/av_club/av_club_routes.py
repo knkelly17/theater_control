@@ -8,13 +8,17 @@ from flask import (
     current_app)
 from flask_login import login_required, current_user
 from pythonosc.udp_client import SimpleUDPClient
+
 from app.functions import (
-    get_db,
     get_setting,
     group_required,
-    update_db,
-    insert_db,
     upload_file
+)
+
+from app.functions_db import (
+    get_db,
+    update_db,
+    insert_db
 )
 
 from app.google_drive_user import (
@@ -23,7 +27,8 @@ from app.google_drive_user import (
 )
 
 from .av_club_services import (
-    upload_student_gsheet
+    upload_student_gsheet,
+    get_students_active
 )
 
 from .av_club_forms import AVClubForm
@@ -73,18 +78,9 @@ def students():
 @login_required
 def get_students():
     '''Fetches the list of students from the database and returns it as JSON.'''
-    all_students = get_students_db()
-    return all_students
+    all_students =  get_students_active()
+    return jsonify(all_students)
 
-def get_students_db():
-    '''Fetches the list of actors from the database.'''
-    with get_db(current_app.config) as db:
-        cursor = db.cursor(dictionary=True)
-        student_fields = 'ID, firstName, graduationYear, notes, active'
-        query = "SELECT " + student_fields + " FROM students ORDER BY firstName"
-        cursor.execute(query)
-        student_data = cursor.fetchall()
-        return student_data
 
 @av_club_bp.route('/upload_students', methods=['POST', 'GET'])
 @login_required

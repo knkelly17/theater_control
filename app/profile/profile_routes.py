@@ -23,7 +23,8 @@ from flask_login import (
 from werkzeug.security import generate_password_hash, check_password_hash
 # from config import DBCONNECTION
 from app.extensions import login_manager
-from app.functions import get_db, get_setting
+from app.functions import get_setting
+from app.functions_db import get_db
 from .profile_forms import LoginForm
 from . import profile_bp # pylint: disable=cyclic-import
 

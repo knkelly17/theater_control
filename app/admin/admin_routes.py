@@ -5,13 +5,16 @@ from flask import current_app, render_template, request, jsonify
 from flask_login import login_required, current_user
 from werkzeug.security import generate_password_hash
 from app.functions import (
-    get_db,
-    get_db_value,
     get_setting,
     group_required,
+)
+
+from app.functions_db import (
+    get_db,
     update_db,
     insert_db
 )
+
 from app.services.device_service import get_devices
 from .admin_forms import AdminForm
 from . import admin_bp # pylint: disable=cyclic-import

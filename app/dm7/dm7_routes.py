@@ -10,13 +10,17 @@ from flask import (
 from flask_login import login_required, current_user
 from pythonosc.udp_client import SimpleUDPClient
 from app.functions import (
-    get_db,
     get_setting,
     group_required,
-    update_db,
-    insert_db,
     upload_file
 )
+
+from app.functions_db import (
+    get_db,
+    update_db,
+    insert_db
+)
+
 
 from app.google_drive_user import (
     get_credentials,

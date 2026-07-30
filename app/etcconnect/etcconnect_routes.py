@@ -10,7 +10,8 @@ from flask import (
     current_app)
 from flask_login import login_required, current_user
 from pythonosc.udp_client import SimpleUDPClient
-from app.functions import group_required, get_db, get_setting
+from app.functions import group_required, get_setting
+from app.functions_db import get_db
 from .etcconnect_forms import ETCForm
 from . import etcconnect_bp # pylint: disable=cyclic-import
 

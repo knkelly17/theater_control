@@ -1,0 +1,94 @@
+'''DB functions for the app.'''
+import logging
+import mysql.connector
+
+
+log = logging.getLogger(__name__)
+
+# --- DATABASE CONNECTION ---
+def get_db(config):
+    '''Get a database connection using the provided dbconnection configuration.'''
+
+    return mysql.connector.connect(
+        host=config["DB_HOST"],
+        port=config["DB_PORT"],
+        user=config["DB_USER"],
+        password=config["DB_PASSWORD"],
+        database=config["DB_NAME"],
+    )
+
+
+def get_db_value(config, field, table, where):
+    '''Get a single value from the database based on 
+    the provided field, table, and where clause.'''
+    with get_db(config) as db:
+        cursor = db.cursor(dictionary=True)
+        query = f"SELECT {field} FROM {table} WHERE {where}"
+        cursor.execute(query)
+        output = cursor.fetchone()
+        return output[field] if output else None
+
+def check_row_exists(config, table, where_column, target_value):
+    '''Check for a row in table based on field value'''
+    with get_db(config) as db:
+        cursor = db.cursor(dictionary=True)
+        query = f"SELECT EXISTS(SELECT 1 FROM {table} WHERE {where_column} = %s) AS row_exists"
+        cursor.execute(query, (target_value,))
+        result = cursor.fetchone()
+        return bool(result["row_exists"]) if result else False
+
+
+def update_db(config, table_name, this_id, data_values):
+    '''Update a record in the specified table with the provided data values.'''
+    with get_db(config) as db:
+        cursor = db.cursor(dictionary=True)
+        query = "UPDATE " + table_name + " SET "
+        update_list = []
+        for field in data_values:
+            update_list.append(field + " = '" + str(data_values[field]) + "'" )
+        update_string = ', '.join(update_list)
+        query = query + update_string + " WHERE ID = " + str(this_id)
+        cursor.execute(query)
+        db.commit()
+        return cursor.rowcount
+
+def insert_db(config, table_name, data_values):
+    '''Insert a new record into the 
+    specified table with the provided data values.'''
+    with get_db(config) as db:
+        cursor = db.cursor(dictionary=True)
+        field_list = []
+        values_list = []
+        for field in data_values:
+            field_list.append(str(field))
+            values_list.append("'"+str(data_values[field])+"'")
+        field_string = ", ".join(field_list)
+        values_string = ", ".join(values_list)
+        query = "INSERT INTO " + table_name + " (" + field_string + ")"
+        query = query + " VALUES (" + values_string + ")"
+        cursor.execute(query)
+        db.commit()
+        inserted_id = cursor.lastrowid
+        return inserted_id
+
+def query_single_table_db(config, field_list, table, where_object, order):
+    '''get values from a single DB table'''
+    with get_db(config) as db:
+        cursor = db.cursor(dictionary=True)
+
+        query = f"SELECT {field_list} FROM {table}"
+        params = []
+
+        if where_object:
+            where_column = where_object.get("where_column")
+            target_value = where_object.get("target_value")
+            operator = where_object.get("operator", "=")
+
+            if where_column and target_value is not None:
+                query += f" WHERE {where_column} {operator} %s"
+                params.append(target_value)
+
+        query += f" ORDER BY {order}"
+        cursor.execute(query, params)
+        return cursor.fetchall()
+  

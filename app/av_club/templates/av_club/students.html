@@ -40,7 +40,17 @@
     tabEndNewRow: true,
     columns:[ //Define Table Columns
       {title:"ID", field:"ID", visible:false},
-      {title:"Name", field:"firstName", editor:"input"},
+      {
+        title: "Student Name", 
+        field: "combined_name", // A dummy field name (doesn't need to exist in raw data)
+        formatter: function(cell, formatterParams, onRendered){
+          // Get the complete row data object
+          var data = cell.getData(); 
+          
+          // Combine and return the two fields (e.g., firstName and lastName)
+          return data.firstName + " " + data.lastName; 
+        }
+      },
       {title: "Year", 
        field: "graduationYear", 
        editor: "number", // Changed from "input"

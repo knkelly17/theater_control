@@ -107,4 +107,29 @@ async function sendFieldToDb(rowData, cell, endpoint) {
     
 }
 
+function getHighSchoolClass(gradYear) {
+  const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth(); // 0-indexed (0 = January, 5 = June)
+  let next_year = 0
+
+  if (currentMonth >= 5) {
+    next_year = 1
+  }
+
+  const the_grade = next_year + 12 - gradYear + currentYear
+  
+  switch (the_grade) {
+    case 12:
+      return "Senior";
+    case 11:
+      return "Junior";
+    case 10:
+      return "Sophomore";
+    case 9:
+      return "Freshman";
+    default:
+      return gradYear > currentYear ? "Not yet in High School" : "Graduated";
+  }
+}
+
 
