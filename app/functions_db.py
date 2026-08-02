@@ -1,6 +1,7 @@
 '''DB functions for the app.'''
 import logging
 import mysql.connector
+from flask_login import current_user
 
 
 log = logging.getLogger(__name__)
@@ -40,6 +41,7 @@ def check_row_exists(config, table, where_column, target_value):
 
 def update_db(config, table_name, this_id, data_values):
     '''Update a record in the specified table with the provided data values.'''
+    data_values['sessionid'] = current_user.sessionid
     with get_db(config) as db:
         cursor = db.cursor(dictionary=True)
         query = "UPDATE " + table_name + " SET "
@@ -55,6 +57,7 @@ def update_db(config, table_name, this_id, data_values):
 def insert_db(config, table_name, data_values):
     '''Insert a new record into the 
     specified table with the provided data values.'''
+    data_values['sessionid'] = current_user.sessionid
     with get_db(config) as db:
         cursor = db.cursor(dictionary=True)
         field_list = []
@@ -91,4 +94,89 @@ def query_single_table_db(config, field_list, table, where_object, order):
         query += f" ORDER BY {order}"
         cursor.execute(query, params)
         return cursor.fetchall()
-  
+
+def query_db(
+    config,
+    field_list,
+    table,
+    where_object=None,
+    order=None,
+    joins=None,
+    ):
+    '''Main DB Query'''
+    with get_db(config) as db:
+        cursor = db.cursor(dictionary=True)
+
+        query = f"SELECT {field_list} FROM {table}"
+        params = []
+
+        if joins:
+            for join in joins:
+                query += f" {join}"
+
+        if where_object and where_object.get("conditions"):
+            where_clause, where_params = build_where_clause(where_object)
+            query += where_clause
+            params.extend(where_params)
+
+        if order:
+            query += f" ORDER BY {order}"
+        cursor.execute(query, params)
+        return cursor.fetchall()
+
+def build_where_clause(where_object):
+    '''build out the where portion of a sql query'''
+    if not where_object:
+        return "", []
+
+    conditions = where_object.get("conditions", [])
+    if not conditions:
+        return "", []
+
+    clauses = []
+    params = []
+
+    for cond in conditions:
+        column = cond["column"]
+        operator = cond.get("operator", "=")
+        value = cond["value"]
+
+        if operator not in {"=", "!=", ">", "<", ">=", "<=", "LIKE", "IS"}:
+            raise ValueError(f"Unsupported operator: {operator}")
+
+        if operator == "IS" and value is None:
+            clauses.append(f"{column} IS NULL")
+        else:
+            clauses.append(f"{column} {operator} %s")
+            params.append(value)
+
+    connector = where_object.get("connector", "AND").upper()
+    if connector not in {"AND", "OR"}:
+        raise ValueError(f"Unsupported connector: {connector}")
+
+    sql = " WHERE " + f" {connector} ".join(clauses)
+    return sql, params
+
+###################################
+#### Sample usage for query_db:
+#### where_object = {
+####     "connector": "AND",
+####     "conditions": [
+####         {"column": "name", "operator": "=", "value": "joe"},
+####         {"column": "active", "operator": "=", "value": "Y"},
+####     ],
+#### }
+####
+#### joins = [
+####     "JOIN other_table ON other_table.id = main_table.other_id"
+#### ]
+####
+#### rows = query_db(
+####     config,
+####     "main_table.*",
+####     "main_table",
+####     where_object=where_object,
+####     order="main_table.id",
+####     joins=joins,
+#### )
+###################################

@@ -1,8 +1,12 @@
 '''Hooks used throughout the app'''
 import threading
-from flask import request, session
+from flask import (
+    request,
+    session
+)
 from flask_login import current_user
 from app.services.device_service import track_device
+
 
 def register_hooks(app):
     '''Resistering the hooks for the app'''

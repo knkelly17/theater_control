@@ -4,15 +4,19 @@ from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed, FileRequired
 from wtforms import (
     SubmitField,
-    IntegerField,
-    StringField
+    StringField,
+    SelectField
 )
-
-from wtforms.widgets import NumberInput
 
 class AVClubForm(FlaskForm):
     """AV Club Control Form"""
-    add_student = SubmitField('Add Student',
+
+    choose_student = SelectField(
+        "Choose Student",
+        choices=[]
+    )
+
+    add_student = SubmitField('+ Add Student',
         render_kw={
             'class':
                 'admin_action '
@@ -23,6 +27,60 @@ class AVClubForm(FlaskForm):
                 'w3-small '
             }
         )
+
+    add_av_member = SubmitField('+ Add Student to AV Club',
+        render_kw={
+            'class':
+                'admin_action '
+                'w3-button '
+                'w3-blue '
+                'w3-round '
+                'w3-hover-aqua '
+                'w3-small '
+            }
+        )
+
+    submit_student_av = SubmitField('Add to AV Club',
+            render_kw={
+                'class':
+                    'admin_action '
+                    'w3-button '
+                    'w3-blue '
+                    'w3-round '
+                    'w3-hover-aqua '
+                    'w3-small '
+                }
+            )
+
+    see_all_records = SubmitField(
+        'See All Records (including inactive)',
+        render_kw={
+            'data-span-label':'label-all',
+            'class':
+                'w3-button '
+                'w3-aqua '
+                'w3-round '
+                'w3-hover-aqua '
+                'w3-medium '
+                'w3-show '
+                'active-selector'
+        }
+    )
+
+    see_active_records = SubmitField(
+        'See Active Records Only',
+        render_kw={
+            'data-span-label':'label-active',
+            'class':
+                'w3-button '
+                'w3-aqua '
+                'w3-round '
+                'w3-hover-aqua '
+                'w3-medium, '
+                'w3-hide '
+                'active-selector ' 
+        }
+    )
 
     google_sheet_id = StringField('Google Sheet ID',
             render_kw={
@@ -62,49 +120,3 @@ class AVClubForm(FlaskForm):
             FileAllowed(['tmix'], 'Only Theatremix Files allowed!')
         ]
     )
-
-    panic = SubmitField('Stop All Cues',
-        render_kw={
-            'class':
-                'qlab_action '
-                'w3-button '
-                'w3-blue '
-                'w3-round '
-                'w3-hover-aqua '
-                'w3-xxlarge ',
-            'data-action': 'panic'
-            }
-        )
-
-    cue = IntegerField('Cue', id='cue',
-        render_kw={
-            'class':
-                'w3-border-black w3-round '
-        },
-        widget=NumberInput(min=0, max=1000))
-
-    fire_qlab_cue = SubmitField('Fire Cue',
-        render_kw={
-            'class':
-                'qlab_action '
-                'w3-button '
-                'w3-blue '
-                'w3-round '
-                'w3-hover-aqua '
-                'w3-xlarge ',
-            'data-action': 'fire_qlab_cue'
-            }
-        )
-
-    stop_qlab_cue = SubmitField('Stop Cue',
-        render_kw={
-            'class':
-                'qlab_action '
-                'w3-button '
-                'w3-blue '
-                'w3-round '
-                'w3-hover-aqua '
-                'w3-xlarge ',
-            'data-action': 'stop_qlab_cue'
-            }
-        )

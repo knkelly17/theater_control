@@ -6,30 +6,14 @@ from flask import (
     request,
     jsonify,
     current_app)
-from flask_login import login_required, current_user
-from pythonosc.udp_client import SimpleUDPClient
+from flask_login import login_required
 
 from app.functions import (
     get_setting,
     group_required,
-    upload_file
 )
 
-from app.functions_db import (
-    get_db,
-    update_db,
-    insert_db
-)
-
-from app.google_drive_user import (
-    get_credentials,
-    run_gas_api
-)
-
-from .av_club_services import (
-    upload_student_gsheet,
-    get_students_active
-)
+from app.av_club import av_club_services
 
 from .av_club_forms import AVClubForm
 from . import av_club_bp # pylint: disable=cyclic-import
@@ -55,6 +39,82 @@ def av_club_admin():
         main_menu='av_club'
     )
 
+
+@av_club_bp.route('/av_club_members', methods=['POST', 'GET'])
+@login_required
+@group_required("av_club_admin")
+def av_club_members():
+    """List AV Club Members"""
+    contents = "AV Club Groups"
+    form = AVClubForm()
+    exclude = "avClub"
+    form.choose_student.choices = av_club_services.get_students_active_names_options(exclude)
+    return render_template(
+        'av_club/av_club_members.html', 
+        # title='List AV Club Members',
+        # sub_title='AV Club Members',
+        site_name=get_setting(current_app.config,'name'),
+        form=form,
+        version=ver,
+        main_menu='av_club',
+        base='av_club_members',
+        page_content=contents
+    )
+
+@av_club_bp.route('/get_list_of_students', methods=['POST', 'GET'])
+@login_required
+@group_required("av_club_admin")
+def get_list_of_students():
+    """Get an options list of students for drop downs"""
+    exclude = "avClub"
+    return av_club_services.get_students_active_names_options(exclude)
+
+@av_club_bp.route('/get_av_club_members', methods=['POST', 'GET'])
+@login_required
+@group_required("av_club_admin")
+def get_av_club_members():
+    '''Fetches the list of students from the database and returns it as JSON.'''
+    active = request.args.get('active', default='Active')
+    all_students =  av_club_services.get_av_club_members(active)
+    return jsonify(all_students)
+
+@av_club_bp.route('/add_existing_student', methods=['POST', 'GET'])
+@login_required
+@group_required("av_club_admin")
+def add_existing_student():
+    '''Add an existing student to the AV Club'''
+    add_response =  av_club_services.add_existing_student(request.get_json())
+    # log.warning(add_response)
+    return jsonify(add_response)
+
+@av_club_bp.route('/add_student', methods=['POST', 'GET'])
+@login_required
+@group_required("av_club_admin")
+def add_student():
+    '''Add an existing student to the AV Club'''
+    add_response =  av_club_services.add_student(request.get_json())
+    return jsonify(add_response)
+
+@av_club_bp.route('/update_student', methods=['POST', 'GET'])
+@login_required
+@group_required("av_club_admin")
+def update_student():
+    '''Update student information'''
+    log.warning(request.get_json())
+    update_response =  av_club_services.update_student(request.get_json())
+    # log.warning(add_response)
+    return jsonify(update_response)
+
+@av_club_bp.route('/update_member_info', methods=['POST', 'GET'])
+@login_required
+@group_required("av_club_admin")
+def update_membe_info():
+    '''Update basic info for av club member'''
+    log.warning(request.get_json())
+    update_response =  av_club_services.update_member_info(request.get_json())
+    # log.warning(add_response)
+    return jsonify(update_response)
+
 @av_club_bp.route('/students', methods=['POST', 'GET'])
 @login_required
 @group_required("av_club_admin")
@@ -76,9 +136,29 @@ def students():
 
 @av_club_bp.route('/get_students', methods=['POST', 'GET'])
 @login_required
+@group_required("av_club_admin")
 def get_students():
     '''Fetches the list of students from the database and returns it as JSON.'''
-    all_students =  get_students_active()
+    active = request.args.get('active', default='Active')
+    all_students =  av_club_services.get_students(active)
+    return jsonify(all_students)
+
+@av_club_bp.route('/get_students_active', methods=['POST', 'GET'])
+@login_required
+@group_required("av_club_admin")
+@group_required("av_club_admin")
+def get_students_active():
+    '''Fetches the list of active students from the database and returns it as JSON.'''
+    all_students =  av_club_services.get_students_active()
+    return jsonify(all_students)
+
+@av_club_bp.route('/get_active_student_names', methods=['POST', 'GET'])
+@login_required
+@group_required("av_club_admin")
+@group_required("av_club_admin")
+def get_students_active_names():
+    '''Fetches the list of students from the database and returns it as JSON.'''
+    all_students =  av_club_services.get_students_active_names()
     return jsonify(all_students)
 
 
@@ -86,13 +166,13 @@ def get_students():
 @login_required
 @group_required("av_club_admin")
 @group_required("admin")
-def upload_students():
+def upload_students_gsheet():
     '''Upload students from Google Sheet'''
     form = AVClubForm()
     response = "Waiting for data"
 
     if request.form:
-        student_data = upload_student_gsheet(
+        student_data = av_club_services.upload_student_gsheet(
             request.form['google_sheet_id'],
             request.form['google_sheet_range']
             )

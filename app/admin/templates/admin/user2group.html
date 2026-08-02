@@ -39,6 +39,7 @@
   async function buildMatrix() {
     const res = await fetch("/admin/permissions_matrix");
     const data = await res.json();
+    
 
     const baseCols = [
         { title: "User", field: "username", frozen: true }
@@ -63,17 +64,30 @@
 
   buildMatrix();
 
+  const currentUserId = {{ current_user.id|tojson }}
+
   async function onToggleClick(e, cell) {
     const row = cell.getRow().getData();
     const field = cell.getField();
     const groupId = field.split("_")[1];
     const userId = row.id;
+    const groupTitle  = cell.getColumn().getDefinition().title
+
+   //Current user cannot add/remove admin access for themselves
+    
+    if (userId == currentUserId && groupTitle == 'admin') {
+      alert("You cannot add/remove yourself to the admin group.  Another admin will need to do this.");
+      return
+    }
 
     const currentValue = cell.getValue();
     const newValue = !currentValue;
 
+    
+
     // update UI immediately
     cell.setValue(newValue);
+    
 
     try {
         const res = await fetch("/admin/update_user_group", {

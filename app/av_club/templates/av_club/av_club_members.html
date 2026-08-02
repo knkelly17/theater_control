@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <!-- h1>Enter Channel Number to set Full or Out</h1 -->
+
+{% include 'av_club/av_club_menu.html' %}
+
+{% if base %}
+<script>
+    base_page = "{{ base }}";
+    document.getElementsByClassName(base_page)[0].classList.add("selected-button", "w3-green");
+    document.getElementsByClassName(base_page)[0].classList.remove("w3-dark-gray");
+</script>
+{% endif %}
+
+<!-- Page Content -->
+<div class="w3-main" style="margin-left:200px">
+  <button class="w3-button w3-xlarge w3-hide-large" onclick="w3_open()">&#9776;</button>
+  <div class="w3-container">
+    <h1>
+      <span id='label-active' style="display:inline-block">Active</span>
+      <span id='label-all' style="display:none">All</span>
+      AV Club Members
+    </h1>
+    {{ form.see_all_records }}
+    {{ form.see_active_records }}
+    <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+    <div class="w3-margin-bottom manage-show" style="display:block">
+      {{ form.add_av_member() }}
+    </div>
+    <div id="av-club-members-table"></div>
+    <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+  </div>
+</div>
+
+<!-- Add User Modal -->
+
+<div id="add_member_modal" class="w3-modal">
+  <div class="w3-modal-content w3-card-4 w3-animate-zoom" style="max-width:400px">
+    <div class="w3-center"><br>
+      <span onclick="document.getElementById('add_member_modal').style.display='none'" class="w3-button w3-xlarge w3-transparent w3-display-topright" title="Close Modal">×</span>
+      <h3 class="w3-wide">Add Existing Student to AV Club</h3>
+    </div>
+    
+    <div class="w3-container w3-card-4">
+      <div class="w3-row">
+        <div class="w3-col m6 l4">&nbsp;</div>
+      </div>
+    
+        {{ form.hidden_tag() }}
+
+        {{ form.choose_student }}
+
+        {{ form.submit_student_av }}
+        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+    </div>
+    <div class="w3-row">
+      <div class="w3-col w3-panel w3-pale-blue alert-info" id="change_status"></div>
+    </div>
+  </div>
+</div>
+
+<!-- end of modal-->
+
+<script>
+
+  const requiredFields = ["studentId"];
+  const excludedFields = [];
+
+  const initialSort = [
+    { column: "graduationYear", dir: "asc" },
+    { column: "fullName", dir: "asc" }
+  ];
+
+  const tableData = "/av_club/get_av_club_members"
+
+  
+
+ // function initMembersTable() {
+  const pageTable = new Tabulator("#av-club-members-table", {
+  //height:205, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can
+  ajaxURL: tableData,
+  dataLoader: false,
+  layout:"fitDataTable",
+  index:"indexId",
+  tabEndNewRow: true,
+  sortOrderReverse: true,
+  initialSort: initialSort,
+  columns:[ //Define Table Columns
+    {
+      title:"Student Name",
+      field:"fullName",
+      headerFilter:"input"
+
+    },
+    {title: "Graduation Year", 
+      field: "graduationYear", 
+      mutateLink: "class", 
+      validator: function(cell, value, parameters){
+      // Convert string input to a base-10 integer
+      var yearNum = parseInt(value, 10);
+      
+      // Ensure it is a valid number, and falls strictly within your min/max constraints
+      return !isNaN(yearNum) && yearNum >= 2025 && yearNum <= 2100;
+      }
+    },
+    {title:"Class", field:"class",
+      mutator: function(value, data) {
+        // data contains all values from the AJAX response for this row
+        return getHighSchoolClass(data.graduationYear);
+      },
+      width:100
+    },
+    {title:"Email", field:"email", width:300},
+    {title:"AV Club Notes", field:"notes", editor:"input"},
+    {title:"Active", field:"active", hozAlign:"center",
+      formatter:"tickCross",
+      formatterParams: {
+        allowTruthy: true,
+      },
+      cellClick: function (e, cell) {
+        cell.setValue(!cell.getValue());
+      },
+    },
+    {title:"Parents' Name(s)", field:"parentName"},
+    {title:"Parent's Email", field:"parentEmail"},
+  ],
+});
+
+pageTable.on("cellEdited", function(cell) {
+  var fieldName = cell.getField();
+
+  // 1. Block the calculated column from triggering the update
+  if (fieldName === "class") { 
+      return; // Exit early, doing nothing
+  }
+  const row = cell.getRow();
+  const rowID = row.getIndex()
+  if (rowID) {
+    editCellAPI(cell, "/av_club/update_member_info"); 
+  } else {
+    addRowAPI(row, "/av_club/add_existing_student", requiredFields, excludedFields)
+  }     
+});
+
+
+
+  document.getElementById("add_av_member").addEventListener("click", function () {
+    document.getElementById('add_member_modal').style.display='block';
+  });
+
+  document.getElementById("submit_student_av").addEventListener("click", function () {
+    //choose_student
+    const student_id_dropdown = document.getElementById("choose_student")
+    student_id = student_id_dropdown.value
+    if (isNaN(parseFloat(student_id))) {
+      document.getElementById('add_member_modal').style.display='none';
+      return
+    } 
+    const blankRowData = {
+      indexId: null,
+      studentId: student_id,
+    };
+
+    pageTable.addRow(blankRowData, true)
+      .then(function(row) {
+        row.update({ studentId: student_id });
+        return addRowAPI(row, "/av_club/add_existing_student", requiredFields, excludedFields);
+      })
+      .then(function() {
+        pageTable.setSort(initialSort);
+      })
+      .catch(function(error) {
+        alert(error)
+      });
+
+    // Remove the item at the currently selected index
+    if (student_id_dropdown.selectedIndex !== -1) {
+        student_id_dropdown.remove(student_id_dropdown.selectedIndex);
+    }
+
+    document.getElementById('add_member_modal').style.display='none';
+  });
+
+</script>
+
+<script src="{{ url_for('av_club.static', filename='js/av_club.js') }}?v={{ version }}"></script>
+
+
+
+{% endblock %}

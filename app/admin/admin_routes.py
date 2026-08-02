@@ -12,7 +12,8 @@ from app.functions import (
 from app.functions_db import (
     get_db,
     update_db,
-    insert_db
+    insert_db,
+    get_db_value
 )
 
 from app.services.device_service import get_devices
@@ -207,14 +208,15 @@ def update_user_group():
     group_id = data["group_id"]
     assigned = data["assigned"]
 
+
     with get_db(current_app.config) as db:
         cursor = db.cursor()
 
         if assigned:
             cursor.execute("""
-                INSERT IGNORE INTO user2group (userID, groupID)
-                VALUES (%s, %s)
-            """, (user_id, group_id))
+                INSERT IGNORE INTO user2group (userID, groupID, sessionid)
+                VALUES (%s, %s, %s)
+            """, (user_id, group_id, current_user.sessionid))
         else:
             cursor.execute("""
                 DELETE FROM user2group

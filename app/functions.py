@@ -2,7 +2,7 @@
 import os
 from functools import wraps
 from datetime import datetime
-from flask import current_app
+from flask import current_app, request, render_template
 from flask_login import current_user
 from werkzeug.utils import secure_filename
 from app.functions_db import (
@@ -16,11 +16,21 @@ def group_required(*group_names):
         @wraps(f)
         def wrapper(*args, **kwargs):
             if not current_user.is_authenticated:
-                return {"error": "Unauthorized"}, 401
-
+                if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return {"error": "Unauthorized"}, 401
+                return render_template(
+                    'index.html',
+                    title='Unauthorized',
+                    page_content='Unauthorized'
+                ), 401
             if not any(current_user.has_group(g) for g in group_names):
-                return {"error": "Forbidden"}, 403
-
+                if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return {"error": "Forbidden"}, 403
+                return render_template(
+                    'index.html',
+                    title='Forbidden',
+                    page_content='Forbidden'
+                ), 403
             return f(*args, **kwargs)
         return wrapper
     return decorator
@@ -35,7 +45,7 @@ def get_site_settings(config):
     query_single_table_db(config, "name, value", 'settings', where_object, None)
 
 
-def get_setting(config, key, default=None):
+def get_setting(config, key):
     '''Get a specific setting value from the settings table.'''
     return get_db_value(config, 'value', 'settings', ' name = ' + key)
 
