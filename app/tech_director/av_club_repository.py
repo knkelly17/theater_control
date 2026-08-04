@@ -10,6 +10,10 @@ from app.functions_db import (
 
 log = logging.getLogger(__name__)
 
+ASSIGNMENT_TABLE = {
+    'avclub':'student2avclub'
+    }
+
 def check_for_student(email):
     '''Check if a row exists for this student'''
     return check_row_exists(current_app.config, "students", "email", email)
@@ -40,14 +44,14 @@ def get_students(active, start_of_current_year, data_needed, sort_by, exclude_it
 
     exclude_conditions_map = {
         "avClub": {
-            "column": "user2avclub.studentId",
+            "column": "student2avclub.studentId",
             "operator": "IS",
             "value": None
         }
     }
 
     exclude_joins = {
-        "avClub": ["LEFT JOIN user2avclub ON students.ID = user2avclub.studentId"]
+        "avClub": ["LEFT JOIN student2avclub ON students.ID = student2avclub.studentId"]
     }
 
     fields = field_mappings.get(data_needed, "students.ID as indexId, students.*")
@@ -106,7 +110,7 @@ def get_av_club_members_db(active, start_of_current_year):
                         "value": 1
                     },
                     {
-                        "column": "user2avclub.active", 
+                        "column": "student2avclub.active", 
                         "operator": "=", 
                         "value": 1
                     },
@@ -114,19 +118,20 @@ def get_av_club_members_db(active, start_of_current_year):
             }
 
     joins = [
-        "LEFT JOIN students ON user2avclub.studentId = students.ID"
+        "LEFT JOIN students ON student2avclub.studentId = students.ID"
         ]
 
-    fields = "user2avclub.ID as indexId, " \
+    fields = "student2avclub.ID as indexId, " \
     "students.Id as studentId, " \
     "CONCAT(students.firstName,' ',students.lastName) AS fullName, " \
-    "students.graduationYear, user2avclub.notes, students.email, " \
-    "user2avclub.active, students.parentName, students.parentEmail"
+    "students.firstName, students.lastName, " \
+    "students.graduationYear, student2avclub.notes, students.email, " \
+    "student2avclub.active, students.parentName, students.parentEmail"
 
     return query_db (
             current_app.config,
             fields,
-            "user2avclub", 
+            "student2avclub", 
             where_object,
             "students.graduationYear ASC",
             joins
@@ -134,7 +139,16 @@ def get_av_club_members_db(active, start_of_current_year):
 
 def add_club_member_db(data):
     '''Insert student to the av club table'''
-    inserted_id = insert_db(current_app.config, "user2avclub", data)
+    inserted_id = insert_db(current_app.config, "student2avclub", data)
+    return inserted_id
+
+def add_assignment(data, assignment_type):
+    '''Insert student to the av club table'''
+    inserted_id = insert_db(
+        current_app.config,
+        ASSIGNMENT_TABLE[assignment_type],
+        data
+    )
     return inserted_id
 
 def add_student(data):
@@ -174,7 +188,7 @@ def update_member_info_db(data):
     }
     return update_db(
         current_app.config,
-        "user2avclub", 
+        "student2avclub", 
         data['ID'],
         data_values
     )

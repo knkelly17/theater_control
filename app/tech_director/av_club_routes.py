@@ -1,6 +1,10 @@
 """Routes for the Flask web application handling AV Club Administration."""
 import logging
 import datetime
+from mysql.connector import (
+    errorcode,
+    IntegrityError,
+)
 from flask import (
     render_template,
     request,
@@ -22,6 +26,8 @@ log = logging.getLogger(__name__)
 
 currentDT = datetime.datetime.now()
 ver = currentDT.strftime("%Y-%m-%d-%H:%M:%S")
+
+VALID_ASSIGNMENTS = {"avclub", "show"}
 
 @av_club_bp.route('/', methods=['GET', 'POST'])
 @login_required
@@ -48,7 +54,7 @@ def av_club_members():
     contents = "AV Club Groups"
     form = AVClubForm()
     exclude = "avClub"
-    form.choose_student.choices = av_club_services.get_students_active_names_options(exclude)
+    form.studentId.choices = av_club_services.get_students_active_names_options(exclude)
     return render_template(
         'av_club/av_club_members.html', 
         # title='List AV Club Members',
@@ -86,6 +92,53 @@ def add_existing_student():
     add_response =  av_club_services.add_existing_student(request.get_json())
     # log.warning(add_response)
     return jsonify(add_response)
+
+@av_club_bp.route('/xxassign_new_student/<string:assignment_type>', methods=['POST'])
+@login_required
+@group_required("av_club_admin")
+def assign_new_student_XX(assignment_type):
+    '''Create a student assign'''
+    if assignment_type not in VALID_ASSIGNMENTS:
+        return jsonify(
+            {"message": "/assignment_type is either missing or invalid."}
+            ), 422
+    add_response =  av_club_services.assign_new_student(request.get_json(), assignment_type)
+    # log.warning(add_response)
+    return jsonify(add_response)
+
+@av_club_bp.route('/assign_new_student/<string:assignment_type>', methods=['POST'])
+# **** UPDATE THIS ONE TO ALSO TAKE /new or /existing and so this is the only end point
+# used to add a student assignment
+@login_required
+@group_required("av_club_admin")
+def assign_new_student(assignment_type):
+    '''Create a student and assign them to a group'''
+    if assignment_type not in VALID_ASSIGNMENTS:
+        return jsonify({
+            "message": "Assignment type is missing or invalid."
+        }), 422
+
+    try:
+        add_response = av_club_services.assign_new_student(
+            request.get_json(),
+            assignment_type
+        )
+    except IntegrityError as error:
+        if error.errno == errorcode.ER_DUP_ENTRY:
+            # this contains the actual message: error.msg
+            message = "A student with that email address already exists."
+            return jsonify({
+                "message": message,
+                "field": "email",
+            }), 409
+
+        log.exception("Database integrity error while creating student")
+        return jsonify({
+            "message": "The student could not be saved."
+        }), 500
+
+    return jsonify(add_response)
+
 
 @av_club_bp.route('/add_student', methods=['POST', 'GET'])
 @login_required

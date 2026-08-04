@@ -3,7 +3,7 @@
 {% block content %}
     <!-- h1>Enter Channel Number to set Full or Out</h1 -->
 
-{% include 'av_club/av_club_menu.html' %}
+{% include 'tech_director/tech_director_menu.html' %}
 
 {% if base %}
 <script>
@@ -36,7 +36,7 @@
 
 
 
-  const tableData = "/av_club/get_students"
+  const tableData = "/tech_director/get_students"
 
   const requiredFields = ["email"];
   const excludedFields = ["ID", "class"];
@@ -97,6 +97,8 @@
         formatter:"tickCross",
         formatterParams: {
          allowTruthy: true,
+         tickElement:"<i class='fa fa-check'></i>",
+         crossElement:"<i class='fa fa-times'></i>",
         },
         cellClick: function (e, cell) {
           cell.setValue(!cell.getValue());
@@ -107,7 +109,6 @@
     ],
     });
 
-  /*
   pageTable.on("cellEdited", function(cell) {
     var fieldName = cell.getField();
 
@@ -118,26 +119,9 @@
     const row = cell.getRow();
     const rowID = row.getIndex()
     if (rowID) {
-      editCell(cell, "students", "/dm7/update_db_field"); 
+      editCellAPI(cell, "/tech_director/update_student"); 
     } else {
-      addRow(cell, "students", requiredFields, "/dm7/insert_db_row")
-    }     
-  });
-  */
-
-  pageTable.on("cellEdited", function(cell) {
-    var fieldName = cell.getField();
-
-    // 1. Block the calculated column from triggering the update
-    if (fieldName === "class") { 
-        return; // Exit early, doing nothing
-    }
-    const row = cell.getRow();
-    const rowID = row.getIndex()
-    if (rowID) {
-      editCellAPI(cell, "/av_club/update_student"); 
-    } else {
-      addRowAPI(row,  "/av_club/add_student", requiredFields, excludedFields)
+      addRowAPI(row,  "/tech_director/add_student", requiredFields, excludedFields)
     }     
   });
 

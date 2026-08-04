@@ -112,10 +112,22 @@ def add_existing_student(data):
     student_details[0]['indexId'] = inserted_id
     return student_details[0]
 
+def assign_new_student(data, assignment_type):
+    '''Create a new student record and assign it'''
+    new_student_id = av_club_repository.add_student(data)
+    insert_data = {
+        'studentId':new_student_id
+    }
+    new_assignment_id = av_club_repository.add_assignment(insert_data, assignment_type)
+    student_details = av_club_repository.get_student_details(new_student_id)
+    student_details[0]['indexId'] = new_assignment_id
+    return student_details[0]
+
+
 def add_student(data):
     '''Add a new student'''
-    inserted_id = av_club_repository.add_student(data)
-    return {'indexId':inserted_id}
+    new_student_id = av_club_repository.add_student(data)
+    return {'indexId':new_student_id}
 
 def update_member_info(data):
     '''Update membership info'''

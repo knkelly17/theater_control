@@ -3,7 +3,7 @@
 {% block content %}
     <!-- h1>Enter Channel Number to set Full or Out</h1 -->
 
-{% include 'av_club/av_club_menu.html' %}
+{% include 'tech_director/tech_director_menu.html' %}
 
 {% if base %}
 <script>
@@ -21,7 +21,7 @@
     <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
     
     <!-- Crucial: enctype must be multipart/form-data -->
-    <form action="/av_club/upload_students" method="POST" enctype="multipart/form-data">
+    <form action="/tech_director/upload_students" method="POST" enctype="multipart/form-data">
         {{ form.hidden_tag() }}
 
         <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
@@ -53,7 +53,7 @@
   
 </script>
 
-<script src="{{ url_for('av_club.static', filename='js/av_club.js') }}?v={{ version }}"></script>
+<script src="{{ url_for('tech_director.static', filename='js/tech_director.js') }}?v={{ version }}"></script>
 
 
 

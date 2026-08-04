@@ -11,9 +11,36 @@ from wtforms import (
 class AVClubForm(FlaskForm):
     """AV Club Control Form"""
 
-    choose_student = SelectField(
+    studentId = SelectField(
         "Choose Student",
-        choices=[]
+        choices=[],
+        render_kw={
+            'class':
+                'submit_av_member_fields '
+        })
+
+    firstName = StringField('First Name',
+        render_kw={
+            'class':
+              'submit_av_member_fields '
+        })
+    
+    lastName = StringField('Last Name',
+        render_kw={
+            'class':
+              'submit_av_member_fields '
+        })
+    email = StringField('School Email',
+        render_kw={
+            'class':
+              'submit_av_member_fields '
+        })
+
+    graduationYear = StringField('Graduation Year (4 digits)',
+        render_kw={
+            'class':
+                'submit_av_member_fields '
+        }
     )
 
     add_student = SubmitField('+ Add Student',
@@ -28,8 +55,9 @@ class AVClubForm(FlaskForm):
             }
         )
 
-    add_av_member = SubmitField('+ Add Student to AV Club',
+    add_av_member = SubmitField('+ Add Existing Student to AV Club',
         render_kw={
+            'data-add-av-member':'existing',
             'class':
                 'admin_action '
                 'w3-button '
@@ -40,17 +68,44 @@ class AVClubForm(FlaskForm):
             }
         )
 
+    add_new_av_member = SubmitField('+ Add New Student to AV Club',
+        render_kw={
+            'data-add-av-member':'new',
+            'class':
+                'admin_action '
+                'w3-button '
+                'w3-purple '
+                'w3-round '
+                'w3-hover-aqua '
+                'w3-small '
+            }
+        )
+    
     submit_student_av = SubmitField('Add to AV Club',
-            render_kw={
-                'class':
-                    'admin_action '
-                    'w3-button '
-                    'w3-blue '
-                    'w3-round '
-                    'w3-hover-aqua '
-                    'w3-small '
-                }
-            )
+        render_kw={
+            'data-submit-av':'submit',
+            'class':
+                'admin_action '
+                'w3-button '
+                'w3-blue '
+                'w3-round '
+                'w3-hover-aqua '
+                'w3-small '
+            }
+        )
+
+    existing_submit_student_av = SubmitField('Add to AV Club',
+        render_kw={
+            'data-submit-av':'submit',
+            'class':
+                'admin_action '
+                'w3-button '
+                'w3-blue '
+                'w3-round '
+                'w3-hover-aqua '
+                'w3-small '
+            }
+        )
 
     see_all_records = SubmitField(
         'See All Records (including inactive)',

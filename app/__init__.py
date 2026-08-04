@@ -19,11 +19,7 @@ def create_app(config_object="app.config.Config"):
         )
 
 
-    #app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=1)
-    #app.config['REMEMBER_COOKIE_DURATION'] = timedelta(minutes=1)
-
     # --- Initialize extensions here ---
-    # e.g. db.init_app(app), login_manager.init_app(app)
 
     login_manager.init_app(app)
     login_manager.login_view = 'profile.login' # Where to redirect unauthorized users

@@ -1,3 +1,33 @@
+const originalFetch = window.fetch.bind(window);
+
+window.fetch = async function(...args) {
+    const response = await originalFetch(...args);
+
+    if (response && response.status === 401 && !window.location.pathname.startsWith('/profile/login')) {
+        window.location.href = '/profile/login?next=' + encodeURIComponent(window.location.pathname + window.location.search);
+    }
+
+    return response;
+};
+
+function handleFetchResponse(response) {
+    if (response.status === 401) {
+        window.location.href = '/profile/login?next=' + encodeURIComponent(window.location.pathname + window.location.search);
+        return null;
+    }
+
+    if (response.status === 403) {
+        alert('You do not have permission to perform this action.');
+        return null;
+    }
+
+    if (!response.ok) {
+        return response;
+    }
+
+    return response;
+}
+
 function isRowComplete(rowData, requiredFields) {
     return requiredFields.every(field => {
         return rowData[field] !== undefined && rowData[field] !== "";
@@ -18,7 +48,7 @@ function normalizeValueForDb(value) {
     return value;
 }
 
-function normalizePayloadForDb(value) {
+function normalizePayloadForDb(value) { //***this gets replaced by preparePayload 
     if (Array.isArray(value)) {
         return value.map(normalizePayloadForDb);
     }
@@ -32,7 +62,21 @@ function normalizePayloadForDb(value) {
     return normalizeValueForDb(value);
 }
 
-function sanitizeRowPayloadForDb(rowData, excludedFields = []) {
+function preparePayload(value) {
+    if (Array.isArray(value)) {
+        return value.map(preparePayload);
+    }
+
+    if (value && typeof value === "object") {
+        return Object.fromEntries(
+            Object.entries(value).map(([key, nestedValue]) => [key, preparePayload(nestedValue)])
+        );
+    }
+
+    return normalizeValueForDb(value);
+}
+
+function sanitizeRowPayloadForDb(rowData, excludedFields = []) { //***replaced by removeExcludedFields
     if (!rowData || typeof rowData !== "object") {
         return rowData;
     }
@@ -44,22 +88,16 @@ function sanitizeRowPayloadForDb(rowData, excludedFields = []) {
     return sanitized;
 }
 
-function handleFetchResponse(response) {
-    if (response.status === 401) {
-        window.location.href = '/profile/login?next=' + encodeURIComponent(window.location.pathname + window.location.search);
-        return null;
+function removeExcludedFields(rowData, excludedFields = []) {
+    if (!rowData || typeof rowData !== "object") {
+        return rowData;
     }
 
-    if (response.status === 403) {
-        alert('You do not have permission to perform this action.');
-        return null;
-    }
-
-    if (!response.ok) {
-        throw new Error('Request failed');
-    }
-
-    return response;
+    const sanitized = { ...rowData };
+    excludedFields.forEach((field) => {
+        delete sanitized[field];
+    });
+    return sanitized;
 }
 
 function editCell(cell, table, endpoint) {
@@ -104,7 +142,7 @@ function editCellAPI(cell, endpoint) {
     sendFieldToDb(rowData, cell, endpoint);
 }
 
-function addRowAPI(target, endpoint, requiredFields=[], excludedFields = []) {
+async function addRowAPI(target, endpoint, requiredFields=[], excludedFields = []) {
     let row = null;
 
     if (target && typeof target.getData === "function") {
@@ -118,13 +156,28 @@ function addRowAPI(target, endpoint, requiredFields=[], excludedFields = []) {
     }
 
     const rowValues = row.getData();
-    const payloadForDb = sanitizeRowPayloadForDb(rowValues, excludedFields);
+    //const payloadForDb = removeExcludedFields(rowValues, excludedFields);
+    const payloadToSend = removeExcludedFields(rowValues, excludedFields);
 
-    if (isRowComplete(payloadForDb, requiredFields)) {
-        return sendNewRowToDBAPI(payloadForDb, row, endpoint);
+    const missingFields = requiredFields.filter(field =>
+        payloadToSend[field] === undefined || payloadToSend[field] === ""
+    );
+
+    if (missingFields.length > 0) {
+        return Promise.reject(
+            new Error(`Please complete: ${missingFields.join(", ")}.`)
+        );
     }
 
-    return Promise.resolve(null);
+    const data = await api.post(
+        endpoint,
+        preparePayload(payloadToSend)
+    );
+
+    row.update(data);
+    row.getElement().classList.add("w3-pale-green");
+    setTimeout(() => row.getElement().classList.remove("w3-pale-green"), 2000);
+
 }
 
 async function sendNewRowToDBAPI(rowData, row, endpoint) {
@@ -137,24 +190,23 @@ async function sendNewRowToDBAPI(rowData, row, endpoint) {
         },
         body: JSON.stringify(normalizePayloadForDb(rowData))
     });
+ 
+    const data = await response.json().catch(() => ({}));
 
     const handledResponse = handleFetchResponse(response);
+
     if (!handledResponse) {
         return;
     }
 
-    if (!handledResponse.ok) {
-        return;
+    if (!response.ok) {
+        throw new Error(data.message || `Request failed (${response.status})`);
     }
 
-    const data = await handledResponse.json();
-
-    if (handledResponse.ok) {
-        // ✅ assign ID so it becomes a normal row
-        row.update(data);
-        row.getElement().classList.add("w3-pale-green");
-        setTimeout(() => row.getElement().classList.remove("w3-pale-green"), 2000);
-    }
+    row.update(data);
+    row.getElement().classList.add("w3-pale-green");
+    setTimeout(() => row.getElement().classList.remove("w3-pale-green"), 2000);
+    
 }
 
 
