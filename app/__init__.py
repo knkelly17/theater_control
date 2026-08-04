@@ -33,7 +33,7 @@ def create_app(config_object="app.config.Config"):
     from app.qlab import qlab_bp
     from app.main import main_bp
     from app.dm7 import dm7_bp
-    from app.av_club import av_club_bp
+    from app.tech_director import tech_director_bp
 
     app.register_blueprint(admin_bp, url_prefix="/admin")
     app.register_blueprint(etcconnect_bp, url_prefix="/etcconnect")
@@ -41,7 +41,7 @@ def create_app(config_object="app.config.Config"):
     app.register_blueprint(qlab_bp, url_prefix="/qlab")
     app.register_blueprint(main_bp, url_prefix="/")
     app.register_blueprint(dm7_bp, url_prefix="/dm7")
-    app.register_blueprint(av_club_bp, url_prefix="/av_club")
+    app.register_blueprint(tech_director_bp, url_prefix="/tech_director")
 
     # register hooks
     register_hooks(app)

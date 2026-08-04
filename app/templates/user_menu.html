@@ -25,9 +25,9 @@
             <a href="{{ url_for('profile.profile') }}"
             class="w3-button w3-bar-item  w3-hide-medium w3-hide-small w3-dark-gray profile">Profile</a>
 
-        {% if current_user.has_group("av_club_admin") %}
-            <a href="{{ url_for('av_club.av_club_admin') }}"
-            class="w3-button w3-bar-item  w3-hide-medium w3-hide-small w3-dark-gray av_club">AV Club Admin</a>
+        {% if current_user.has_group("tech_director_admin") %}
+            <a href="{{ url_for('tech_director.tech_director_admin') }}"
+            class="w3-button w3-bar-item  w3-hide-medium w3-hide-small w3-dark-gray tech_director">Tech Director</a>
         {% endif %}
 
         {% if current_user.has_group("admin") %}

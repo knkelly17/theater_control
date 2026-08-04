@@ -130,7 +130,7 @@
     { column: "fullName", dir: "asc" }
   ];
 
-  const tableData = "/av_club/get_av_club_members"
+  const tableData = "/tech_director/get_av_club_members"
 
   const pageTable = new Tabulator("#av-club-members-table", {
   //height:205, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can
@@ -204,9 +204,9 @@ pageTable.on("cellEdited", function(cell) {
   const row = cell.getRow();
   const rowID = row.getIndex()
   if (rowID) {
-    editCellAPI(cell, "/av_club/update_member_info"); 
+    editCellAPI(cell, "/tech_director/update_member_info"); 
   } else {
-    addRowAPI(row, "/av_club/add_existing_student", requiredFields, excludedFields)
+    addRowAPI(row, "/tech_director/add_existing_student", requiredFields, excludedFields)
   }     
 });
 
@@ -233,7 +233,7 @@ function submitStudentAvMember(thisTarget){
   const targetForm = thisModal.querySelector('.student_assignment_form');
   const errorField = thisModal.querySelector('.errorField');
   
-  const thisFieldCollection = thisModal.querySelectorAll('.submit_av_member_fields')
+  const thisFieldCollection = thisModal.querySelectorAll('.submit_assignment_fields')
 
   const hasStudentId = Array.from(thisFieldCollection)
     .some(element => element.id === "studentId");
@@ -267,7 +267,7 @@ function submitStudentAvMember(thisTarget){
       errorField.textContent = "Student must be chosen before submission.  (Click 'X' to cancel form.)";
       return
     } 
-    submit_endpoint = "/av_club/add_existing_student"     
+    submit_endpoint = "/tech_director/add_existing_student"     
   } else { //new student
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const emailValid = emailRegex.test(inputCollection['email']); 
@@ -280,7 +280,7 @@ function submitStudentAvMember(thisTarget){
       errorField.textContent = "Valid Graduation Year is required.  (Click 'X' to cancel form.)";
       return
     }
-    submit_endpoint = "/av_club/assign_new_student/avclub"
+    submit_endpoint = "/tech_director/assign_new_student/avclub"
   }
 
   pageTable.addRow({indexId: null, ...inputCollection }, true)
@@ -308,7 +308,7 @@ function submitStudentAvMember(thisTarget){
 
 </script>
 
-<script src="{{ url_for('av_club.static', filename='js/av_club.js') }}?v={{ version }}"></script>
+<script src="{{ url_for('tech_director.static', filename='js/tech_director.js') }}?v={{ version }}"></script>
 
 
 

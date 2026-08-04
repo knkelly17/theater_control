@@ -8,38 +8,38 @@ from wtforms import (
     SelectField
 )
 
-class AVClubForm(FlaskForm):
-    """AV Club Control Form"""
+class TechDirectorForm(FlaskForm):
+    """Tech Director Control Form"""
 
     studentId = SelectField(
         "Choose Student",
         choices=[],
         render_kw={
             'class':
-                'submit_av_member_fields '
+                'submit_assignment_fields '
         })
 
     firstName = StringField('First Name',
         render_kw={
             'class':
-              'submit_av_member_fields '
+              'submit_assignment_fields '
         })
-    
+
     lastName = StringField('Last Name',
         render_kw={
             'class':
-              'submit_av_member_fields '
+              'submit_assignment_fields '
         })
     email = StringField('School Email',
         render_kw={
             'class':
-              'submit_av_member_fields '
+              'submit_assignment_fields '
         })
 
     graduationYear = StringField('Graduation Year (4 digits)',
         render_kw={
             'class':
-                'submit_av_member_fields '
+                'submit_assignment_fields '
         }
     )
 
@@ -55,6 +55,7 @@ class AVClubForm(FlaskForm):
             }
         )
 
+    # DELETE
     add_av_member = SubmitField('+ Add Existing Student to AV Club',
         render_kw={
             'data-add-av-member':'existing',
@@ -68,6 +69,7 @@ class AVClubForm(FlaskForm):
             }
         )
 
+    # DELETE
     add_new_av_member = SubmitField('+ Add New Student to AV Club',
         render_kw={
             'data-add-av-member':'new',
@@ -80,7 +82,8 @@ class AVClubForm(FlaskForm):
                 'w3-small '
             }
         )
-    
+
+    # DELETE
     submit_student_av = SubmitField('Add to AV Club',
         render_kw={
             'data-submit-av':'submit',
@@ -94,6 +97,8 @@ class AVClubForm(FlaskForm):
             }
         )
 
+
+    # DELETE
     existing_submit_student_av = SubmitField('Add to AV Club',
         render_kw={
             'data-submit-av':'submit',

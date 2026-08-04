@@ -9,7 +9,7 @@ from app.functions import (
     get_current_academic_year_start
 )
 
-from app.av_club import av_club_repository
+from app.tech_director import tech_director_repository
 
 log = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ def upload_student_gsheet(spreadsheet_id, range_name):
     columns = student_data[0]
     for student in student_data[1:]:
         email = student[columns.index("email")]
-        student_exists = av_club_repository.check_for_student(email)
+        student_exists = tech_director_repository.check_for_student(email)
         data_values = {
             "ID": student[columns.index("indexId")],
             "studentId": student[columns.index("studentId")],
@@ -37,7 +37,7 @@ def upload_student_gsheet(spreadsheet_id, range_name):
             # output = update_student(data_values['ID'], data_values)
             log.warning("Update for %s is  %s", email, student_exists)
         else:
-            this_id = av_club_repository.add_student(data_values)
+            this_id = tech_director_repository.add_student(data_values)
             log.warning("insert %s with ID %s", email, this_id)
 
     return columns
@@ -47,7 +47,7 @@ def get_students(active):
     data_needed = "all"
     sorted_by = "graduationYear"
     exclude = None
-    return av_club_repository.get_students(
+    return tech_director_repository.get_students(
         active,
         get_current_academic_year_start(),
         data_needed,
@@ -60,7 +60,7 @@ def get_students_active():
     data_needed = "all"
     sorted_by = "grade"
     exclude = None
-    return av_club_repository.get_students(
+    return tech_director_repository.get_students(
         "Active",
         get_current_academic_year_start(),
         data_needed,
@@ -73,7 +73,7 @@ def get_students_active_names():
     data_needed = "fullName"
     sorted_by = "fullName"
     exclude = None
-    return av_club_repository.get_students(
+    return tech_director_repository.get_students(
         "Active",
         get_current_academic_year_start(),
         data_needed,
@@ -85,7 +85,7 @@ def get_students_active_names_options(exclude):
     '''Generate a list of active students for a dropdown'''
     data_needed = "fullName"
     sorted_by = "fullName"
-    student_object = av_club_repository.get_students(
+    student_object = tech_director_repository.get_students(
         "Active",
         get_current_academic_year_start(),
         data_needed,
@@ -100,39 +100,42 @@ def get_students_active_names_options(exclude):
 
 def get_av_club_members(active):
     '''Fetches the list of av club members'''
-    return av_club_repository.get_av_club_members_db(active, get_current_academic_year_start())
+    return tech_director_repository.get_av_club_members_db(
+        active,
+        get_current_academic_year_start()
+    )
 
 def add_existing_student(data):
     '''Add an existing student to the AV Club'''
     insert_data = {
         'studentId':data['studentId']
     }
-    inserted_id = av_club_repository.add_club_member_db(insert_data)
-    student_details = av_club_repository.get_student_details(data['studentId'])
+    inserted_id = tech_director_repository.add_club_member_db(insert_data)
+    student_details = tech_director_repository.get_student_details(data['studentId'])
     student_details[0]['indexId'] = inserted_id
     return student_details[0]
 
 def assign_new_student(data, assignment_type):
     '''Create a new student record and assign it'''
-    new_student_id = av_club_repository.add_student(data)
+    new_student_id = tech_director_repository.add_student(data)
     insert_data = {
         'studentId':new_student_id
     }
-    new_assignment_id = av_club_repository.add_assignment(insert_data, assignment_type)
-    student_details = av_club_repository.get_student_details(new_student_id)
+    new_assignment_id = tech_director_repository.add_assignment(insert_data, assignment_type)
+    student_details = tech_director_repository.get_student_details(new_student_id)
     student_details[0]['indexId'] = new_assignment_id
     return student_details[0]
 
 
 def add_student(data):
     '''Add a new student'''
-    new_student_id = av_club_repository.add_student(data)
+    new_student_id = tech_director_repository.add_student(data)
     return {'indexId':new_student_id}
 
 def update_member_info(data):
     '''Update membership info'''
-    return av_club_repository.update_member_info_db(data)
+    return tech_director_repository.update_member_info_db(data)
 
 def update_student(data):
     '''Update membership info'''
-    return av_club_repository.update_student(data)
+    return tech_director_repository.update_student(data)

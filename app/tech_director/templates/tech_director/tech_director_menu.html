@@ -2,24 +2,24 @@
 
 <!-- Sidebar -->
 
-<div class="w3-sidebar w3-bar-block w3-collapse w3-card" style="width:200px;" id="av_clubSidebar">
+<div class="w3-sidebar w3-bar-block w3-collapse w3-card" style="width:200px;" id="tech_directorSidebar">
     <button class="w3-bar-item w3-button w3-hide-large" onclick="w3_close()">Close &times;</button>
 
     <div class="w3-container w3-light-gray w3-center">
         <div class="w3-bar">
 
-            <a href="{{ url_for('av_club.av_club_members') }}"
+            <a href="{{ url_for('tech_director.av_club_members') }}"
                 class="w3-button w3-bar-item 
-                    w3-left w3-dark-gray av_club av_club_members">AV Club Members</a>
+                    w3-left w3-dark-gray tech_director av_club_members">AV Club Members</a>
 
-            <a href="{{ url_for('av_club.students') }}"
+            <a href="{{ url_for('tech_director.students') }}"
                 class="w3-button w3-bar-item 
-                    w3-dark-gray av_club students">Students</a>
+                    w3-dark-gray tech_director students">Students</a>
 
         {% if current_user.has_group("admin") %}
-            <a href="{{ url_for('av_club.upload_students_gsheet') }}"
+            <a href="{{ url_for('tech_director.upload_students_gsheet') }}"
             class="w3-button w3-bar-item 
-                    w3-dark-gray av_club upload_students">Upload Students</a>
+                    w3-dark-gray tech_director upload_students">Upload Students</a>
         {% endif %}
 
         </div>
@@ -31,10 +31,10 @@
 
 
 function w3_open() {
-  document.getElementById("av_clubSidebar").style.display = "block";
+  document.getElementById("tech_directorSidebar").style.display = "block";
 }
 function w3_close() {
-  document.getElementById("av_clubSidebar").style.display = "none";
+  document.getElementById("tech_directorSidebar").style.display = "none";
 }
 
 </script>
