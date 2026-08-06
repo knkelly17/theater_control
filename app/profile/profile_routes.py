@@ -8,8 +8,7 @@ from flask import(
     request,
     jsonify,
     redirect,
-    url_for,
-    current_app
+    url_for
 )
 
 from flask_login import (
@@ -50,7 +49,7 @@ class User(UserMixin):
 
 def check_password(this_user, password):
     '''Check user password'''
-    with get_db(current_app.config) as db:
+    with get_db() as db:
         cursor = db.cursor(dictionary=True)
         cursor.execute("SELECT * FROM users WHERE username=%s", (this_user,))
         user_data = cursor.fetchone()
@@ -76,7 +75,7 @@ def unauthorized():
 @login_manager.user_loader
 def load_user(user_id):
     '''Load user from the database by ID.'''
-    with get_db(current_app.config) as db:
+    with get_db() as db:
         cursor = db.cursor(dictionary=True)
         cursor.execute("SELECT * FROM users WHERE ID=%s", (user_id,))
         user_data = cursor.fetchone()
@@ -115,7 +114,7 @@ def login():
     form = LoginForm()
     if request.method == "POST":
         json_data = request.get_json(silent=True) or {}
-        with get_db(current_app.config) as db:
+        with get_db() as db:
             cursor = db.cursor(dictionary=True)
             cursor.execute(
                 "SELECT * FROM users WHERE username=%s", (json_data.get('username'),)
@@ -175,7 +174,7 @@ def profile():
     return render_template(
         'profile/profile.html', 
         title='Profile',
-        site_name=get_setting(current_app.config, 'name'),
+        site_name=get_setting('name'),
         version=ver,
         form=form,
         main_menu='profile')
@@ -198,7 +197,7 @@ def change_password():
 
     hashed_password = generate_password_hash(new_password)
 
-    with get_db(current_app.config) as db:
+    with get_db() as db:
         cursor = db.cursor()
         cursor.execute(
             "UPDATE users SET password_hash=%s WHERE ID=%s", 

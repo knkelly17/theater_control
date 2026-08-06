@@ -32,7 +32,7 @@ def etcconnect_control():
     form = ETCForm()
     return render_template(
         'etcconnect/etcconnect.html', 
-        site_name=get_setting(current_app.config,'name'),
+        site_name=get_setting('name'),
         title='Lighting Control',
         form=form,
         version=ver,
@@ -45,8 +45,8 @@ def etcconnect_control():
 def level_set():
     """Channel/Address level setting or Cue fire."""
     if current_user.is_authenticated:
-        ip = str(get_setting(current_app.config,'etc_ip'))
-        port = int(get_setting(current_app.config,'etc_port'))
+        ip = str(get_setting('etc_ip'))
+        port = int(get_setting('etc_port'))
         client = SimpleUDPClient(ip, port)
 
         mode = request.get_json()['mode']
@@ -82,8 +82,8 @@ def level_set():
 def fire_cue_rest():
     """Address level setting via REST route."""
 
-    qlab_ext_ip = get_setting(current_app.config,'qlab_ext_ip')
-    qlab_ext_key = get_setting(current_app.config,'qlab_ext_key')
+    qlab_ext_ip = get_setting('qlab_ext_ip')
+    qlab_ext_key = get_setting('qlab_ext_key')
 
     if request.remote_addr != str(qlab_ext_ip):
         log.warning("Unauthorized access attempt from IP %s", request.remote_addr)
@@ -100,8 +100,8 @@ def fire_cue_rest():
     json_data = request.get_json(silent=True)
 
     if json_data and 'command' in json_data:
-        etc_ip = str(get_setting(current_app.config, 'etc_ip'))
-        etc_port = int(get_setting(current_app.config, 'etc_port'))
+        etc_ip = str(get_setting('etc_ip'))
+        etc_port = int(get_setting('etc_port'))
         command = json_data['command']
         qlab_parameters = get_qlab_command_db(command)
         if qlab_parameters:
@@ -136,7 +136,7 @@ def fire_cue_rest():
 
 def get_qlab_command_db(command_name):
     '''Fetch QLab command parameters from the database based on the command name.'''
-    with get_db(current_app.config) as db:
+    with get_db() as db:
         cursor = db.cursor(dictionary=True)
         query = "SELECT * FROM qlab_commands WHERE name = %s and active = 'Y'"
         cursor.execute(query, (command_name,))

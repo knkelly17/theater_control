@@ -36,18 +36,18 @@ def group_required(*group_names):
     return decorator
 
 
-def get_site_settings(config):
+def get_site_settings():
     '''Get all settings from the DB'''
     where_object = {
         'where_colume': "active",
         'target_value': " = 'Y'"
     }
-    query_single_table_db(config, "name, value", 'settings', where_object, None)
+    query_single_table_db("name, value", 'settings', where_object, None)
 
 
-def get_setting(config, key):
+def get_setting(key):
     '''Get a specific setting value from the settings table.'''
-    return get_db_value(config, 'value', 'settings', ' name = ' + key)
+    return get_db_value('value', 'settings', ' name = ' + key)
 
 
 

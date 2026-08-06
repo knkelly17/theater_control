@@ -1,7 +1,7 @@
 '''Main route for the site'''
 import logging
 import datetime
-from flask import render_template, current_app
+from flask import render_template
 from flask_login import login_required
 from app.functions import get_setting
 from . import main_bp #pylint: disable=cyclic-import
@@ -21,5 +21,5 @@ def index():
         'index.html', 
         title='Home',
         version=ver,
-        site_name=get_setting(current_app.config, 'name'),
+        site_name=get_setting('name'),
         main_menu='index')

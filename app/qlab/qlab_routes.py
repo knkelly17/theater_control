@@ -5,8 +5,7 @@ from flask import(
     render_template,
     request,
     jsonify,
-    url_for,
-    current_app
+    url_for
 )
 from flask_login import login_required, current_user
 from pythonosc.udp_client import SimpleUDPClient
@@ -28,7 +27,7 @@ def qlab_control():
     return render_template(
         'qlab/qlab.html', 
         title='QLab Control',
-        site_name=get_setting(current_app.config, 'name'),
+        site_name=get_setting('name'),
         form=form,
         version=ver,
         main_menu='qlab'
@@ -43,8 +42,8 @@ def qlab_remote_ajax():
     if current_user.is_authenticated:
         output_result = 1
         this_text = "All Cues stopped"
-        ip = str(get_setting(current_app.config, 'qlab_ip'))
-        port = int(get_setting(current_app.config, 'qlab_port'))
+        ip = str(get_setting('qlab_ip'))
+        port = int(get_setting('qlab_port'))
         client = SimpleUDPClient(ip, port)
         action = request.get_json()['action']
         if action == 'fire_qlab_cue':

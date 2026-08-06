@@ -17,7 +17,7 @@ from app.functions import (
     group_required,
 )
 
-from app.tech_director import tech_director_services
+from .services import tech_director_services
 
 from .tech_director_forms import TechDirectorForm
 from . import tech_director_bp # pylint: disable=cyclic-import
@@ -42,7 +42,7 @@ def tech_director_admin():
     return render_template(
         'tech_director/tech_director.html', 
         title='AV Club Amdin',
-        site_name=get_setting(current_app.config, 'name'),
+        site_name=get_setting('name'),
         form=form,
         version=ver,
         main_menu='tech_director'
@@ -61,7 +61,7 @@ def av_club_members():
         'tech_director/av_club_members.html', 
         # title='List AV Club Members',
         # sub_title='AV Club Members',
-        site_name=get_setting(current_app.config,'name'),
+        site_name=get_setting('name'),
         form=form,
         version=ver,
         main_menu='tech_director',
@@ -83,7 +83,7 @@ def students():
         'tech_director/students.html', 
         title='List Students',
         sub_title='Students',
-        site_name=get_setting(current_app.config,'name'),
+        site_name=get_setting('name'),
         form=form,
         version=ver,
         main_menu='tech_director',
@@ -260,7 +260,7 @@ def upload_students_gsheet():
         form=form,
         title='AV Club Student Upload',
         sub_title='Upload Students From Google Sheet',
-        site_name=get_setting(current_app.config, 'name'),
+        site_name=get_setting('name'),
         version=ver,
         main_menu='tech_director',
         base='upload_students',

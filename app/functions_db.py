@@ -1,37 +1,39 @@
 '''DB functions for the app.'''
 import logging
 import mysql.connector
+from flask import current_app
 from flask_login import current_user
 
 
 log = logging.getLogger(__name__)
 
+
 # --- DATABASE CONNECTION ---
-def get_db(config):
+def get_db():
     '''Get a database connection using the provided dbconnection configuration.'''
 
     return mysql.connector.connect(
-        host=config["DB_HOST"],
-        port=config["DB_PORT"],
-        user=config["DB_USER"],
-        password=config["DB_PASSWORD"],
-        database=config["DB_NAME"],
+        host=current_app.config["DB_HOST"],
+        port=current_app.config["DB_PORT"],
+        user=current_app.config["DB_USER"],
+        password=current_app.config["DB_PASSWORD"],
+        database=current_app.config["DB_NAME"],
     )
 
 
-def get_db_value(config, field, table, where):
+def get_db_value(field, table, where):
     '''Get a single value from the database based on 
     the provided field, table, and where clause.'''
-    with get_db(config) as db:
+    with get_db() as db:
         cursor = db.cursor(dictionary=True)
         query = f"SELECT {field} FROM {table} WHERE {where}"
         cursor.execute(query)
         output = cursor.fetchone()
         return output[field] if output else None
 
-def check_row_exists(config, table, where_column, target_value):
+def check_row_exists(table, where_column, target_value):
     '''Check for a row in table based on field value'''
-    with get_db(config) as db:
+    with get_db() as db:
         cursor = db.cursor(dictionary=True)
         query = f"SELECT EXISTS(SELECT 1 FROM {table} WHERE {where_column} = %s) AS row_exists"
         cursor.execute(query, (target_value,))
@@ -39,10 +41,10 @@ def check_row_exists(config, table, where_column, target_value):
         return bool(result["row_exists"]) if result else False
 
 
-def update_db(config, table_name, this_id, data_values):
+def update_db(table_name, this_id, data_values):
     '''Update a record in the specified table with the provided data values.'''
     data_values['sessionid'] = current_user.sessionid
-    with get_db(config) as db:
+    with get_db() as db:
         cursor = db.cursor(dictionary=True)
         query = "UPDATE " + table_name + " SET "
         update_list = []
@@ -54,11 +56,11 @@ def update_db(config, table_name, this_id, data_values):
         db.commit()
         return cursor.rowcount
 
-def insert_db(config, table_name, data_values):
+def insert_db(table_name, data_values):
     '''Insert a new record into the 
     specified table with the provided data values.'''
     data_values['sessionid'] = current_user.sessionid
-    with get_db(config) as db:
+    with get_db() as db:
         cursor = db.cursor(dictionary=True)
         field_list = []
         values_list = []
@@ -74,9 +76,9 @@ def insert_db(config, table_name, data_values):
         inserted_id = cursor.lastrowid
         return inserted_id
 
-def query_single_table_db(config, field_list, table, where_object, order):
+def query_single_table_db(field_list, table, where_object, order):
     '''get values from a single DB table'''
-    with get_db(config) as db:
+    with get_db() as db:
         cursor = db.cursor(dictionary=True)
 
         query = f"SELECT {field_list} FROM {table}"
@@ -96,7 +98,6 @@ def query_single_table_db(config, field_list, table, where_object, order):
         return cursor.fetchall()
 
 def query_db(
-    config,
     field_list,
     table,
     where_object=None,
@@ -104,7 +105,7 @@ def query_db(
     joins=None,
     ):
     '''Main DB Query'''
-    with get_db(config) as db:
+    with get_db() as db:
         cursor = db.cursor(dictionary=True)
 
         query = f"SELECT {field_list} FROM {table}"

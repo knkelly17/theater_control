@@ -47,7 +47,7 @@ def dm7_control():
     return render_template(
         'dm7/dm7.html', 
         title='DM7 Control',
-        site_name=get_setting(current_app.config, 'name'),
+        site_name=get_setting('name'),
         form=form,
         version=ver,
         main_menu='dm7'
@@ -64,7 +64,7 @@ def admin_actors():
         'dm7/actors.html', 
         title='Admin Tasks',
         sub_title='Actors',
-        site_name=get_setting(current_app.config,'name'),
+        site_name=get_setting('name'),
         form=form,
         version=ver,
         main_menu='dm7',
@@ -81,7 +81,7 @@ def get_actors():
 
 def get_actors_db():
     '''Fetches the list of actors from the database.'''
-    with get_db(current_app.config) as db:
+    with get_db() as db:
         cursor = db.cursor(dictionary=True)
         actor_fields = 'ID, name, year, notes, active'
         query = "SELECT " + actor_fields + " FROM actors ORDER BY name"
@@ -100,7 +100,7 @@ def mic_checks():
         form=form,
         title='DM7 Control',
         sub_title='Mic Checs',
-        site_name=get_setting(current_app.config, 'name'),
+        site_name=get_setting('name'),
         version=ver,
         main_menu='dm7',
         base='mic_checks',
@@ -112,8 +112,8 @@ def mic_checks():
 @group_required("dm7")
 def update_channel():
     '''Update a channel setting'''
-    ip = str(get_setting(current_app.config,'dm7_ip'))
-    port = int(get_setting(current_app.config,'dm7_port'))
+    ip = str(get_setting('dm7_ip'))
+    port = int(get_setting('dm7_port'))
     log.warning("DM7 IP: %s", ip)
     client = SimpleUDPClient(ip, port)
     parameters = request.get_json()
@@ -159,7 +159,7 @@ def upload_actors():
         form=form,
         title='DM7 Control',
         sub_title='Upload Actors From Theatermix File',
-        site_name=get_setting(current_app.config, 'name'),
+        site_name=get_setting('name'),
         version=ver,
         main_menu='dm7',
         base='upload_actors'
@@ -175,7 +175,7 @@ def upload_actors_sheet():
 @group_required("dm7")
 def get_actor_channels():
     '''Get Channel and actor name if assigned'''
-    with get_db(current_app.config) as db:
+    with get_db() as db:
         cursor = db.cursor(dictionary=True)
         query = "SELECT c.ID, c.channel, a.name as actor " \
                 "FROM `channels` c " \
@@ -198,7 +198,7 @@ def update_field_db():
         edit_row['field']: edit_row['value'],
         'sessionid': current_user.sessionid
     }
-    update_result = update_db(current_app.config, table, edit_row['ID'], update_fields)
+    update_result = update_db(table, edit_row['ID'], update_fields)
     current_app.settings_last_loaded = currentDT.strftime("%Y-%m-%d-%H:%M:%S")
     return jsonify({
         "status": "ok",
@@ -217,11 +217,9 @@ def insert_row_db():
     insert_row = insert_values['rowData']
     table = insert_values['table']
     insert_row['sessionid'] = current_user.sessionid
-    inserted_id = insert_db(current_app.config, table, insert_row)
+    inserted_id = insert_db(table, insert_row)
     current_app.settings_last_loaded = currentDT.strftime("%Y-%m-%d-%H:%M:%S")
     return jsonify({
         "status": "ok",
         "value": inserted_id
     })
-
-
