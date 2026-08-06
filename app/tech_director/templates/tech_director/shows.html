@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <!-- h1>Enter Channel Number to set Full or Out</h1 -->
+
+{% include 'tech_director/tech_director_menu.html' %}
+
+{% if base %}
+<script>
+    base_page = "{{ base }}";
+    document.getElementsByClassName(base_page)[0].classList.add("selected-button", "w3-green");
+    document.getElementsByClassName(base_page)[0].classList.remove("w3-dark-gray");
+</script>
+{% endif %}
+
+{% if sub_base %}
+<script>
+    base_page = "{{ sub_base }}";
+    document.getElementsByClassName(base_page)[0].classList.add("w3-lime");
+</script>
+{% endif %}
+
+<!-- Page Content -->
+<div class="w3-main" style="margin-left:200px">
+  <button class="w3-button w3-xlarge w3-hide-large" onclick="w3_open()">&#9776;</button>
+  <div class="w3-container">
+    <h1>Manage 
+      <span id='label-active' style="display:inline-block">Active</span>
+      <span id='label-all' style="display:none">All</span>
+      Shows
+    </h1>
+    {{ form.see_all_records }}
+    {{ form.see_active_records }}
+    <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+    {{ form.add_student() }}
+    <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+    <div id="page-table"></div>
+    
+  </div>
+</div>
+
+<script>
+
+  const table_base_url = '/tech_director/get_shows';
+  const tableData = `${table_base_url}/active`
+  
+  const requiredFields = ["name"];
+  const excludedFields = ["ID"];
+
+  const pageTable = new Tabulator("#page-table", {
+    ajaxURL: tableData,
+    dataLoader: false,
+    layout:"fitDataTable", //fit columns to width of table (optional)
+    index:"indexId",
+    tabEndNewRow: true,
+    sortOrderReverse: true,
+    initialSort: [
+      {column: "openingDate", dir: "asc"},
+    ],
+    columns:[ //Define Table Columns
+      {
+        title:"Name",
+        field:"name",
+        editor:"input",
+        headerFilter:"input"
+      },      
+      {title: "Opening Date", 
+      field: "openingDate", 
+      formatter:"datetime", formatterParams:{
+          inputFormat:"yyyy-MM-dd",
+          outputFormat:"yyyy-MM-dd",
+          invalidPlaceholder:"(invalid date)",
+          timezone:"America/Los_Angeles",
+        },
+      editor: "date", // Changed from "input"
+      },
+      {
+        title:"Active",
+        field:"active",
+        hozAlign:"center", 
+        formatter:"tickCross",
+        formatterParams: {
+         allowTruthy: true,
+         tickElement:"<i class='fa fa-check'></i>",
+         crossElement:"<i class='fa fa-times'></i>",
+        },
+        cellClick: function (e, cell) {
+          cell.setValue(!cell.getValue());
+        },
+      },
+    ],
+    });
+
+  pageTable.on("cellEdited", function(cell) {
+    var fieldName = cell.getField();
+
+    // 1. Block the calculated column from triggering the update
+    if (fieldName === "class") { 
+        return; // Exit early, doing nothing
+    }
+    const row = cell.getRow();
+    const rowID = row.getIndex()
+    if (rowID) {
+      editCellAPI(cell, "/tech_director/update_show"); 
+    } else {
+      addRowAPI(row,  "/tech_director/add_show", requiredFields, excludedFields)
+    }     
+  });
+
+  
+
+//Add row on "Add Row" button click
+
+
+document.getElementById("add_student").addEventListener("click", function () {
+  const blankRowData = {
+    ID: null
+  };
+
+  pageTable.addRow(blankRowData, true)
+    .then((row) => {
+      row.select();
+      setTimeout(function () {
+        const cell = row.getCell("firstName");
+        if (cell) {
+          cell.edit();
+        }
+      }, 0);
+    })
+});
+
+</script>
+
+
+<script src="{{ url_for('tech_director.static', filename='js/tech_director.js') }}?v={{ version }}"></script>
+
+{% endblock %}

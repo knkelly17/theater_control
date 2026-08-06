@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>W3.CSS Sidebar with Submenu</title>
+    <!-- Include W3.CSS from CDN -->
+    <link rel="stylesheet" href="https://w3schools.com">
+    <!-- Include Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cloudflare.com">
+</head>
+<body class="w3-light-grey">
+
+<!-- Side Navigation Menu -->
+<nav class="w3-sidebar w3-bar-block w3-collapse w3-white w3-card" style="width:250px;" id="mySidebar">
+  <!-- Close button for mobile screens -->
+  <button class="w3-bar-item w3-button w3-large w3-hide-large" onclick="w3_close()">
+    Close &times;
+  </button>
+  
+  <!-- Regular Menu Items -->
+  <a href="#" class="w3-bar-item w3-button"><i class="fa fa-home"></i> Dashboard</a>
+  <a href="#" class="w3-bar-item w3-button"><i class="fa fa-envelope"></i> Messages</a>
+
+  <!-- Dropdown Submenu Container -->
+  <div>
+    <button class="w3-button w3-block w3-left-align" onclick="toggleSubmenu()">
+      <i class="fa fa-cogs"></i> Settings <i class="fa fa-caret-down w3-right"></i>
+    </button>
+    <!-- Hidden by default via w3-hide -->
+    <div id="submenu" class="w3-hide w3-padding-large w3-medium w3-light-grey">
+      <a href="#" class="w3-bar-item w3-button">Profile Settings</a>
+      <a href="#" class="w3-bar-item w3-button">Privacy</a>
+      <a href="#" class="w3-bar-item w3-button">Notifications</a>
+    </div>
+  </div>
+
+  <a href="#" class="w3-bar-item w3-button"><i class="fa fa-question-circle"></i> Help</a>
+</nav>
+
+<!-- Main Content Area -->
+<div class="w3-main" style="margin-left:250px;">
+  <!-- Top bar visible on mobile only -->
+  <header class="w3-container w3-teal w3-hide-large w3-padding">
+    <button class="w3-button w3-teal w3-xlarge" onclick="w3_open()">&#9776;</button>
+    <span class="w3-xlarge w3-margin-left">My App</span>
+  </header>
+
+  <main class="w3-container w3-padding-32">
+    <h2>Main Content Goes Here</h2>
+    <p>The sidebar is fixed on large screens and collapsible on smaller devices.</p>
+  </main>
+</div>
+
+<!-- JavaScript for Sidebar and Submenu Toggling -->
+<script>
+// Toggle the submenu visibility
+function toggleSubmenu() {
+  var x = document.getElementById("submenu");
+  if (x.className.indexOf("w3-show") == -1) {
+    x.className += " w3-show";
+  } else { 
+    x.className = x.className.replace(" w3-show", "");
+  }
+}
+
+// Open sidebar on mobile
+function w3_open() {
+  document.getElementById("mySidebar").style.display = "block";
+}
+
+// Close sidebar on mobile
+function w3_close() {
+  document.getElementById("mySidebar").style.display = "none";
+}
+</script>
+
+</body>
+</html>

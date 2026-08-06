@@ -192,9 +192,7 @@ def add_student():
 @group_required("tech_director_admin")
 def update_student():
     '''Update student information'''
-    log.warning(request.get_json())
     update_response =  tech_director_services.update_student(request.get_json())
-    # log.warning(add_response)
     return jsonify(update_response)
 
 @tech_director_bp.route('/update_member_info', methods=['POST', 'GET'])
@@ -204,7 +202,6 @@ def update_membe_info():
     '''Update basic info for av club member'''
     log.warning(request.get_json())
     update_response =  tech_director_services.update_member_info(request.get_json())
-    # log.warning(add_response)
     return jsonify(update_response)
 
 @tech_director_bp.route('/get_students/<string:state>', methods=['POST', 'GET'])
