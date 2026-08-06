@@ -407,9 +407,9 @@ document.addEventListener("DOMContentLoaded", () => {
     
                 const action = clickedButton['id']
                 if (action == "see_all_records") {
-                    url = tableData+"?active=All"
+                    url = table_base_url+"/all"
                 } else if (action == "see_active_records") {
-                    url = tableData+"?active=Active"
+                    url = table_base_url+"/active"
                 }
 
                 clickedButton.classList.replace("w3-show", "w3-hide");

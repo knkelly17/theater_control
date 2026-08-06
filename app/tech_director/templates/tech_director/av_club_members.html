@@ -26,21 +26,21 @@
     {{ form.see_active_records }}
     <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
     <div class="w3-margin-bottom manage-show" style="display:block">
-      {{ form.add_av_member() }}
-      {{ form.add_new_av_member() }}
+      {{ form.add_member() }}
+      {{ form.add_new_member() }}
     </div>
-    <div id="av-club-members-table"></div>
+    <div id="members-table"></div>
     <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
   </div>
 </div>
 
 <!-- Add Existing User Modal -->
 
-<div id="existing_add_member_modal" class="w3-modal add-av-member-modal">
+<div id="existing_add_member_modal" class="w3-modal add-member-modal">
   <div class="w3-modal-content w3-card-4 w3-animate-zoom" style="max-width:600px">
     <div class="w3-center"><br>
       <span onclick="document.getElementById('existing_add_member_modal').style.display='none'" class="w3-button w3-xlarge w3-transparent w3-display-topright" title="Close Modal">×</span>
-      <h3 class="w3-wide">Add Existing Student to AV Club</h3>
+      <h3 class="w3-wide">Add Existing Student</h3>
     </div>
     
     <div class="w3-container w3-card-4 w3-center">
@@ -59,9 +59,10 @@
 
         <button
           type="button"
+          data-submit-assignment="existing"
           class="admin_action w3-button w3-blue w3-round w3-hover-aqua w3-small"
-          data-submit-av="existing">
-          + Add Existing Student to AV Club
+          data-submit="existing">
+          + Add Existing Student
         </button>
         <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
         <div class="errorField"></div>
@@ -76,13 +77,13 @@
 
 <!-- Add New User Modal -->
 
-<div id="new_add_member_modal" class="w3-modal add-av-member-modal">
+<div id="new_add_member_modal" class="w3-modal add-member-modal">
   <div class="w3-modal-content w3-card-4 w3-animate-zoom" style="max-width:600px">
     <div class="w3-center"><br>
       <span onclick="document.getElementById('new_add_member_modal').style.display='none'" class="w3-button w3-xlarge w3-transparent w3-display-topright" title="Close Modal">
         x
       </span>
-      <h3 class="w3-wide">Add New Student to AV Club</h3>
+      <h3 class="w3-wide">Add New Student</h3>
     </div>
     
     <div class="w3-container w3-card-4 w3-center">
@@ -108,8 +109,8 @@
         <button
           type="button"
           class="admin_action w3-button w3-blue w3-round w3-hover-aqua w3-small"
-          data-submit-av="new">
-          + Add New Student to AV Club
+          data-submit-assignment="new">
+          + Add New Student
         </button>
         
         <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
@@ -130,9 +131,12 @@
     { column: "fullName", dir: "asc" }
   ];
 
-  const tableData = "/tech_director/get_av_club_members"
+  const assignment_group = "{{ assignment_group }}"
+  
+  const table_base_url = `/tech_director/get_group_members/${assignment_group}/`
+  const tableData = `${table_base_url}/active`
 
-  const pageTable = new Tabulator("#av-club-members-table", {
+  const pageTable = new Tabulator("#members-table", {
   //height:205, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can
   ajaxURL: tableData,
   dataLoader: false,
@@ -210,26 +214,26 @@ pageTable.on("cellEdited", function(cell) {
   }     
 });
 
-const addMemberButtons = document.querySelectorAll('[data-add-av-member]');
+const addMemberButtons = document.querySelectorAll('[data-add-member]');
 
 addMemberButtons.forEach(button => {
   button.addEventListener('click', (event) => {
-    modalId = event.target.dataset.addAvMember+'_add_member_modal';
+    modalId = event.target.dataset.addMember+'_add_member_modal';
     document.getElementById(modalId).style.display='block';
   });
 });
 
-const submitAvMemberButtons = document.querySelectorAll('[data-submit-av]')
+const submitMemberButtons = document.querySelectorAll('[data-submit-assignment]')
 
-submitAvMemberButtons.forEach(button => {
+submitMemberButtons.forEach(button => {
   button.addEventListener('click', (event) => {
     thisTarget = event.target;
-    submitStudentAvMember(thisTarget)
+    submitStudentMember(thisTarget)
   });
 });
 
-function submitStudentAvMember(thisTarget){
-  const thisModal = thisTarget.closest('.add-av-member-modal');
+function submitStudentMember(thisTarget){
+  const thisModal = thisTarget.closest('.add-member-modal');
   const targetForm = thisModal.querySelector('.student_assignment_form');
   const errorField = thisModal.querySelector('.errorField');
   
@@ -261,14 +265,19 @@ function submitStudentAvMember(thisTarget){
       'indexId'
     ];
 
+  let state = null
+
   if (hasStudentId) { //existing student
     student_id = inputCollection['studentId']
     if (isNaN(parseFloat(student_id))) {
       errorField.textContent = "Student must be chosen before submission.  (Click 'X' to cancel form.)";
       return
     } 
-    submit_endpoint = "/tech_director/add_existing_student"     
+    state = 'existing'
+    //submit_endpoint = "/tech_director/add_existing_student"     
   } else { //new student
+    state = 'new'
+    console.log(submit_endpoint)
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const emailValid = emailRegex.test(inputCollection['email']); 
     const gradYearRegex = /^\d{4}$/;
@@ -280,8 +289,10 @@ function submitStudentAvMember(thisTarget){
       errorField.textContent = "Valid Graduation Year is required.  (Click 'X' to cancel form.)";
       return
     }
-    submit_endpoint = "/tech_director/assign_new_student/avclub"
+    
+    //`Request failed (${response.status})`
   }
+  submit_endpoint = `/tech_director/assign_student/${state}/${assignment_group}`
 
   pageTable.addRow({indexId: null, ...inputCollection }, true)
     .then(async function(row) {
@@ -292,13 +303,16 @@ function submitStudentAvMember(thisTarget){
         throw error;
       }
     })
-    .then(function() {
+    .then(async function() {
+      if (hasStudentId) {
+        await refreshAvailableStudentOptions(assignment_group);
+      }
       thisModal.style.display='none'
       if (targetForm) {
         targetForm.reset();
       }
       errorField.textContent = '';
-      pageTable.setSort(initialSort);
+      // pageTable.setSort(initialSort); Better not to sort as row might need work.
     })
     .catch(function(error) {
       errorField.textContent = error.message;

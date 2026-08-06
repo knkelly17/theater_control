@@ -86,7 +86,7 @@ def get_students_active_names_options(exclude):
     data_needed = "fullName"
     sorted_by = "fullName"
     student_object = tech_director_repository.get_students(
-        "Active",
+        "active",
         get_current_academic_year_start(),
         data_needed,
         sorted_by,
@@ -98,9 +98,10 @@ def get_students_active_names_options(exclude):
         option_list.append(this_option)
     return option_list
 
-def get_av_club_members(active):
+def get_group_members(assignment_group, active):
     '''Fetches the list of av club members'''
-    return tech_director_repository.get_av_club_members_db(
+    return tech_director_repository.get_group_members(
+        assignment_group,
         active,
         get_current_academic_year_start()
     )
@@ -115,14 +116,18 @@ def add_existing_student(data):
     student_details[0]['indexId'] = inserted_id
     return student_details[0]
 
-def assign_new_student(data, assignment_type):
-    '''Create a new student record and assign it'''
-    new_student_id = tech_director_repository.add_student(data)
+def assign_student(data, state, assignment_group):
+    '''Assign a student to a group (assignment_type)'''
+    if state == 'new':
+        student_id = tech_director_repository.add_student(data)
+    else:
+        student_id = data['studentId']
+
     insert_data = {
-        'studentId':new_student_id
+        'studentId':student_id
     }
-    new_assignment_id = tech_director_repository.add_assignment(insert_data, assignment_type)
-    student_details = tech_director_repository.get_student_details(new_student_id)
+    new_assignment_id = tech_director_repository.add_assignment(insert_data, assignment_group)
+    student_details = tech_director_repository.get_student_details(student_id)
     student_details[0]['indexId'] = new_assignment_id
     return student_details[0]
 

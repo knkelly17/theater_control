@@ -8,13 +8,26 @@
     <div class="w3-container w3-light-gray w3-center">
         <div class="w3-bar">
 
-            <a href="{{ url_for('tech_director.av_club_members') }}"
-                class="w3-button w3-bar-item 
-                    w3-left w3-dark-gray tech_director av_club_members">AV Club Members</a>
-
             <a href="{{ url_for('tech_director.students') }}"
                 class="w3-button w3-bar-item 
                     w3-dark-gray tech_director students">Students</a>
+                    
+            <a href="{{ url_for('tech_director.av_club_members') }}"
+                class="w3-button w3-bar-item 
+                    w3-left w3-dark-gray tech_director av_club_members">AV Club</a>
+
+            
+            
+            <div class="w3-dropdown-hover">
+                <button class="w3-button w3-dark-gray tech_director shows">Shows/Events<i class="fa fa-caret-down"></i></button>
+                <div class="w3-dropdown-content w3-bar-block">
+                    <a href="{{ url_for('tech_director.shows') }}" 
+                       class="w3-button w3-bar-item 
+                       w3-left tech_director list">List</a>
+                    <a href="#" class="w3-bar-item w3-button">Assign Student</a>
+                </div>
+
+            </div>
 
         {% if current_user.has_group("admin") %}
             <a href="{{ url_for('tech_director.upload_students_gsheet') }}"

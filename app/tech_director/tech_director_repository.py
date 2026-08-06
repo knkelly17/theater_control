@@ -10,7 +10,7 @@ from app.functions_db import (
 
 log = logging.getLogger(__name__)
 
-ASSIGNMENT_TABLE = {
+ASSIGNMENT_TABLES = {
     'avclub':'student2avclub'
     }
 
@@ -43,25 +43,25 @@ def get_students(active, start_of_current_year, data_needed, sort_by, exclude_it
     }
 
     exclude_conditions_map = {
-        "avClub": {
+        "avclub": {
             "column": "student2avclub.studentId",
             "operator": "IS",
             "value": None
         }
     }
 
-    exclude_joins = {
-        "avClub": ["LEFT JOIN student2avclub ON students.ID = student2avclub.studentId"]
+    exclude_joins_map = {
+        "avclub": ["LEFT JOIN student2avclub ON students.ID = student2avclub.studentId"]
     }
 
     fields = field_mappings.get(data_needed, "students.ID as indexId, students.*")
     sort = sort_mappings.get(sort_by, "students.graduationYear ASC")
     exclude_conditions = exclude_conditions_map.get(exclude_items, None)
-    joins = exclude_joins.get(exclude_items, None)
+    joins = exclude_joins_map.get(exclude_items, None)
 
     where_object = None
 
-    if active == "Active":
+    if active == "active":
         where_object = {
             "connector": "AND",
             "conditions": [
@@ -90,12 +90,14 @@ def get_students(active, start_of_current_year, data_needed, sort_by, exclude_it
         joins
     )
 
-def get_av_club_members_db(active, start_of_current_year):
+def get_group_members(assignment_group, active, start_of_current_year):
     '''Fetches AV Club Members from DB'''
+
+    assignment_table = ASSIGNMENT_TABLES[assignment_group]
 
     where_object = None
 
-    if active == "Active":
+    if active == "active":
         where_object = {
                 "connector": "AND",
                 "conditions": [
@@ -110,7 +112,7 @@ def get_av_club_members_db(active, start_of_current_year):
                         "value": 1
                     },
                     {
-                        "column": "student2avclub.active", 
+                        "column": f"{assignment_table}.active", 
                         "operator": "=", 
                         "value": 1
                     },
@@ -118,10 +120,10 @@ def get_av_club_members_db(active, start_of_current_year):
             }
 
     joins = [
-        "LEFT JOIN students ON student2avclub.studentId = students.ID"
+        f"LEFT JOIN students ON {assignment_table}.studentId = students.ID"
         ]
 
-    fields = "student2avclub.ID as indexId, " \
+    fields = f"{assignment_table}.ID as indexId, " \
     "students.Id as studentId, " \
     "CONCAT(students.firstName,' ',students.lastName) AS fullName, " \
     "students.firstName, students.lastName, " \
@@ -131,7 +133,7 @@ def get_av_club_members_db(active, start_of_current_year):
     return query_db (
             current_app.config,
             fields,
-            "student2avclub", 
+            assignment_table,
             where_object,
             "students.graduationYear ASC",
             joins
@@ -142,11 +144,11 @@ def add_club_member_db(data):
     inserted_id = insert_db(current_app.config, "student2avclub", data)
     return inserted_id
 
-def add_assignment(data, assignment_type):
+def add_assignment(data, assignment_group):
     '''Insert student to the av club table'''
     inserted_id = insert_db(
         current_app.config,
-        ASSIGNMENT_TABLE[assignment_type],
+        ASSIGNMENT_TABLES[assignment_group],
         data
     )
     return inserted_id

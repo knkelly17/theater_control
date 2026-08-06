@@ -12,4 +12,6 @@ tech_director_bp = Blueprint(
 
 # 2. Import routes at the BOTTOM to prevent circular imports
 # This ensures profile_bp is defined before routes try to import it
-from . import tech_director_routes # pylint: disable=wrong-import-position
+# pylint: disable=wrong-import-position
+from . import tech_director_routes
+from . import show_routes

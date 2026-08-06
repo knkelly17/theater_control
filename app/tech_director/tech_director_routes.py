@@ -27,7 +27,10 @@ log = logging.getLogger(__name__)
 currentDT = datetime.datetime.now()
 ver = currentDT.strftime("%Y-%m-%d-%H:%M:%S")
 
-VALID_ASSIGNMENTS = {"avclub", "show"}
+VALID_ASSIGNMENTS = {'avclub', 'show', 'all'}
+VALID_STATES = {'new', 'existing', 'all', 'active'}
+
+# Main page
 
 @tech_director_bp.route('/', methods=['GET', 'POST'])
 @login_required
@@ -45,7 +48,6 @@ def tech_director_admin():
         main_menu='tech_director'
     )
 
-
 @tech_director_bp.route('/av_club_members', methods=['POST', 'GET'])
 @login_required
 @group_required("tech_director_admin")
@@ -53,7 +55,7 @@ def av_club_members():
     """List AV Club Members"""
     contents = "AV Club Groups"
     form = TechDirectorForm()
-    exclude = "avClub"
+    exclude = "avclub"
     form.studentId.choices = tech_director_services.get_students_active_names_options(exclude)
     return render_template(
         'tech_director/av_club_members.html', 
@@ -64,24 +66,65 @@ def av_club_members():
         version=ver,
         main_menu='tech_director',
         base='av_club_members',
+        assignment_group='avclub',
         page_content=contents
     )
 
-@tech_director_bp.route('/get_list_of_students', methods=['POST', 'GET'])
+#STUDENTS
+
+@tech_director_bp.route('/students', methods=['POST', 'GET'])
 @login_required
 @group_required("tech_director_admin")
-def get_list_of_students():
+def students():
+    """List Students"""
+    contents = "AV Club Groups"
+    form = TechDirectorForm()
+    return render_template(
+        'tech_director/students.html', 
+        title='List Students',
+        sub_title='Students',
+        site_name=get_setting(current_app.config,'name'),
+        form=form,
+        version=ver,
+        main_menu='tech_director',
+        base='students',
+        page_content=contents
+    )
+
+### Helper routes
+
+@tech_director_bp.route('/get_list_of_students/<string:assignment_group>', methods=['POST', 'GET'])
+@login_required
+@group_required("tech_director_admin")
+def get_list_of_students(assignment_group):
     """Get an options list of students for drop downs"""
-    exclude = "avClub"
+    if assignment_group not in VALID_ASSIGNMENTS:
+        return jsonify({
+            "message": "Assignment type is missing or invalid."
+        }), 422
+    exclude = assignment_group
     return tech_director_services.get_students_active_names_options(exclude)
 
-@tech_director_bp.route('/get_av_club_members', methods=['POST', 'GET'])
+
+@tech_director_bp.route(
+        '/get_group_members/<string:assignment_group>/<string:state>',
+        methods=['POST', 'GET']
+    )
 @login_required
 @group_required("tech_director_admin")
-def get_av_club_members():
+def get_group_members(assignment_group, state):
     '''Fetches the list of students from the database and returns it as JSON.'''
-    active = request.args.get('active', default='Active')
-    all_students =  tech_director_services.get_av_club_members(active)
+    if assignment_group not in VALID_ASSIGNMENTS:
+        return jsonify({
+            "message": "Assignment type is missing or invalid."
+        }), 422
+    if state not in VALID_STATES:
+        return jsonify({
+            "message": "State (all/active) is missing or invalid."
+        }), 422
+
+    # active = request.args.get('active', default='Active')
+    all_students =  tech_director_services.get_group_members(assignment_group, state)
     return jsonify(all_students)
 
 @tech_director_bp.route('/add_existing_student', methods=['POST', 'GET'])
@@ -93,27 +136,36 @@ def add_existing_student():
     # log.warning(add_response)
     return jsonify(add_response)
 
-@tech_director_bp.route('/assign_new_student/<string:assignment_type>', methods=['POST'])
-# **** UPDATE THIS ONE TO ALSO TAKE /new or /existing and so this is the only end point
-# used to add a student assignment
+@tech_director_bp.route(
+        '/assign_student/<string:state>/<string:assignment_group>',
+        methods=['POST']
+    )
 @login_required
 @group_required("tech_director_admin")
-def assign_new_student(assignment_type):
-    '''Create a student and assign them to a group'''
-    if assignment_type not in VALID_ASSIGNMENTS:
+def assign_new_student(state, assignment_group):
+    '''Assign a student (new or existing) to a group.'''
+    if assignment_group not in VALID_ASSIGNMENTS:
         return jsonify({
             "message": "Assignment type is missing or invalid."
         }), 422
 
+    if state not in VALID_STATES:
+        return jsonify({
+            "message": "State (new/existing) is missing or invalid."
+        }), 422
+
     try:
-        add_response = tech_director_services.assign_new_student(
+        add_response = tech_director_services.assign_student(
             request.get_json(),
-            assignment_type
+            state,
+            assignment_group,
         )
     except IntegrityError as error:
         if error.errno == errorcode.ER_DUP_ENTRY:
             # this contains the actual message: error.msg
-            message = "A student with that email address already exists."
+            message = "Error completing task.  Contact Administrator."
+            if 'email' in error.msg:
+                message = "A student with that email address already exists."
             return jsonify({
                 "message": message,
                 "field": "email",
@@ -155,32 +207,16 @@ def update_membe_info():
     # log.warning(add_response)
     return jsonify(update_response)
 
-@tech_director_bp.route('/students', methods=['POST', 'GET'])
+@tech_director_bp.route('/get_students/<string:state>', methods=['POST', 'GET'])
 @login_required
 @group_required("tech_director_admin")
-def students():
-    """List Students"""
-    contents = "AV Club Groups"
-    form = TechDirectorForm()
-    return render_template(
-        'tech_director/students.html', 
-        title='List Students',
-        sub_title='Students',
-        site_name=get_setting(current_app.config,'name'),
-        form=form,
-        version=ver,
-        main_menu='tech_director',
-        base='students',
-        page_content=contents
-    )
-
-@tech_director_bp.route('/get_students', methods=['POST', 'GET'])
-@login_required
-@group_required("tech_director_admin")
-def get_students():
+def get_students(state):
     '''Fetches the list of students from the database and returns it as JSON.'''
-    active = request.args.get('active', default='Active')
-    all_students =  tech_director_services.get_students(active)
+    if state not in (['all', 'active']):
+        return jsonify({
+            "message": "State (all/active) is missing or invalid."
+        }), 422
+    all_students =  tech_director_services.get_students(state)
     return jsonify(all_students)
 
 @tech_director_bp.route('/get_students_active', methods=['POST', 'GET'])

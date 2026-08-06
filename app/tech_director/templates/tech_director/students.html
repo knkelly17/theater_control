@@ -34,10 +34,9 @@
 
 <script>
 
-
-
-  const tableData = "/tech_director/get_students"
-
+  const table_base_url = '/tech_director/get_students';
+  const tableData = `${table_base_url}/active`
+  
   const requiredFields = ["email"];
   const excludedFields = ["ID", "class"];
 

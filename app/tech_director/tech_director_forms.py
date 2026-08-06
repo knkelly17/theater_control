@@ -55,10 +55,9 @@ class TechDirectorForm(FlaskForm):
             }
         )
 
-    # DELETE
-    add_av_member = SubmitField('+ Add Existing Student to AV Club',
+    add_member = SubmitField('+ Add Existing Student',
         render_kw={
-            'data-add-av-member':'existing',
+            'data-add-member':'existing',
             'class':
                 'admin_action '
                 'w3-button '
@@ -69,10 +68,9 @@ class TechDirectorForm(FlaskForm):
             }
         )
 
-    # DELETE
-    add_new_av_member = SubmitField('+ Add New Student to AV Club',
+    add_new_member = SubmitField('+ Add New Student',
         render_kw={
-            'data-add-av-member':'new',
+            'data-add-member':'new',
             'class':
                 'admin_action '
                 'w3-button '
