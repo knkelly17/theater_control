@@ -1,5 +1,153 @@
 const originalFetch = window.fetch.bind(window);
 
+const TabulatorActions = {
+
+    async createRow(target, endpoint, requiredFields=[], excludedFields = []) {
+        let row = null;
+
+        if (target && typeof target.getData === "function") {
+            row = target;
+        } else if (target && typeof target.getRow === "function") {
+            row = target.getRow();
+        }
+
+        if (!row || typeof row.getData !== "function") {
+            return Promise.resolve(null);
+        }
+
+        const rowValues = row.getData();
+        const payloadToSend = removeExcludedFields(rowValues, excludedFields);
+
+        const missingFields = requiredFields.filter(field =>
+            payloadToSend[field] === undefined || payloadToSend[field] === ""
+        );
+
+        if (missingFields.length > 0) {
+            return Promise.reject(
+                new Error(`Please complete: ${missingFields.join(", ")}.`)
+            );
+        }
+
+        const data = await api.post(
+            endpoint,
+            preparePayload(payloadToSend)
+        );
+
+        row.update(data);
+        row.getElement().classList.add("w3-pale-green");
+        setTimeout(() => row.getElement().classList.remove("w3-pale-green"), 2000);
+
+    },
+
+    async  updateCell(cell, endpoint) {
+        const row = cell.getRow();
+        const rowValues = row.getData();
+        const rowID = row.getIndex()
+
+
+        const rowData = {
+            "ID": cell.getRow().getIndex(),
+            "field": cell.getField(),
+            "value": cell.getValue()
+        };
+
+        payloadToSend = normalizePayloadForDb(rowData)
+
+        try {
+            const data = await api.put(
+                endpoint,
+                preparePayload(payloadToSend)
+            );
+
+            cell.getElement().classList.add("w3-pale-green");
+            setTimeout(() => cell.getElement().classList.remove("w3-pale-green"), 1000);
+        } catch(error) {
+            console.error(error);
+            // ❌ error feedback
+            cell.getElement().classList.add("w3-pale-red");
+        }
+
+        //sendFieldToDb(rowData, cell, endpoint);
+    }, 
+
+    
+
+}
+
+const PageSetup = {
+    
+    setupAddRecordControls({
+        table,
+        addButton,
+        cancelButton,
+        errorField,
+        createEndpoint,
+        updateEndpoint,
+        requiredFields,
+        excludedFields,
+    }) {
+        let pendingNewRow = null;
+
+        table.on("cellEdited", (cell) => {
+            if (excludedFields.includes(cell.getField())) {
+                return;
+            }
+
+            const row = cell.getRow();
+
+            if (row.getIndex()) {
+                TabulatorActions.updateCell(cell, updateEndpoint); 
+                return; // Existing-row update handling goes here.
+            }
+
+            const value = cell.getValue();
+            const isEmpty = value === undefined ||
+                            value === null ||
+                            (typeof value === "string" && value.trim() === "");
+
+            if (isEmpty) {
+                return;
+            }
+
+            TabulatorActions.createRow(
+                row, createEndpoint, requiredFields, excludedFields
+            )
+            .then(() => {
+                pendingNewRow = null;
+                errorField.textContent = "";
+                addButton.classList.replace("w3-hide", "w3-show");
+                cancelButton.classList.replace("w3-show", "w3-hide");
+            })
+            .catch((error) => {
+                errorField.textContent = error.message;
+            });
+        });
+
+        addButton.addEventListener("click", () => {
+
+            table.addRow({ ID: null }, true).then((row) => {
+                pendingNewRow = row;
+                addButton.classList.replace("w3-show", "w3-hide");
+                cancelButton.classList.replace("w3-hide", "w3-show");
+                row.select()
+                setTimeout(function () {
+                    row.getCells()[0]?.edit();
+                }, 0);
+            });
+        });
+
+        cancelButton.addEventListener("click", () => {
+            pendingNewRow?.delete();
+            pendingNewRow = null;
+            errorField.textContent = "";
+            addButton.classList.replace("w3-hide", "w3-show");
+            cancelButton.classList.replace("w3-show", "w3-hide");
+        });
+    }
+}
+
+
+
 window.fetch = async function(...args) {
     const response = await originalFetch(...args);
 
@@ -125,21 +273,6 @@ function addRow(cell, table, requiredFields, endpoint) {
     }
 
     return;
-}
-
-function editCellAPI(cell, endpoint) {
-    const row = cell.getRow();
-    const rowValues = row.getData();
-    const rowID = row.getIndex()
-
-
-    const rowData = {
-        "ID": cell.getRow().getIndex(),
-        "field": cell.getField(),
-        "value": cell.getValue()
-    };
-   
-    sendFieldToDb(rowData, cell, endpoint);
 }
 
 async function addRowAPI(target, endpoint, requiredFields=[], excludedFields = []) {
@@ -282,6 +415,37 @@ async function callAPIGeneric (endpoint, parameters) {
     }  
 }
 
+async function editCellAPI(cell, endpoint) {
+    const row = cell.getRow();
+    const rowValues = row.getData();
+    const rowID = row.getIndex()
+
+
+    const rowData = {
+        "ID": cell.getRow().getIndex(),
+        "field": cell.getField(),
+        "value": cell.getValue()
+    };
+
+    payloadToSend = normalizePayloadForDb(rowData)
+
+    try {
+        const data = await api.put(
+            endpoint,
+            preparePayload(payloadToSend)
+        );
+
+        cell.getElement().classList.add("w3-pale-green");
+        setTimeout(() => cell.getElement().classList.remove("w3-pale-green"), 1000);
+    } catch(error) {
+        console.error(error);
+        // ❌ error feedback
+        cell.getElement().classList.add("w3-pale-red");
+    }
+
+    //sendFieldToDb(rowData, cell, endpoint);
+}
+
 async function sendFieldToDb(rowData, cell, endpoint) {
     try {
         const response = await fetch(endpoint, {
@@ -304,6 +468,7 @@ async function sendFieldToDb(rowData, cell, endpoint) {
         }
 
         const data = await handledResponse.json();
+        
 
         if (!handledResponse.ok) {
             throw new Error(data.message || "Error");
@@ -391,6 +556,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const allButton = document.getElementById("see_all_records");
     const activeButton = document.getElementById("see_active_records");
 
+    //const cancelAddButton = document.getElementById("cancel_add");
+    //const addRecordButton = document.getElementById("add_record");
+    
+
     if (allButton && activeButton && pageTable && tableData) {
 
         let url = tableData;
@@ -423,6 +592,29 @@ document.addEventListener("DOMContentLoaded", () => {
         //pageTable.setData(url)
     }
 
+
+   /*
+    if (addRecordButton) {
+        addRecordButton.addEventListener("click", function () {
+            const blankRowData = {
+                ID: null
+            };
+
+            pageTable.addRow(blankRowData, true)
+                .then((row) => {
+                cancelAddButton.classList.replace("w3-hide", "w3-show");
+                addRecordButton.classList.add("w3-hide");
+                row.select();
+                setTimeout(function () {
+                    const cell = row.getCells()[0];
+                    if (cell) {
+                    cell.edit();
+                    }
+                }, 0);
+                })
+        });
+    }
+        */
 });
 
 

@@ -5,14 +5,6 @@
 
 {% include 'tech_director/tech_director_menu.html' %}
 
-{% if base %}
-<script>
-    base_page = "{{ base }}";
-    document.getElementsByClassName(base_page)[0].classList.add("selected-button", "w3-green");
-    document.getElementsByClassName(base_page)[0].classList.remove("w3-dark-gray");
-</script>
-{% endif %}
-
 <!-- Page Content -->
 <div class="w3-main" style="margin-left:200px">
   <button class="w3-button w3-xlarge w3-hide-large" onclick="w3_open()">&#9776;</button>
@@ -26,6 +18,9 @@
     {{ form.see_active_records }}
     <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
     {{ form.add_student() }}
+    {{ form.cancel_add() }}
+    <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+    <div class="pageErrorField w3-text-red"></div>
     <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
     <div id="student-table"></div>
     
@@ -34,6 +29,10 @@
 
 <script>
 
+  const cancelAddButton = document.getElementById("cancel_add");
+  const addRecordButton = document.getElementById("add_student");
+  const pageErrorField = document.querySelector(".pageErrorField")
+  
   const table_base_url = '/tech_director/get_students';
   const tableData = `${table_base_url}/active`
   
@@ -52,6 +51,7 @@
       {column: "firstName", dir: "asc" } // Then sort by this second
     ],
     columns:[ //Define Table Columns
+      {title:"Email", field:"email", editor:"input"},
       {
         title:"First Name",
         field:"firstName",
@@ -81,13 +81,16 @@
         return !isNaN(yearNum) && yearNum >= 2025 && yearNum <= 2100;
       }
       },
-      {title:"Class", field:"class",
+      {
+        title:"Class", 
+        field:"class",
+        editor: false,
+        editable: false,
         mutator: function(value, data) {
           // data contains all values from the AJAX response for this row
           return getHighSchoolClass(data.graduationYear);
         }
       },
-      {title:"Email", field:"email", editor:"input"},
       {title:"Notes", field:"notes", editor:"input"},
       {
         title:"Active",
@@ -108,6 +111,19 @@
     ],
     });
 
+    PageSetup.setupAddRecordControls({
+      table: pageTable,
+      addButton: addRecordButton,
+      cancelButton: cancelAddButton,
+      errorField: pageErrorField,
+      createEndpoint: "/tech_director/add_student",
+      updateEndpoint: "/tech_director/update_student",
+      requiredFields,
+      excludedFields
+    });
+
+  /*
+
   pageTable.on("cellEdited", function(cell) {
     var fieldName = cell.getField();
 
@@ -118,16 +134,24 @@
     const row = cell.getRow();
     const rowID = row.getIndex()
     if (rowID) {
-      editCellAPI(cell, "/tech_director/update_student"); 
+      TabulatorActions.updateCell(cell, "/tech_director/update_student"); 
     } else {
-      addRowAPI(row,  "/tech_director/add_student", requiredFields, excludedFields)
+      TabulatorActions.createRow(row,  "/tech_director/add_student", requiredFields, excludedFields)
+        .then(
+          pageErrorField.textContent = ''
+        )
+        .catch(
+          error => pageErrorField.textContent = error.message
+        );
     }     
   });
+  */
 
   
 
 //Add row on "Add Row" button click
 
+/*
 
 document.getElementById("add_student").addEventListener("click", function () {
   const blankRowData = {
@@ -138,13 +162,14 @@ document.getElementById("add_student").addEventListener("click", function () {
     .then((row) => {
       row.select();
       setTimeout(function () {
-        const cell = row.getCell("firstName");
+        const cell = row.getCell("email");
         if (cell) {
           cell.edit();
         }
       }, 0);
     })
 });
+*/
 </script>
 
 <script src="{{ url_for('dm7.static', filename='js/dm7.js') }}?v={{ version }}"></script>
