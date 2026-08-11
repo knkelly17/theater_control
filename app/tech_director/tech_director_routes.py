@@ -72,18 +72,6 @@ def av_club_members():
         sub_base='assign_student'
     )
 
-
-# Should get replaced by /api/assign_student_avclub
-@tech_director_bp.route('/add_existing_student', methods=['POST', 'GET'])
-@login_required
-@group_required("tech_director_admin")
-def add_existing_student():
-    '''Add an existing student to the AV Club'''
-    add_response =  tech_director_services.add_existing_student(request.get_json())
-    # log.warning(add_response)
-    return jsonify(add_response)
-#############################################################
-
 @tech_director_bp.route(
         '/api/assign_student_avclub/<string:state>/',
         methods=['POST', 'PUT']
@@ -122,55 +110,21 @@ def assign_student_avclub(state):
     return jsonify(add_response)
 
 
-
-@tech_director_bp.route('/get_list_of_students/<string:assignment_group>', methods=['POST', 'GET'])
-@login_required
-@group_required("tech_director_admin")
-def get_list_of_students(assignment_group):
-    """Get an options list of students for drop downs"""
-    if assignment_group not in VALID_ASSIGNMENTS:
-        return jsonify({
-            "message": "Assignment type is missing or invalid."
-        }), 422
-    exclude = assignment_group
-    return StudentService.get_students_active_names_options(exclude)
-
-
 @tech_director_bp.route(
-        '/get_group_members/<string:assignment_group>/<string:state>',
-        methods=['POST', 'GET']
+        '/api/list_avclub_students/<string:state>',
+        methods=['GET']
     )
 @login_required
 @group_required("tech_director_admin")
-def get_group_members(assignment_group, state):
-    '''Fetches the list of students from the database and returns it as JSON.'''
-    if assignment_group not in VALID_ASSIGNMENTS:
-        return jsonify({
-            "message": "Assignment type is missing or invalid."
-        }), 422
+def list_avclub_students(state):
+    '''Fetches the list of students in the AV Club.'''
     if state not in VALID_STATES:
         return jsonify({
             "message": "State (all/active) is missing or invalid."
         }), 422
-
-    # active = request.args.get('active', default='Active')
-    all_students =  tech_director_services.get_group_members(assignment_group, state)
+    all_students =  AVClubService.list_avclub_students(state)
     return jsonify(all_students)
 
-
-@tech_director_bp.route('/api/update_membership_info/<string:assignment_group>', methods=['PUT'])
-@login_required
-@group_required("tech_director_admin")
-def update_membership_info(assignment_group):
-    '''Update basic info for entity membership'''
-    if assignment_group not in VALID_ASSIGNMENTS:
-        return jsonify({
-            "message": "Assignment type is missing or invalid."
-        }), 422
-    update_response =  tech_director_services.update_membership_info(
-        request.get_json(), assignment_group
-        )
-    return jsonify(update_response)
 
 @tech_director_bp.route('/get_students/<string:state>', methods=['POST', 'GET'])
 @login_required
