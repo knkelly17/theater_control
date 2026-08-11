@@ -101,3 +101,8 @@ class StudentService:
         student_details = StudentRepository.get_student_details(student_id)
         student_details[0]['index_id'] = new_assignment_id
         return student_details[0]
+
+    @staticmethod
+    def update_membership_info(data, assignment_group):
+        '''Update membership info'''
+        return StudentRepository.update_membership_info(data, assignment_group)

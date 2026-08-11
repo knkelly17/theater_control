@@ -146,3 +146,15 @@ class StudentRepository:
             data
         )
         return inserted_id
+
+    @staticmethod
+    def update_membership_info(data, assignment_group):
+        '''Send updates regarding membership to the db'''
+        data_values = {
+            data['field']:data['value']
+        }
+        return update_db(
+            ASSIGNMENT_TABLES[assignment_group],
+            data['ID'],
+            data_values
+        )

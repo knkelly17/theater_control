@@ -1,11 +1,10 @@
 async function refreshAvailableStudentOptions(exclude) {
 
     const select = document.getElementById("student_id");
-    const endpoint = `/tech_director/get_list_of_students/${exclude}`
+    const endpoint = `/tech_director/api/get_list_of_students_name_options/${exclude}`
     const payload = ''
-    const options =  await api.post(
-        endpoint,
-        payload
+    const options =  await api.get(
+        endpoint
     );
 
     select.replaceChildren();

@@ -126,37 +126,6 @@ def list_avclub_students(state):
     return jsonify(all_students)
 
 
-@tech_director_bp.route('/get_students/<string:state>', methods=['POST', 'GET'])
-@login_required
-@group_required("tech_director_admin")
-def get_students(state):
-    '''Fetches the list of students from the database and returns it as JSON.'''
-    if state not in (['all', 'active']):
-        return jsonify({
-            "message": "State (all/active) is missing or invalid."
-        }), 422
-    all_students =  StudentService.get_students(state)
-    return jsonify(all_students)
-
-@tech_director_bp.route('/get_students_active', methods=['POST', 'GET'])
-@login_required
-@group_required("tech_director_admin")
-@group_required("tech_director_admin")
-def get_students_active():
-    '''Fetches the list of active students from the database and returns it as JSON.'''
-    all_students =  StudentService.get_students_active()
-    return jsonify(all_students)
-
-@tech_director_bp.route('/get_active_student_names', methods=['POST', 'GET'])
-@login_required
-@group_required("tech_director_admin")
-@group_required("tech_director_admin")
-def get_students_active_names():
-    '''Fetches the list of students from the database and returns it as JSON.'''
-    all_students =  StudentService.get_students_active_names()
-    return jsonify(all_students)
-
-
 @tech_director_bp.route('/upload_students', methods=['POST', 'GET'])
 @login_required
 @group_required("tech_director_admin")
