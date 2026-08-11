@@ -286,6 +286,29 @@ def sort_sheet(creds, spreadsheet_id, worksheet_id, cell_range, column, sort_ord
 
     return response
 
+def gas_list_all_students(creds, state):
+    '''pull list of students from Google Sheet'''
+    service = build('script', 'v1', credentials=creds)
+
+    this_function = 'getAllStudents'
+
+    if state == 'active':
+        this_function = 'getActiveStudents'
+
+    # Target script project ID and the target function name
+    #script_id = 'AKfycbz4GnXz0aof1rmmbGLNk_FCthKl0q1D0hXBLi2T2p6LAfgEFHg5KSjc7rAKnq32B3oG'
+    script_id = 'AKfycbx953vG7sjYy8hycuZL3yZvEruvC87p0lOgUDD6ycKeIxHteUWprC8S6O1F5JZ3tDFp'
+    request = {
+        'function': this_function,  # Name of JS function to run
+    }
+
+    try:
+        response = service.scripts().run(scriptId=script_id, body=request).execute() # pylint: disable=maybe-no-member
+        # print(response['response']['result'])
+        return response['response']['result']
+    except HttpError as error:
+        return "Error executing script: %s", error
+
 def run_gas_api (creds, show_id):
     '''testing google api'''
     service = build('script', 'v1', credentials=creds)
@@ -293,13 +316,15 @@ def run_gas_api (creds, show_id):
     # Target script project ID and the target function name
     script_id = 'AKfycbz4GnXz0aof1rmmbGLNk_FCthKl0q1D0hXBLi2T2p6LAfgEFHg5KSjc7rAKnq32B3oG'
     request = {
-        'function': 'populateCastSheet',  # Name of JS function to run
-        'parameters': [show_id]        # Parameters passed to it
+        'function': 'getAllStudents',  # Name of JS function to run
+        #
+        #'parameters': [show_id]        # Parameters passed to it
     }
 
     try:
         response = service.scripts().run(scriptId=script_id, body=request).execute() # pylint: disable=maybe-no-member
-        print(response['response']['result']['showCast'])
+        print(response['response']['result'])
+        #print(response['response']['result']['showCast'])
     except HttpError as error:
         print("Error executing script:", error)
 
@@ -331,11 +356,11 @@ def read_sheet(creds, spreadsheet_id, range_name):
 def main():
     '''Testing only'''
     creds = get_credentials()
-    # run_gas_api(creds, 1)
-    sheet_id = '1BuNP3ruI6dw-VHDj3erRm--O606qF-Hc0vn25cv81_U'
-    range_name = 'Students!A1:F'
-    data = read_sheet(creds, sheet_id, range_name)
-    print(data)
+    gas_list_all_students(creds)
+    #sheet_id = '1BuNP3ruI6dw-VHDj3erRm--O606qF-Hc0vn25cv81_U'
+    #range_name = 'Students!A1:F'
+    #data = read_sheet(creds, sheet_id, range_name)
+    #print(data)
 
 
 if __name__ == '__main__':

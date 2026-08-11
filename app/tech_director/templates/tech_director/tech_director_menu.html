@@ -2,31 +2,83 @@
 
 <!-- Sidebar -->
 
+<style>
+  #tech_directorSidebar .w3-dropdown-content {
+    position: static;
+  }
+
+  #tech_directorSidebar .w3-dropdown-hover {
+    display: block;
+    float: none;
+  }
+
+  #tech_directorSidebar .w3-dropdown-content .w3-bar-item {
+    padding-left: 16px;
+  }
+
+</style>
+
+{% if base %}
+<script>
+    base_page = "{{ base }}";
+    document.addEventListener("DOMContentLoaded", () => {
+        document.getElementsByClassName(base_page)[0].classList.add("selected-button", "w3-green");
+        document.getElementsByClassName(base_page)[0].classList.remove("w3-dark-gray");
+    })
+</script>
+{% endif %}
+
+{% if sub_base %}
+<script>
+    sub_base_page = "{{ sub_base }}";
+    document.addEventListener("DOMContentLoaded", () => {
+        document.getElementsByClassName(sub_base_page)[0].classList.add("w3-lime");
+    })
+</script>
+{% endif %}
+
+
+<div id="ajax-loader" class="w3-modal" style="display:none; z-index:9999;">
+  <div class="w3-display-middle w3-center">
+    <i class="w3-jumbo w3-spin w3-text-white fa fa-spinner"></i>
+    <h3 class="w3-text-white">Loading, please wait...</h3>
+  </div>
+</div>
+
+
 <div class="w3-sidebar w3-bar-block w3-collapse w3-card" style="width:200px;" id="tech_directorSidebar">
     <button class="w3-bar-item w3-button w3-hide-large" onclick="w3_close()">Close &times;</button>
-
+    
     <div class="w3-container w3-light-gray w3-center">
-        <div class="w3-bar">
+        <div class="w3-bar-block">
 
             <a href="{{ url_for('tech_director.students') }}"
                 class="w3-button w3-bar-item 
                     w3-dark-gray tech_director students">Students</a>
                     
-            <a href="{{ url_for('tech_director.av_club_members') }}"
+            <!-- a href="{{ url_for('tech_director.av_club_members') }}"
                 class="w3-button w3-bar-item 
-                    w3-left w3-dark-gray tech_director av_club_members">AV Club</a>
+                    w3-left w3-dark-gray tech_director av_club_members">AV Club</a-->
 
-            
-            
+            <div class="w3-dropdown-hover">
+                <button class="w3-button w3-dark-gray tech_director av_club_members">AV Club<i class="fa fa-caret-down"></i></button>
+                <div class="w3-dropdown-content w3-bar-block">
+                    <a href="{{ url_for('tech_director.av_club_members') }}" 
+                       class="w3-button w3-bar-item 
+                       tech_director assign_student"><i class='fa fa-caret-right'></i>Assign Student</a>
+                </div>
+            </div>
+    
             <div class="w3-dropdown-hover">
                 <button class="w3-button w3-dark-gray tech_director shows">Shows/Events<i class="fa fa-caret-down"></i></button>
                 <div class="w3-dropdown-content w3-bar-block">
                     <a href="{{ url_for('tech_director.shows') }}" 
                        class="w3-button w3-bar-item 
-                       w3-left tech_director list">List</a>
-                    <a href="#" class="w3-bar-item w3-button">Assign Student</a>
+                       tech_director list_show"><i class='fa fa-caret-right'></i>List</a>
+                    <a href="{{ url_for('tech_director.students_shows') }}" 
+                       class="w3-button w3-bar-item 
+                       tech_director assign_students_shows"><i class='fa fa-caret-right'></i>Assign Student</a>
                 </div>
-
             </div>
 
         {% if current_user.has_group("admin") %}

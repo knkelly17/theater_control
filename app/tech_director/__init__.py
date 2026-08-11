@@ -15,3 +15,4 @@ tech_director_bp = Blueprint(
 # pylint: disable=wrong-import-position
 from . import tech_director_routes
 from . import show_routes
+from . import student_routes

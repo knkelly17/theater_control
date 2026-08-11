@@ -5,7 +5,6 @@
 
 {% include 'tech_director/tech_director_menu.html' %}
 
-
 <!-- Page Content -->
 <div class="w3-main" style="margin-left:200px">
   <button class="w3-button w3-xlarge w3-hide-large" onclick="w3_open()">&#9776;</button>
@@ -34,7 +33,7 @@
   const cancelAddButton = document.getElementById("cancel_add");
   const addRecordButton = document.getElementById("add_record");
 
-  const table_base_url = '/tech_director/api/get_shows';
+  const table_base_url = '/tech_director/api/list_shows';
   const tableData = `${table_base_url}/active`
   
   const requiredFields = ["name"];
@@ -44,11 +43,11 @@
     ajaxURL: tableData,
     dataLoader: false,
     layout:"fitDataTable", //fit columns to width of table (optional)
-    index:"indexId",
+    index:"index_id",
     tabEndNewRow: true,
     sortOrderReverse: true,
     initialSort: [
-      {column: "openingDate", dir: "asc"},
+      {column: "opening_date", dir: "asc"},
     ],
     columns:[ //Define Table Columns
       {
@@ -58,7 +57,7 @@
         headerFilter:"input"
       },      
       {title: "Opening Date", 
-      field: "openingDate", 
+      field: "opening_date", 
       formatter:"datetime", formatterParams:{
           inputFormat:"yyyy-MM-dd",
           outputFormat:"yyyy-MM-dd",
@@ -69,7 +68,7 @@
       },
       {
         title:"Active",
-        field:"active",
+        field:"status_id",
         hozAlign:"center", 
         formatter:"tickCross",
         formatterParams: {
@@ -84,7 +83,7 @@
     ],
     });
 
-  PageSetup.setupAddRecordControls({
+  PageSetup.setupManageRecordChanges({
     table: pageTable,
     addButton: addRecordButton,
     cancelButton: cancelAddButton,
@@ -94,31 +93,6 @@
     requiredFields,
     excludedFields,
   });
-
-  /*pageTable.on("cellEdited", function(cell) {
-    const fieldName = cell.getField();
-
-    const row = cell.getRow();
-    const rowID = row.getIndex()
-    if (rowID) {
-      TabulatorActions.updateCell(cell, "/tech_director/api/update_show"); 
-    } else {
-      TabulatorActions.createRow(row,  "/tech_director/api/add_show", requiredFields, excludedFields)
-        .then(function() {
-          pageErrorField.textContent = '';
-          addRecordButton.classList.replace("w3-hide", "w3-show");
-          cancelAddButton.classList.replace("w3-show", "w3-hide");
-        })
-        .catch(
-          error => pageErrorField.textContent = error.message
-        );
-    }     
-  });
-  */
-
-  
-
-//Add row on "Add Row" button click
 
 </script>
 

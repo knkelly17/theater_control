@@ -84,8 +84,8 @@ def load_user(user_id):
 
         groups_query = """SELECT g.name
         FROM user_groups g
-        JOIN user2group ug ON g.ID = ug.groupID
-        WHERE ug.userID = %s"""
+        JOIN user2group ug ON g.ID = ug.group_id
+        WHERE ug.user_id = %s"""
 
         cursor.execute(groups_query, (user_id,))
         groups = [row["name"] for row in cursor.fetchall()]
@@ -93,7 +93,7 @@ def load_user(user_id):
         # Get the most recent session_id for this user from sessionLog
         cursor.execute("""
             SELECT sessionID FROM sessionLog
-            WHERE userID = %s
+            WHERE user_id = %s
             ORDER BY sessionID DESC
             LIMIT 1
         """, (user_id,))
@@ -132,7 +132,7 @@ def login():
                     session_id
                 )
                 cursor.execute(
-                    "INSERT INTO sessionLog (sessionID, userID) VALUES (%s, %s)", 
+                    "INSERT INTO sessionLog (sessionID, user_id) VALUES (%s, %s)", 
                     (session_id, user.id))
                 db.commit()
                 login_user(user)

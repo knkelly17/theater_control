@@ -5,14 +5,6 @@
 
 {% include 'tech_director/tech_director_menu.html' %}
 
-{% if base %}
-<script>
-    base_page = "{{ base }}";
-    document.getElementsByClassName(base_page)[0].classList.add("selected-button", "w3-green");
-    document.getElementsByClassName(base_page)[0].classList.remove("w3-dark-gray");
-</script>
-{% endif %}
-
 <!-- Page Content -->
 <div class="w3-main" style="margin-left:200px">
   <button class="w3-button w3-xlarge w3-hide-large" onclick="w3_open()">&#9776;</button>
@@ -52,7 +44,7 @@
 
         <form class="student_assignment_form">
 
-          {{ form.studentId }}
+          {{ form.student_id }}
         </form>
 
         <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
@@ -84,6 +76,7 @@
         x
       </span>
       <h3 class="w3-wide">Add New Student</h3>
+      <h4><span style="color: red;">*</span>All fields are required.</h4>
     </div>
     
     <div class="w3-container w3-card-4 w3-center">
@@ -95,13 +88,13 @@
   
         {{ form.hidden_tag() }}
 
-        {{ form.firstName.label }}: {{ form.firstName }}
+        <span style="color: red;">*</span>{{ form.first_name.label }}: {{ form.first_name }}
         <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
-        {{ form.lastName.label }}: {{ form.lastName }}
+        <span style="color: red;">*</span>{{ form.last_name.label }}: {{ form.last_name }}
         <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
-        {{ form.email.label }}: {{ form.email }}
+        <span style="color: red;">*</span>{{ form.email.label }}: {{ form.email }}
         <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
-        {{ form.graduationYear.label }}: {{ form.graduationYear }}
+        <span style="color: red;">*</span>{{ form.graduation_year.label }}: {{ form.graduation_year }}
 
        </form>
 
@@ -127,11 +120,35 @@
 <script>
 
   const initialSort = [
-    { column: "graduationYear", dir: "asc" },
-    { column: "fullName", dir: "asc" }
+    { column: "graduation_year", dir: "asc" },
+    { column: "full_name", dir: "asc" }
   ];
 
   const assignment_group = "{{ assignment_group }}"
+
+  const updateTargets = {
+    membership: {
+      endpoint: `/tech_director/api/update_membership_info/${assignment_group}`,
+      idField: "index_id",
+    },
+    student: {
+      endpoint: "/tech_director/api/update_student",
+      idField: "student_id",
+    },
+  };
+
+  const fieldEntities = {
+    email: "student",
+    parent_name: "student",
+    parent_email: "student",
+    first_name: "student",
+    last_name: "student",
+    role_description: "membership",
+    notes: "membership",
+    status_id: "membership",
+    graduation_year: "student"
+  };
+
   
   const table_base_url = `/tech_director/get_group_members/${assignment_group}/`
   const tableData = `${table_base_url}/active`
@@ -141,19 +158,20 @@
   ajaxURL: tableData,
   dataLoader: false,
   layout:"fitDataTable",
-  index:"indexId",
+  index:"index_id",
   tabEndNewRow: true,
   sortOrderReverse: true,
   initialSort: initialSort,
   columns:[ //Define Table Columns
     {
       title:"Student Name",
-      field:"fullName",
-      headerFilter:"input"
+      field:"full_name",
+      headerFilter:"input",
+      editable:"false"
 
     },
     {title: "Graduation Year", 
-      field: "graduationYear", 
+      field: "graduation_year", 
       mutateLink: "class", 
       validator: function(cell, value, parameters){
       // Convert string input to a base-10 integer
@@ -161,18 +179,24 @@
       
       // Ensure it is a valid number, and falls strictly within your min/max constraints
       return !isNaN(yearNum) && yearNum >= 2025 && yearNum <= 2100;
-      }
+      },
+      editor: "number", // Changed from "input"
+      editorParams: {
+        min: 2025,
+        max: 2100,
+        step: 1
+      },
     },
     {title:"Class", field:"class",
       mutator: function(value, data) {
         // data contains all values from the AJAX response for this row
-        return getHighSchoolClass(data.graduationYear);
+        return getHighSchoolClass(data.graduation_year);
       },
       width:100
     },
-    {title:"Email", field:"email", width:300},
+    {title:"Email", field:"email", width:300, editor:"input"},
     {title:"AV Club Notes", field:"notes", editor:"input"},
-    {title:"Active", field:"active", hozAlign:"center",
+    {title:"Active", field:"status_id", hozAlign:"center",
       formatter:"tickCross",
       formatterParams: {
         allowTruthy: true,
@@ -183,36 +207,32 @@
         cell.setValue(!cell.getValue());
       },
     },
-    {title:"Parents' Name(s)", field:"parentName"},
-    {title:"Parent's Email", field:"parentEmail"},
+    {title:"Parents' Name(s)", field:"parent_name", editor:"input"},
+    {title:"Parent's Email", field:"parent_email", editor:"input"},
     {
       title: "First Name", 
-      field: "firstName", 
+      field: "first_name", 
       visible: false
     },
     {
       title: "Last Name", 
-      field: "lastName", 
+      field: "last_name", 
       visible: false
     }
   ],
 });
 
-pageTable.on("cellEdited", function(cell) {
-  var fieldName = cell.getField();
-
-  // 1. Block the calculated column from triggering the update
-  if (fieldName === "class") { 
-      return; // Exit early, doing nothing
-  }
-  const row = cell.getRow();
-  const rowID = row.getIndex()
-  if (rowID) {
-    editCellAPI(cell, "/tech_director/update_member_info"); 
-  } else {
-    addRowAPI(row, "/tech_director/add_existing_student", requiredFields, excludedFields)
-  }     
-});
+PageSetup.setupManageRecordChanges({
+    table: pageTable,
+    addButton: null,
+    cancelButton: null,
+    errorField: null,
+    createEndpoint: "/api/assign_student_avclub/existing/",
+    updateTargets,
+    fieldEntities,
+    requiredFields: [],
+    excludedFields: ['class'],
+  });
 
 const addMemberButtons = document.querySelectorAll('[data-add-member]');
 
@@ -220,105 +240,29 @@ addMemberButtons.forEach(button => {
   button.addEventListener('click', (event) => {
     modalId = event.target.dataset.addMember+'_add_member_modal';
     document.getElementById(modalId).style.display='block';
+    const focusField = document.querySelector('.student_form_focus')
+    if (focusField) {
+      focusField.focus()
+    }
   });
 });
 
+const extraFields = {}
+const baseEndpoint = '/tech_director/api/assign_student_avclub'
+
+/* Click Submit button on one of the two forms */
 const submitMemberButtons = document.querySelectorAll('[data-submit-assignment]')
 
 submitMemberButtons.forEach(button => {
   button.addEventListener('click', (event) => {
     thisTarget = event.target;
-    submitStudentMember(thisTarget)
+    TabulatorActions.submitStudentMemberShip(
+      thisTarget,
+      extraFields,
+      baseEndpoint
+    )
   });
 });
-
-function submitStudentMember(thisTarget){
-  const thisModal = thisTarget.closest('.add-member-modal');
-  const targetForm = thisModal.querySelector('.student_assignment_form');
-  const errorField = thisModal.querySelector('.errorField');
-  
-  const thisFieldCollection = thisModal.querySelectorAll('.submit_assignment_fields')
-
-  const hasStudentId = Array.from(thisFieldCollection)
-    .some(element => element.id === "studentId");
-
-  let inputCollection = {}
-
-  thisFieldCollection.forEach(thisField => {
-    inputCollection[thisField.id] = thisField.value
-  });
-
-  let student_id = null;
-  let submit_endpoint = null;
-
-  const requiredFields = hasStudentId ? [
-      "studentId"
-    ] : [
-      'email',
-      'graduationYear'
-    ];
-  const excludedFields = hasStudentId ? [] : [
-      'fullName',
-      'class',
-      'notes',
-      'active',
-      'indexId'
-    ];
-
-  let state = null
-
-  if (hasStudentId) { //existing student
-    student_id = inputCollection['studentId']
-    if (isNaN(parseFloat(student_id))) {
-      errorField.textContent = "Student must be chosen before submission.  (Click 'X' to cancel form.)";
-      return
-    } 
-    state = 'existing'
-    //submit_endpoint = "/tech_director/add_existing_student"     
-  } else { //new student
-    state = 'new'
-    console.log(submit_endpoint)
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const emailValid = emailRegex.test(inputCollection['email']); 
-    const gradYearRegex = /^\d{4}$/;
-    const gradYearValid = gradYearRegex.test(inputCollection['graduationYear']);
-    if (!emailValid) {
-      errorField.textContent = "Valid Email is required.  Click 'X' to cancel form.";
-      return
-    } else if (!gradYearValid) {
-      errorField.textContent = "Valid Graduation Year is required.  (Click 'X' to cancel form.)";
-      return
-    }
-    
-    //`Request failed (${response.status})`
-  }
-  submit_endpoint = `/tech_director/assign_student/${state}/${assignment_group}`
-
-  pageTable.addRow({indexId: null, ...inputCollection }, true)
-    .then(async function(row) {
-      try {
-        return await addRowAPI(row, submit_endpoint, requiredFields, excludedFields);
-      } catch (error) {
-        row.delete();
-        throw error;
-      }
-    })
-    .then(async function() {
-      if (hasStudentId) {
-        await refreshAvailableStudentOptions(assignment_group);
-      }
-      thisModal.style.display='none'
-      if (targetForm) {
-        targetForm.reset();
-      }
-      errorField.textContent = '';
-      // pageTable.setSort(initialSort); Better not to sort as row might need work.
-    })
-    .catch(function(error) {
-      errorField.textContent = error.message;
-    });
-
-} 
 
 </script>
 

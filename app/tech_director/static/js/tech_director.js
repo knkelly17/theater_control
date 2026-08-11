@@ -1,6 +1,6 @@
 async function refreshAvailableStudentOptions(exclude) {
 
-    const select = document.getElementById("studentId");
+    const select = document.getElementById("student_id");
     const endpoint = `/tech_director/get_list_of_students/${exclude}`
     const payload = ''
     const options =  await api.post(
@@ -10,7 +10,7 @@ async function refreshAvailableStudentOptions(exclude) {
 
     select.replaceChildren();
 
-    options.forEach(([studentId, fullName]) => {
-        select.add(new Option(fullName, studentId));
+    options.forEach(([student_id, full_name]) => {
+        select.add(new Option(full_name, student_id));
     });
 }

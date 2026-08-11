@@ -39,33 +39,38 @@
   const requiredFields = ["email"];
   const excludedFields = ["ID", "class"];
 
+  const updateTarget = {
+    endpoint: "/tech_director/api/update_student",
+    idField: "index_id",
+  };
+
   const pageTable = new Tabulator("#student-table", {
     ajaxURL: tableData,
     dataLoader: false,
     layout:"fitDataTable", //fit columns to width of table (optional)
-    index:"indexId",
+    index:"index_id",
     tabEndNewRow: true,
     sortOrderReverse: true,
     initialSort: [
-      {column: "graduationYear", dir: "asc"},
-      {column: "firstName", dir: "asc" } // Then sort by this second
+      {column: "graduation_year", dir: "asc"},
+      {column: "first_name", dir: "asc" } // Then sort by this second
     ],
     columns:[ //Define Table Columns
       {title:"Email", field:"email", editor:"input"},
       {
         title:"First Name",
-        field:"firstName",
+        field:"first_name",
         editor:"input",
         headerFilter:"input"
       },
       {
         title:"Last Name",
-        field:"lastName",
+        field:"last_name",
         editor:"input",
         headerFilter:"input"
       },       
       {title: "Graduation Year", 
-      field: "graduationYear", 
+      field: "graduation_year", 
       editor: "number", // Changed from "input"
       editorParams: {
         min: 2025,
@@ -88,13 +93,13 @@
         editable: false,
         mutator: function(value, data) {
           // data contains all values from the AJAX response for this row
-          return getHighSchoolClass(data.graduationYear);
+          return getHighSchoolClass(data.graduation_year);
         }
       },
       {title:"Notes", field:"notes", editor:"input"},
       {
         title:"Active",
-        field:"active",
+        field:"status_id",
         hozAlign:"center", 
         formatter:"tickCross",
         formatterParams: {
@@ -111,65 +116,17 @@
     ],
     });
 
-    PageSetup.setupAddRecordControls({
+    PageSetup.setupManageRecordChanges({
       table: pageTable,
       addButton: addRecordButton,
       cancelButton: cancelAddButton,
       errorField: pageErrorField,
-      createEndpoint: "/tech_director/add_student",
-      updateEndpoint: "/tech_director/update_student",
+      createEndpoint: "/tech_director/api/student",
+      updateTarget,
       requiredFields,
       excludedFields
     });
 
-  /*
-
-  pageTable.on("cellEdited", function(cell) {
-    var fieldName = cell.getField();
-
-    // 1. Block the calculated column from triggering the update
-    if (fieldName === "class") { 
-        return; // Exit early, doing nothing
-    }
-    const row = cell.getRow();
-    const rowID = row.getIndex()
-    if (rowID) {
-      TabulatorActions.updateCell(cell, "/tech_director/update_student"); 
-    } else {
-      TabulatorActions.createRow(row,  "/tech_director/add_student", requiredFields, excludedFields)
-        .then(
-          pageErrorField.textContent = ''
-        )
-        .catch(
-          error => pageErrorField.textContent = error.message
-        );
-    }     
-  });
-  */
-
-  
-
-//Add row on "Add Row" button click
-
-/*
-
-document.getElementById("add_student").addEventListener("click", function () {
-  const blankRowData = {
-    ID: null
-  };
-
-  pageTable.addRow(blankRowData, true)
-    .then((row) => {
-      row.select();
-      setTimeout(function () {
-        const cell = row.getCell("email");
-        if (cell) {
-          cell.edit();
-        }
-      }, 0);
-    })
-});
-*/
 </script>
 
 <script src="{{ url_for('dm7.static', filename='js/dm7.js') }}?v={{ version }}"></script>

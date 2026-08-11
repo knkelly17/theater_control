@@ -39,16 +39,14 @@ const TabulatorActions = {
 
     },
 
-    async  updateCell(cell, endpoint) {
-        const row = cell.getRow();
-        const rowValues = row.getData();
-        const rowID = row.getIndex()
+    async updateCell(cell, { endpoint, idField }) {
 
+        const rowValues = cell.getRow().getData();
 
         const rowData = {
-            "ID": cell.getRow().getIndex(),
-            "field": cell.getField(),
-            "value": cell.getValue()
+            ID: rowValues[idField],
+            field: cell.getField(),
+            value: cell.getValue(),
         };
 
         payloadToSend = normalizePayloadForDb(rowData)
@@ -70,19 +68,133 @@ const TabulatorActions = {
         //sendFieldToDb(rowData, cell, endpoint);
     }, 
 
+    async getData(endpoint) {
+        try {
+            const data = await api.get(
+                endpoint
+            );
+            return data;
+        } catch(error) {
+            console.error(error)
+        }
+    },
+
+    submitStudentMemberShip(thisTarget, extraFields = {}, baseEndpoint){
+        const thisModal = thisTarget.closest('.add-member-modal');
+        const targetForm = thisModal.querySelector('.student_assignment_form');
+        const errorField = thisModal.querySelector('.errorField');
+        const extraFieldKeys = Object.keys(extraFields);
+        
+        const thisFieldCollection = thisModal.querySelectorAll('.submit_assignment_fields')
+
+        const hasStudentId = Array.from(thisFieldCollection)
+            .some(element => element.id === "student_id");
+
+        const inputCollection = {
+            ...Object.fromEntries(
+            Array.from(thisFieldCollection).map((field) => [field.id, field.value])
+            ),
+            ...extraFields,
+        };
+
+        let student_id = null;
+        let submit_endpoint = null;
+
+        const requiredFields = [
+            ...(hasStudentId
+                ? ["student_id"]
+                : ["first_name", "last_name", "email", "graduation_year"]),
+            ...Object.keys(extraFields),
+            ];
+
+        const uniqueRequiredFields = [...new Set(requiredFields)];
+
+        const excludedFields = hasStudentId ? [] : [
+            'full_name',
+            'class',
+            'notes',
+            'status_id',
+            'index_id'
+            ];
+
+        let state = null
+
+        if (hasStudentId) { //existing student
+            student_id = inputCollection['student_id']
+            if (isNaN(parseFloat(student_id))) {
+            errorField.textContent = "Student must be chosen before submission.  (Click 'X' to cancel form.)";
+            return
+            } 
+            state = 'existing'   
+        } else { //new student
+            state = 'new'
+            const isNonBlank = (value) => String(value ?? "").trim().length > 0;
+
+            const validations = [
+            [
+                isNonBlank(inputCollection.first_name) &&
+                isNonBlank(inputCollection.last_name),
+                "First and last name are required. Click 'X' to cancel form."
+            ],
+            [
+                /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(inputCollection.email),
+                "Valid Email is required. Click 'X' to cancel form."
+            ],
+            [
+                /^\d{4}$/.test(inputCollection.graduation_year),
+                "Valid Graduation Year is required. Click 'X' to cancel form."
+            ],
+            ];
+
+            const invalidValidation = validations.find(([isValid]) => !isValid);
+
+            if (invalidValidation) {
+            errorField.textContent = invalidValidation[1];
+            return;
+            }
+        }
+        submit_endpoint = `${baseEndpoint}/${state}/`
+
+        pageTable.addRow({index_id: null, ...inputCollection }, true)
+            .then(async function(row) {
+            try {
+                return await TabulatorActions.createRow(row, submit_endpoint, uniqueRequiredFields, excludedFields);
+            } catch (error) {
+                row.delete();
+                throw error;
+            }
+            })
+            .then(async function() {
+            if (hasStudentId) {
+                await refreshAvailableStudentOptions(assignment_group);
+            }
+            thisModal.style.display='none'
+            if (targetForm) {
+                targetForm.reset();
+            }
+            errorField.textContent = '';
+            })
+            .catch(function(error) {
+            errorField.textContent = error.message;
+            });
+
+    }
+
     
 
 }
 
 const PageSetup = {
     
-    setupAddRecordControls({
+    setupManageRecordChanges({
         table,
         addButton,
         cancelButton,
         errorField,
         createEndpoint,
-        updateEndpoint,
+        updateTarget,
+        updateTargets,
+        fieldEntities,
         requiredFields,
         excludedFields,
     }) {
@@ -90,14 +202,23 @@ const PageSetup = {
 
         table.on("cellEdited", (cell) => {
             if (excludedFields.includes(cell.getField())) {
+                //console.log(cell.getField() + " is excluded by design.")
                 return;
             }
 
             const row = cell.getRow();
 
-            if (row.getIndex()) {
-                TabulatorActions.updateCell(cell, updateEndpoint); 
-                return; // Existing-row update handling goes here.
+            if (row.getIndex()) { // Existing-row update handling goes here.
+                const target = updateTarget ??
+                    updateTargets?.[fieldEntities?.[cell.getField()]];
+
+                if (!target) {
+                    console.log(`${cell.getField()} has no update target.`);
+                    return;
+                }
+
+                TabulatorActions.updateCell(cell, target);
+                return; 
             }
 
             const value = cell.getValue();
@@ -110,7 +231,10 @@ const PageSetup = {
             }
 
             TabulatorActions.createRow(
-                row, createEndpoint, requiredFields, excludedFields
+                row,
+                editEndpoints['create'],
+                requiredFields,
+                excludedFields
             )
             .then(() => {
                 pendingNewRow = null;
@@ -123,26 +247,30 @@ const PageSetup = {
             });
         });
 
-        addButton.addEventListener("click", () => {
+        if (addButton) {
+            addButton.addEventListener("click", () => {
 
-            table.addRow({ ID: null }, true).then((row) => {
-                pendingNewRow = row;
-                addButton.classList.replace("w3-show", "w3-hide");
-                cancelButton.classList.replace("w3-hide", "w3-show");
-                row.select()
-                setTimeout(function () {
-                    row.getCells()[0]?.edit();
-                }, 0);
+                table.addRow({ ID: null }, true).then((row) => {
+                    pendingNewRow = row;
+                    addButton.classList.replace("w3-show", "w3-hide");
+                    cancelButton.classList.replace("w3-hide", "w3-show");
+                    row.select()
+                    setTimeout(function () {
+                        row.getCells()[0]?.edit();
+                    }, 0);
+                });
             });
-        });
+        }
 
-        cancelButton.addEventListener("click", () => {
-            pendingNewRow?.delete();
-            pendingNewRow = null;
-            errorField.textContent = "";
-            addButton.classList.replace("w3-hide", "w3-show");
-            cancelButton.classList.replace("w3-show", "w3-hide");
-        });
+        if (cancelButton) {
+            cancelButton.addEventListener("click", () => {
+                pendingNewRow?.delete();
+                pendingNewRow = null;
+                errorField.textContent = "";
+                addButton.classList.replace("w3-hide", "w3-show");
+                cancelButton.classList.replace("w3-show", "w3-hide");
+            });
+        }
     }
 }
 
@@ -516,7 +644,7 @@ function getHighSchoolClass(gradYear) {
 }
 
 function editableForNewRows(cell) {
-    return !cell.getRow().getData().indexId;
+    return !cell.getRow().getData().index_id;
 }
 
 async function activeUpdate(cell) {

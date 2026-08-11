@@ -11,7 +11,7 @@ from wtforms import (
 class TechDirectorForm(FlaskForm):
     """Tech Director Control Form"""
 
-    studentId = SelectField(
+    student_id = SelectField(
         "Choose Student",
         choices=[],
         render_kw={
@@ -19,24 +19,34 @@ class TechDirectorForm(FlaskForm):
                 'submit_assignment_fields '
         })
 
-    firstName = StringField('First Name',
+    show_id= SelectField(
+            "Choose Show",
+            choices=[],
+            render_kw={
+                'class':
+                    'pick_show_fields '
+            })
+
+    first_name = StringField('First Name',
         render_kw={
             'class':
               'submit_assignment_fields '
+              'student_form_focus '
         })
 
-    lastName = StringField('Last Name',
+    last_name = StringField('Last Name',
         render_kw={
             'class':
               'submit_assignment_fields '
         })
     email = StringField('School Email',
         render_kw={
+            'autocomplete': 'off',
             'class':
               'submit_assignment_fields '
         })
 
-    graduationYear = StringField('Graduation Year (4 digits)',
+    graduation_year = StringField('Graduation Year (4 digits)',
         render_kw={
             'class':
                 'submit_assignment_fields '
@@ -52,6 +62,33 @@ class TechDirectorForm(FlaskForm):
                 'w3-round '
                 'w3-hover-aqua '
                 'w3-small '
+                'w3-show '
+            }
+        )
+
+    add_record = SubmitField('+ Add Record',
+        render_kw={
+            'class':
+                'admin_action '
+                'w3-button '
+                'w3-blue '
+                'w3-round '
+                'w3-hover-aqua '
+                'w3-small '
+                'w3-show '
+            }
+        )
+
+    cancel_add = SubmitField('Cancel',
+        render_kw={
+            'class':
+                'admin_action '
+                'w3-button '
+                'w3-orange '
+                'w3-round '
+                'w3-hover-amber '
+                'w3-small '
+                'w3-hide '
             }
         )
 
