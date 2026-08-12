@@ -150,8 +150,11 @@
   };
 
   
-  const table_base_url = `/tech_director/api/list_avclub_students`
-  const tableData = `${table_base_url}/active`
+  const tableBaseUrl = `/tech_director/api/list_avclub_students`
+  const tableData = `${tableBaseUrl}/active`
+
+  const allButton = document.getElementById("see_all_records");
+  const activeButton = document.getElementById("see_active_records");
 
   const pageTable = new Tabulator("#members-table", {
   //height:205, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can
@@ -233,6 +236,13 @@ PageSetup.setupManageRecordChanges({
     requiredFields: [],
     excludedFields: ['class'],
   });
+
+  PageSetup.activeAllSelection({
+        allButton: allButton,
+        activeButton: activeButton,
+        pageTable,
+        tableBaseUrl
+    })
 
 const addMemberButtons = document.querySelectorAll('[data-add-member]');
 

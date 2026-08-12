@@ -33,11 +33,22 @@
   const cancelAddButton = document.getElementById("cancel_add");
   const addRecordButton = document.getElementById("add_record");
 
-  const table_base_url = '/tech_director/api/list_shows';
-  const tableData = `${table_base_url}/active`
+  const allButton = document.getElementById("see_all_records");
+  const activeButton = document.getElementById("see_active_records");
+
+
+  const tableBaseUrl = '/tech_director/api/list_shows';
+  const tableData = `${tableBaseUrl}/active`
   
   const requiredFields = ["name"];
   const excludedFields = ["ID"];
+
+  
+
+  const updateTarget = {
+    endpoint: "/tech_director/api/update_show",
+    idField: "index_id",
+  };
 
   const pageTable = new Tabulator("#page-table", {
     ajaxURL: tableData,
@@ -83,13 +94,20 @@
     ],
     });
 
+  PageSetup.activeAllSelection({
+      allButton: allButton,
+      activeButton: activeButton,
+      pageTable,
+      tableBaseUrl
+  })
+  
   PageSetup.setupManageRecordChanges({
     table: pageTable,
     addButton: addRecordButton,
     cancelButton: cancelAddButton,
     errorField: pageErrorField,
     createEndpoint: "/tech_director/api/add_show",
-    updateEndpoint: "/tech_director/api/update_show",
+    updateTarget,
     requiredFields,
     excludedFields,
   });

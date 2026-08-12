@@ -185,6 +185,41 @@ const TabulatorActions = {
 }
 
 const PageSetup = {
+
+    activeAllSelection({
+        allButton,
+        activeButton,
+        pageTable,
+        tableBaseUrl
+    }) {
+
+        let url;
+
+        const selectorButtons = document.querySelectorAll(".active-selector");
+        
+        selectorButtons.forEach(button => {
+            button.addEventListener('click', (event) => {
+                const clickedButton = event.target;
+                const clickedSpanLabel = clickedButton.dataset.spanLabel;
+
+                const otherButton = Array.from(selectorButtons).find(btn => btn !== clickedButton);
+                const otherSpanLabel = otherButton.dataset.spanLabel;
+                const action = clickedButton['id']
+
+                if (action == "see_all_records") {
+                    url = tableBaseUrl+"/all"
+                } else if (action == "see_active_records") {
+                    url = tableBaseUrl+"/active"
+                }
+
+                clickedButton.classList.replace("w3-show", "w3-hide");
+                document.getElementById(clickedSpanLabel).style.display = "inline-block";
+                otherButton.classList.replace("w3-hide", "w3-show");
+                document.getElementById(otherSpanLabel).style.display = "none";
+                pageTable.setData(url);
+            });
+        });
+    },
     
     setupManageRecordChanges({
         table,
@@ -232,7 +267,7 @@ const PageSetup = {
 
             TabulatorActions.createRow(
                 row,
-                editEndpoints['create'],
+                createEndpoint,
                 requiredFields,
                 excludedFields
             )
@@ -250,7 +285,7 @@ const PageSetup = {
         if (addButton) {
             addButton.addEventListener("click", () => {
 
-                table.addRow({ ID: null }, true).then((row) => {
+                table.addRow({}, true).then((row) => {
                     pendingNewRow = row;
                     addButton.classList.replace("w3-show", "w3-hide");
                     cancelButton.classList.replace("w3-hide", "w3-show");
@@ -679,6 +714,7 @@ async function activeUpdate(cell) {
     }
 }
 
+/*
 document.addEventListener("DOMContentLoaded", () => {
 
     const allButton = document.getElementById("see_all_records");
@@ -716,33 +752,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 pageTable.setData(url);
             });
         });
-
-        //pageTable.setData(url)
     }
-
-
-   /*
-    if (addRecordButton) {
-        addRecordButton.addEventListener("click", function () {
-            const blankRowData = {
-                ID: null
-            };
-
-            pageTable.addRow(blankRowData, true)
-                .then((row) => {
-                cancelAddButton.classList.replace("w3-hide", "w3-show");
-                addRecordButton.classList.add("w3-hide");
-                row.select();
-                setTimeout(function () {
-                    const cell = row.getCells()[0];
-                    if (cell) {
-                    cell.edit();
-                    }
-                }, 0);
-                })
-        });
-    }
-        */
 });
-
-
+*/
