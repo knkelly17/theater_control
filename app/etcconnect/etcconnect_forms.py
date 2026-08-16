@@ -4,7 +4,8 @@ from flask_wtf import FlaskForm
 from wtforms import (
     IntegerField,
     SelectField,
-    DecimalField
+    DecimalField,
+    SubmitField
 )
 
 from wtforms.widgets import NumberInput
@@ -54,3 +55,32 @@ class ETCForm(FlaskForm):
                 max=1000
             )
     )
+
+    channel_at_full = SubmitField('Channel @ Full',
+            render_kw= {
+                'data-action': 'set_level_full',
+                'data-channel': 'Channel @ Full',
+                'data-address':  'Address @ Full',
+                'class':
+                    'etc_action '
+                    'w3-button '
+                    'w3-blue '
+                    'w3-round '
+                    'w3-hover-aqua '
+                    'w3-large ' 
+            }
+        )
+
+
+    add_etc_api_command = SubmitField('Add ETC API Command',
+            render_kw={
+                'class':
+                    'admin_action '
+                    'w3-button '
+                    'w3-blue '
+                    'w3-round '
+                    'w3-hover-aqua '
+                    'w3-small '
+                    'w3-show '
+                }
+            )

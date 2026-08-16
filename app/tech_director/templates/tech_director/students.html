@@ -14,8 +14,8 @@
       <span id='label-all' style="display:none">All</span>
       Students
     </h1>
-    {{ form.see_all_records }}
-    {{ form.see_active_records }}
+    {{ form.see_all_records() }}
+    {{ form.see_active_records() }}
     <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
     {{ form.add_student() }}
     {{ form.cancel_add() }}
@@ -82,10 +82,7 @@
       },
       mutateLink: "class", 
       validator: function(cell, value, parameters){
-        // Convert string input to a base-10 integer
         var yearNum = parseInt(value, 10);
-        
-        // Ensure it is a valid number, and falls strictly within your min/max constraints
         return !isNaN(yearNum) && yearNum >= 2025 && yearNum <= 2100;
       }
       },
@@ -124,7 +121,7 @@
       addButton: addRecordButton,
       cancelButton: cancelAddButton,
       errorField: pageErrorField,
-      createEndpoint: "/tech_director/api/student",
+      createEndpoint: "/tech_director/api/add_student",
       updateTarget,
       requiredFields,
       excludedFields

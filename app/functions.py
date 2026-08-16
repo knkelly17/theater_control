@@ -1,7 +1,9 @@
 '''Utility functions for the app.'''
 import os
+import logging
 from functools import wraps
 from datetime import datetime
+from pythonosc.udp_client import SimpleUDPClient
 from flask import current_app, request, render_template
 from flask_login import current_user
 from werkzeug.utils import secure_filename
@@ -9,6 +11,14 @@ from app.functions_db import (
     get_db_value,
     query_single_table_db
 )
+
+log = logging.getLogger(__name__)
+
+def udp_connect(ip, port, message, parameter):
+    '''sennd a UDP message'''
+    client = SimpleUDPClient(ip, port)
+    client.send_message(message, parameter)
+
 
 def group_required(*group_names):
     '''Get groups for a user'''

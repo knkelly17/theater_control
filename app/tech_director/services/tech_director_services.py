@@ -9,8 +9,8 @@ from app.functions import (
     get_current_academic_year_start
 )
 
-from app.tech_director.repositories.tech_director_repository import AVClubRepository
-from app.tech_director.repositories.student_repository import StudentRepository
+from app.tech_director.repositories.tech_director_repositories import AVClubRepository
+from app.tech_director.repositories.student_repositories import StudentRepository
 
 log = logging.getLogger(__name__)
 

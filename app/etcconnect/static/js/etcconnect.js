@@ -93,29 +93,10 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         try {
-            const response = await fetch('/etcconnect/level_set', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: JSON.stringify(req_data)
-            });
-
-            if (response.status === 401) {
-                statusEl.textContent = 'Session expired. Redirecting to login...';
-                window.location.href = '/profile/login?next=' + encodeURIComponent(window.location.pathname + window.location.search);
-                return;
-            }
-
-            if (!response.ok) {
-                statusEl.textContent = 'Server error. Please try again.';
-                return;
-            }
-
-            const data = await response.json();
-
+            const data = await api.post(
+                '/etcconnect/api/level_set',
+                req_data
+            );
             if (data.result === 1) {
                 statusEl.textContent = data.text;
             } else {

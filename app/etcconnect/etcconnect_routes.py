@@ -2,23 +2,23 @@
 import logging
 import datetime
 from flask import (
-    abort,
     render_template,
     request,
     jsonify,
-    url_for,
-    current_app)
-from flask_login import login_required, current_user
-from pythonosc.udp_client import SimpleUDPClient
+)
+from flask_login import login_required
+
 from app.functions import group_required, get_setting
-from app.functions_db import get_db
+
+from app.forms import SiteForm
 from .etcconnect_forms import ETCForm
+
+from .services.etcconnect_services import (
+    ETCConnectService
+)
 from . import etcconnect_bp # pylint: disable=cyclic-import
 
 log = logging.getLogger(__name__)
-
-#ETC_IP = str(get_setting(current_app.config,'etc_ip'))
-#ETC_PORT = int(get_setting(current_app.config,'etc_port'))
 
 
 currentDT = datetime.datetime.now()
@@ -38,107 +38,64 @@ def etcconnect_control():
         version=ver,
         main_menu='etcconnect')
 
-
-@etcconnect_bp.route('/level_set', methods=['POST', 'GET'])
+@etcconnect_bp.route('/api/level_set', methods=['POST'])
 @login_required
 @group_required("etcconnect")
 def level_set():
     """Channel/Address level setting or Cue fire."""
-    if current_user.is_authenticated:
-        ip = str(get_setting('etc_ip'))
-        port = int(get_setting('etc_port'))
-        client = SimpleUDPClient(ip, port)
 
-        mode = request.get_json()['mode']
-        target = str(request.get_json()['target'])
-        level = str(request.get_json()['level'])
+    result = ETCConnectService.set_level(request.get_json())
+    return jsonify(result)
 
-        mode_code = ''
-        return_text = ''
+@etcconnect_bp.route('/etc_api_commands', methods=['POST', 'GET'])
+@login_required
+@group_required("admin")
+def etc_api_commands():
+    """Admin Settings page route."""
+    return render_template(
+        'etcconnect/etc_api_commands.html', 
+        form=ETCForm(),
+        site_form = SiteForm(),
+        title='Admin Tasks',
+        sub_title='ETC API Commands',
+        site_name=get_setting('name'),
+        version=ver,
+        main_menu='admin',
+        base='etc_api_commands'
+    )
 
-        if mode == 'channel':
-            mode_code = 'chan'
-            return_text = 'Channel ' + target +' is @ '+ level
-        elif mode == 'address':
-            mode_code = 'addr'
-            return_text = 'Address ' + target +' is @ '+ level
-        elif mode == 'cue':
-            mode_code = mode
-            return_text = 'Cue ' + level + ' is active'
+@etcconnect_bp.route('/api/get_etc_api_commands', methods=['GET']) #this is probably a post
+@login_required
+@group_required("admin")
+def get_qlab_commands():
+    '''Fetches the list of ETC API commands from the database and returns it as JSON.'''
+    qlab_commands = ETCConnectService.list_all()
+    return jsonify (qlab_commands)
 
-        message = "/eos/"+ mode_code + "/" + target + "/"
+@etcconnect_bp.route('/api/update_etc_api_command', methods=['PUT'])
+@login_required
+@group_required("admin")
+def update_etc_api_command():
+    '''Update command details'''
+    update_response =  ETCConnectService.update_command(request.get_json())
+    return jsonify(update_response)
 
-        client.send_message(message, level)
-        etc_result = 1
-    else:
-        etc_result = 0
-        return_text = url_for("index")
-    return jsonify({
-        'text': return_text,
-        'result': etc_result})
+@etcconnect_bp.route('/api/add_etc_api_command', methods=['POST'])
+@login_required
+@group_required("admin")
+def add_etc_api_command():
+    '''Add a command'''
+    add_response =  ETCConnectService.add_command(request.get_json())
+    return jsonify(add_response)
 
-
-@etcconnect_bp.route('/fireCueRest', methods=['POST'])
+@etcconnect_bp.route('/api/fireCueRest', methods=['POST'])
 def fire_cue_rest():
     """Address level setting via REST route."""
 
-    qlab_ext_ip = get_setting('qlab_ext_ip')
-    qlab_ext_key = get_setting('qlab_ext_key')
+    cue_response = ETCConnectService.fire_cue_rest(
+        request.remote_addr,
+        request.headers.get('X-Api-Key'),
+        request.get_json(silent=True)
+    )
 
-    if request.remote_addr != str(qlab_ext_ip):
-        log.warning("Unauthorized access attempt from IP %s", request.remote_addr)
-        abort(403)
-
-    api_key = request.headers.get('X-Api-Key')
-
-    if api_key != str(qlab_ext_key):
-        log.warning("Unauthorized access attempt with API key")
-        abort(403)
-
-
-    # Get JSON data - silent=True prevents 400 on parse failure
-    json_data = request.get_json(silent=True)
-
-    if json_data and 'command' in json_data:
-        etc_ip = str(get_setting('etc_ip'))
-        etc_port = int(get_setting('etc_port'))
-        command = json_data['command']
-        qlab_parameters = get_qlab_command_db(command)
-        if qlab_parameters:
-            client = SimpleUDPClient(etc_ip, etc_port)
-            message = '/eos'
-            param1 = qlab_parameters.get('parameter_1')
-            param2 = qlab_parameters.get('parameter_2')
-            param3 = qlab_parameters.get('parameter_3')
-            if param1:
-                message += '/' + param1
-            if param2:
-                message += '/' + param2
-
-            client.send_message(message, param3)
-        log.info("QLab trigger: %s from %s to %s", command, request.remote_addr, etc_ip)
-
-        return jsonify({
-            'text': "Cue fired via REST endpoint with command: " + command,
-            'result': 1
-        })
-    #if not input_command:
-    #    return jsonify({'error': 'Missing command parameter'}), 400
-
-
-
-    log.info("Cue fired via REST endpoint with command: %s", command)
-    log.info("Allowed IP: %s", qlab_ext_ip)
-    return jsonify({
-        'text': "Cue fired via REST endpoint with command: " + command,
-        'result': 1
-    })
-
-def get_qlab_command_db(command_name):
-    '''Fetch QLab command parameters from the database based on the command name.'''
-    with get_db() as db:
-        cursor = db.cursor(dictionary=True)
-        query = "SELECT * FROM qlab_commands WHERE name = %s and active = 'Y'"
-        cursor.execute(query, (command_name,))
-        qlab_commands_data = cursor.fetchone()
-        return qlab_commands_data
+    return jsonify(cue_response)

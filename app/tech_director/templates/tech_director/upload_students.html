@@ -25,15 +25,15 @@
         {{ form.hidden_tag() }}
 
         <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
-            {{ form.google_sheet_id.label }} {{ form.google_sheet_id }}
+            {{ form.google_sheet_id.label }} {{ form.google_sheet_id() }}
 
         <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
-            {{ form.google_sheet_range.label }} {{ form.google_sheet_range }}
+            {{ form.google_sheet_range.label }} {{ form.google_sheet_range() }}
             
         <div class="w3-row">
           <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
 
-            {{ form.upload_students }}
+            {{ form.upload_students() }}
         </div>
       
         

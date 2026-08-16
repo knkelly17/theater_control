@@ -51,21 +51,11 @@ const TabulatorActions = {
 
         payloadToSend = normalizePayloadForDb(rowData)
 
-        try {
-            const data = await api.put(
-                endpoint,
-                preparePayload(payloadToSend)
-            );
 
-            cell.getElement().classList.add("w3-pale-green");
-            setTimeout(() => cell.getElement().classList.remove("w3-pale-green"), 1000);
-        } catch(error) {
-            console.error(error);
-            // ❌ error feedback
-            cell.getElement().classList.add("w3-pale-red");
-        }
-
-        //sendFieldToDb(rowData, cell, endpoint);
+        const data = await api.put(
+            endpoint,
+            preparePayload(payloadToSend)
+        );
     }, 
 
     async getData(endpoint) {
@@ -252,7 +242,20 @@ const PageSetup = {
                     return;
                 }
 
-                TabulatorActions.updateCell(cell, target);
+                TabulatorActions.updateCell(
+                    cell,
+                    target
+                )
+                .then(() => {
+                    errorField.textContent = "";
+                    cell.getElement().classList.remove("w3-pale-red");
+                    cell.getElement().classList.add("w3-pale-green");
+                    setTimeout(() => cell.getElement().classList.remove("w3-pale-green"), 1000);
+                })
+                .catch((error) => {
+                    errorField.textContent = error.message;
+                    cell.getElement().classList.add("w3-pale-red");
+                })
                 return; 
             }
 
@@ -320,24 +323,6 @@ window.fetch = async function(...args) {
 
     return response;
 };
-
-function handleFetchResponse(response) {
-    if (response.status === 401) {
-        window.location.href = '/profile/login?next=' + encodeURIComponent(window.location.pathname + window.location.search);
-        return null;
-    }
-
-    if (response.status === 403) {
-        alert('You do not have permission to perform this action.');
-        return null;
-    }
-
-    if (!response.ok) {
-        return response;
-    }
-
-    return response;
-}
 
 function isRowComplete(rowData, requiredFields) {
     return requiredFields.every(field => {

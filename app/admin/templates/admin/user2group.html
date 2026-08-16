@@ -37,7 +37,7 @@
 <script>
 
   async function buildMatrix() {
-    const res = await fetch("/admin/permissions_matrix");
+    const res = await fetch("/admin/api/permissions_matrix");
     const data = await res.json();
     
 
@@ -47,9 +47,14 @@
 
     const groupCols = data.groups.map(g => ({
         title: g.name,
-        field: `g_${g.id}`,
+        field: `g_${g.index_id}`,
         hozAlign: "center",
         formatter: "tickCross",
+        formatterParams: {
+         allowTruthy: true,
+         tickElement:"<i class='fa fa-check' style='color: green;'></i>",
+         crossElement:"<i class='fa fa-times' style='color: red;'></i>",
+        },
         cellClick: onToggleClick
     }));
 
@@ -66,11 +71,14 @@
 
   const currentUserId = {{ current_user.id|tojson }}
 
+  //Keeping this one local rather than the generic one in script.js
+  //as this behaves differently than the typical create/update
+
   async function onToggleClick(e, cell) {
     const row = cell.getRow().getData();
     const field = cell.getField();
     const groupId = field.split("_")[1];
-    const userId = row.id;
+    const userId = row.user_id;
     const groupTitle  = cell.getColumn().getDefinition().title
 
    //Current user cannot add/remove admin access for themselves
@@ -83,14 +91,12 @@
     const currentValue = cell.getValue();
     const newValue = !currentValue;
 
-    
-
     // update UI immediately
     cell.setValue(newValue);
     
 
     try {
-        const res = await fetch("/admin/update_user_group", {
+        const res = await fetch("/admin/api/update_user_group", {
             method: "POST",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({
@@ -104,7 +110,7 @@
 
         // success flash
         cell.getElement().classList.add("w3-pale-green");
-        setTimeout(() => cell.getElement().classList.remove("w3-pale-green"), 200);
+        setTimeout(() => cell.getElement().classList.remove("w3-pale-green"), 2000);
 
     } catch (err) {
         // revert on failure

@@ -1,7 +1,7 @@
 '''Serices for processing Show Items'''
 import logging
 
-from app.tech_director.repositories.student_repository import (
+from app.tech_director.repositories.student_repositories import (
     StudentRepository
 )
 

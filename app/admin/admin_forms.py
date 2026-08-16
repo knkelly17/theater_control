@@ -41,18 +41,7 @@ class AdminForm(FlaskForm):
                 'w3-round '
                 'w3-hover-aqua '
                 'w3-small '
-            }
-        )
-
-    add_qlab_command = SubmitField('Add QLAB Command',
-        render_kw={
-            'class':
-                'admin_action '
-                'w3-button '
-                'w3-blue '
-                'w3-round '
-                'w3-hover-aqua '
-                'w3-small '
+                'w3-show '
             }
         )
 
@@ -65,6 +54,7 @@ class AdminForm(FlaskForm):
                 'w3-round '
                 'w3-hover-aqua '
                 'w3-small '
+                'w3-show '
             }
         )
 
@@ -77,6 +67,7 @@ class AdminForm(FlaskForm):
                 'w3-round '
                 'w3-hover-aqua '
                 'w3-small '
+                'w3-show '
             }
         )
 

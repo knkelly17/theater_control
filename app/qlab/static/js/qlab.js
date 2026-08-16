@@ -31,33 +31,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const response = await fetch('/qlab/qlabAJAX', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: JSON.stringify(req_data)
-            });
 
-            if (response.status === 401) {
-                statusEl.textContent = 'Session expired. Redirecting to login...';
-                window.location.href = '/profile/login?next=' + encodeURIComponent(window.location.pathname + window.location.search);
-                return;
-            }
+            const data = await api.post(
+                '/qlab/api/qlab_cue_action',
+                req_data
+            );
 
-            if (!response.ok) {
-                statusEl.textContent = 'Server error. Please try again.';
-                return;
-            }
-
-            const data = await response.json();
+            statusEl.textContent = data.text;
 
             if (data.result === 1) {
                 statusEl.textContent = data.text;
             } else {
-                window.location.href = data.text;
+                statusEl.textContent = `${data.text} Contact Support`;
             }
         } catch (err) {
             statusEl.textContent = 'Action Failed. Contact Support';

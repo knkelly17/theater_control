@@ -57,6 +57,24 @@ const api_v1 = {
     }
 };
 
+function handleFetchResponse(response) {
+    if (response.status === 401) {
+        window.location.href = '/profile/login?next=' + encodeURIComponent(window.location.pathname + window.location.search);
+        return null;
+    }
+
+    if (response.status === 403) {
+        alert('You do not have permission to perform this action.');
+        return null;
+    }
+
+    if (!response.ok) {
+        return response;
+    }
+
+    return response;
+}
+
 const api = {
 
     async _request(method, endpoint, payload = null) {
@@ -81,7 +99,10 @@ const api = {
         handleFetchResponse(response);
 
         if (!response.ok) {
-            throw new Error(data.message || `Request failed (${response.status})`);
+            const error = new Error(data.message || `Request failed (${response.status})`);
+            error.status = response.status;
+            error.data = data;
+            throw error;
         }
 
         return data;

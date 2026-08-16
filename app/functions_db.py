@@ -76,26 +76,26 @@ def insert_db(table_name, data_values):
         inserted_id = cursor.lastrowid
         return inserted_id
 
-def query_single_table_db(field_list, table, where_object, order):
-    '''get values from a single DB table'''
+def delete_db(
+        table_name,
+        where_object
+    ):
+    '''Delete a record from the 
+    specified table with the provided data conditons.'''
     with get_db() as db:
         cursor = db.cursor(dictionary=True)
 
-        query = f"SELECT {field_list} FROM {table}"
+        query = f'DELETE FROM {table_name}'
         params = []
 
-        if where_object:
-            where_column = where_object.get("where_column")
-            target_value = where_object.get("target_value")
-            operator = where_object.get("operator", "=")
+        where_clause, where_params = build_where_clause(where_object)
+        query += where_clause
+        params.extend(where_params)
 
-            if where_column and target_value is not None:
-                query += f" WHERE {where_column} {operator} %s"
-                params.append(target_value)
-
-        query += f" ORDER BY {order}"
         cursor.execute(query, params)
-        return cursor.fetchall()
+        db.commit()
+        row_count = cursor.rowcount
+        return row_count
 
 def query_db(
     field_list,
@@ -125,6 +125,28 @@ def query_db(
 
         cursor.execute(query, params)
         return cursor.fetchall()
+
+def query_single_table_db(field_list, table, where_object, order):
+    '''get values from a single DB table'''
+    with get_db() as db:
+        cursor = db.cursor(dictionary=True)
+
+        query = f"SELECT {field_list} FROM {table}"
+        params = []
+
+        if where_object:
+            where_column = where_object.get("where_column")
+            target_value = where_object.get("target_value")
+            operator = where_object.get("operator", "=")
+
+            if where_column and target_value is not None:
+                query += f" WHERE {where_column} {operator} %s"
+                params.append(target_value)
+
+        query += f" ORDER BY {order}"
+        cursor.execute(query, params)
+        return cursor.fetchall()
+
 
 def build_where_clause(where_object):
     '''build out the where portion of a sql query'''
