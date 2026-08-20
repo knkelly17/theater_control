@@ -27,6 +27,7 @@ def get_db_value(field, table, where):
     with get_db() as db:
         cursor = db.cursor(dictionary=True)
         query = f"SELECT {field} FROM {table} WHERE {where}"
+        log.warning(query)
         cursor.execute(query)
         output = cursor.fetchone()
         return output[field] if output else None
@@ -46,13 +47,16 @@ def update_db(table_name, this_id, data_values):
     data_values['sessionid'] = current_user.sessionid
     with get_db() as db:
         cursor = db.cursor(dictionary=True)
-        query = "UPDATE " + table_name + " SET "
+        query = f'UPDATE {table_name} SET '
         update_list = []
+        params = []
         for field in data_values:
-            update_list.append(field + " = '" + str(data_values[field]) + "'" )
+            update_list.append(f'{field} = %s')
+            params.append(data_values.get(field))
         update_string = ', '.join(update_list)
-        query = query + update_string + " WHERE ID = " + str(this_id)
-        cursor.execute(query)
+        params.append(str(this_id))
+        query = f'{query} {update_string} WHERE ID = %s'
+        cursor.execute(query, params)
         db.commit()
         return cursor.rowcount
 

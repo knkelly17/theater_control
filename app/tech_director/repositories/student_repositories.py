@@ -127,11 +127,29 @@ class StudentRepository:
 
     @staticmethod
     def update_student(data):
-        '''Add student to the student table'''
-        log.warning(data)
-        data_values = {
-            data['field']:data['value']
+        '''Update student table'''
+        allowed_fields = {
+            "first_name": "first_name",
+            "last_name": "last_name",
+            "email": "email",
+            "graduation_year": "graduation_year",
+            "status_id": "status_id",
+            "student_num": "student_num",
+            "parent_name": "parent_name",
+            "parent_email": "parent_email",
+            "notes":"notes"
         }
+        log.warning(data)
+
+        column = allowed_fields.get(data["field"])
+
+        if column is None:
+            raise ValueError(f"Invalid student field: {data['field']}")
+
+        data_values = {
+            column: data["value"]
+        }
+
         return update_db(
             "students", 
             data['ID'],

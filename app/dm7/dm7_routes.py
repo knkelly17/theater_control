@@ -9,8 +9,8 @@ from flask import (
     current_app)
 from flask_login import login_required, current_user
 from pythonosc.udp_client import SimpleUDPClient
+from app.settings_cache import get_setting
 from app.functions import (
-    get_setting,
     group_required,
     upload_file
 )

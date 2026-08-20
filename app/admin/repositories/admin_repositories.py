@@ -4,7 +4,7 @@ from app.functions_db import (
     insert_db,
     update_db,
     query_db,
-    delete_db
+    delete_db,
 )
 
 # from .tech_director_repository import ASSIGNMENT_TABLES # pylint: disable=relative-beyond-top-level
@@ -216,10 +216,7 @@ class SettingRepository:
             sort,
             joins
         )
-        return result[0]['value']
-
-
-
+        return result[0].get('value')
 
     @staticmethod
     def list_all(status):
@@ -251,3 +248,11 @@ class SettingRepository:
             sort,
             joins
         )
+
+    @staticmethod
+    def get_last_setting_update():
+        '''Get the most recent time that settings were updated'''
+        last_update = query_db(
+            "DATE_FORMAT(MAX(timestamp), '%Y-%m-%d %h:%i:%s %p') as last_update",
+            "settings")
+        return last_update[0].get('last_update')

@@ -7,6 +7,7 @@ from flask import Flask
 from app.extensions import login_manager
 from app.hooks import register_hooks
 
+
 def create_app(config_object="app.config.Config"):
     """Create the app"""
     app = Flask(__name__)
@@ -15,8 +16,8 @@ def create_app(config_object="app.config.Config"):
     app.config.from_object(config_object)
 
     app.config["UPLOAD_FOLDER"] = str(
-            Path(app.root_path).parent / app.config["UPLOAD_FOLDER_NAME"]
-        )
+        Path(app.root_path).parent / app.config["UPLOAD_FOLDER_NAME"]
+    )
 
 
     # --- Initialize extensions here ---
@@ -52,5 +53,12 @@ def create_app(config_object="app.config.Config"):
         format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
         )
 
+    from app.settings_cache import get_setting
+
+    @app.context_processor
+    def inject_global_settings():
+        return {
+            "site_name": get_setting("name", "Theater Control")
+        }
 
     return app

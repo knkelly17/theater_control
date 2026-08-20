@@ -21,6 +21,9 @@
       {{ form.add_member() }}
       {{ form.add_new_member() }}
     </div>
+    <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+    <div class="pageErrorField w3-text-red"></div>
+    <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
     <div id="members-table"></div>
     <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
   </div>
@@ -126,6 +129,8 @@
 
   const assignment_group = "{{ assignment_group }}"
 
+  const pageErrorField = document.querySelector(".pageErrorField")
+
   const updateTargets = {
     membership: {
       endpoint: `/tech_director/api/update_membership_info/${assignment_group}`,
@@ -165,6 +170,13 @@
   tabEndNewRow: true,
   sortOrderReverse: true,
   initialSort: initialSort,
+  rowHeader: {
+        formatter: "rownum", // Enables auto-incrementing numbers
+        headerSort: false,   // Disables sorting on this column
+        hozAlign: "center",  // Centers the numbers
+        width: 40,           // Sets a fixed width
+        frozen: true         // Keeps numbers visible while scrolling
+    },
   columns:[ //Define Table Columns
     {
       title:"Student Name",
@@ -229,7 +241,7 @@ PageSetup.setupManageRecordChanges({
     table: pageTable,
     addButton: null,
     cancelButton: null,
-    errorField: null,
+    errorField: pageErrorField,
     createEndpoint: "/api/assign_student_avclub/existing/",
     updateTargets,
     fieldEntities,

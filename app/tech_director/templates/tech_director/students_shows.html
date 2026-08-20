@@ -20,6 +20,9 @@
       {{ form.add_member() }}
       {{ form.add_new_member() }}
     </div>
+    <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+    <div class="pageErrorField w3-text-red"></div>
+    <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
     <div id="members-table"></div>
     <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
   </div>
@@ -132,6 +135,8 @@
   const assignment_group = "{{ assignment_group }}"
 
   const savedShow = sessionStorage.getItem('activeShowId');
+
+  const pageErrorField = document.querySelector(".pageErrorField")
 
   const updateTargets = {
     membership: {
@@ -253,7 +258,7 @@
         table: pageTable,
         addButton: null,
         cancelButton: null,
-        errorField: null,
+        errorField: pageErrorField,
         createEndpoint: null,
         updateTargets,
         fieldEntities,

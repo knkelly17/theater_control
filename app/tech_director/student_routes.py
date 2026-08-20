@@ -120,8 +120,15 @@ def add_student():
 @group_required("tech_director_admin")
 def update_student():
     '''Update student information'''
-    update_response =  StudentService.update_student(request.get_json())
-    return jsonify(update_response)
+    try:
+        update_response =  StudentService.update_student(request.get_json())
+        return jsonify(update_response)
+    except ValueError as exc:
+        log.warning("Invalid student update: %s", exc)
+
+        return jsonify({
+            "message": "System Error.  Contact Administrator."
+        }), 400
 
 
 @tech_director_bp.route('/api/update_membership_info/<string:assignment_group>', methods=['PUT'])

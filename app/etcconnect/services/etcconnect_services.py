@@ -3,9 +3,8 @@ import logging
 from flask import(
     abort
 )
-from app.admin.repositories.admin_repositories import (
-    SettingRepository
-)
+
+from app.settings_cache import get_setting
 
 from app.etcconnect.repositories.etcconnect_repositories import (
     ETCConnectRepository
@@ -43,8 +42,8 @@ class ETCConnectService:
     @staticmethod
     def fire_cue_rest(remote_ip, api_key, data):
         '''Fire a lighting cue coming over the REST Api.'''
-        etc_api_client_ip = SettingRepository.get_setting('etc_api_client_ip')
-        etc_api_key = SettingRepository.get_setting('etc_api_key')
+        etc_api_client_ip = get_setting('etc_api_client_ip')
+        etc_api_key = get_setting('etc_api_key')
 
         response = {}
 
@@ -58,8 +57,8 @@ class ETCConnectService:
 
 
         if data and 'command' in data:
-            etc_ip = str(SettingRepository.get_setting('etc_ip'))
-            etc_port = int(SettingRepository.get_setting('etc_port'))
+            etc_ip = str(get_setting('etc_ip'))
+            etc_port = int(get_setting('etc_port'))
             command = data['command']
             command_parameters = ETCConnectRepository.get_etc_api_command(command)
             if command_parameters:
@@ -86,8 +85,8 @@ class ETCConnectService:
     @staticmethod
     def set_level(data):
         '''Get the value of a specific setting'''
-        ip = str(SettingRepository.get_setting('etc_ip'))
-        port = int(SettingRepository.get_setting('etc_port'))
+        ip = str(get_setting('etc_ip'))
+        port = int(get_setting('etc_port'))
 
         mode = data['mode']
         target = str(data['target'])

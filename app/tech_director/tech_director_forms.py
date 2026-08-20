@@ -17,6 +17,7 @@ class TechDirectorForm(FlaskForm):
         render_kw={
             'class':
                 'submit_assignment_fields '
+                'student_form_focus '
         })
 
     show_id= SelectField(

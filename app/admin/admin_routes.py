@@ -8,16 +8,13 @@ from mysql.connector import (
 from flask import render_template, request, jsonify
 from flask_login import login_required
 from app.functions import (
-    get_setting,
     group_required,
 )
 
-from app.functions_db import (
-    get_db_value
-)
-
 from app.forms import SiteForm
+
 from app.services.device_service import get_devices
+from app.settings_cache import get_cache_last_loaded
 
 from .services.admin_services import(
     UserService,
@@ -44,7 +41,6 @@ def admin_tasks():
         'admin/admin.html', 
         title='Admin Tasks',
         sub_title='Admin Menu',
-        site_name=get_setting('name'),
         version=ver,
         main_menu='admin')
 
@@ -59,7 +55,6 @@ def admin_users():
         'admin/users.html', 
         title='Admin Tasks',
         sub_title='Users',
-        site_name=get_setting('name'),
         form=AdminForm(),
         site_form = SiteForm(),
         version=ver,
@@ -121,7 +116,6 @@ def admin_groups():
         'admin/groups.html', 
         title='Admin Tasks',
         sub_title='Groups',
-        site_name=get_setting('name'),
         form=AdminForm(),
         site_form = SiteForm(),
         version=ver,
@@ -162,7 +156,6 @@ def admin_user2group():
         'admin/user2group.html', 
         title='Admin Tasks',
         sub_title='Users to Groups',
-        site_name=get_setting('name'),
         form=AdminForm(),
         site_form = SiteForm(),
         version=ver,
@@ -198,7 +191,6 @@ def admin_settings():
         site_form = SiteForm(),
         title='Admin Tasks',
         sub_title='Settings',
-        site_name=get_setting('name'),
         version=ver,
         main_menu='admin',
         base='admin_settings'
@@ -261,11 +253,11 @@ def admin_status():
     '''Admin Status page route.'''
     return render_template(
         "admin/status.html",
-        last_loaded=get_db_value("MAX(timestamp)", "settings", "1"),
+        settings_last_updated=SettingService.get_last_setting_update(),
+        cache_last_loaded = get_cache_last_loaded(),
         devices=get_devices(),
         title='Admin Tasks',
         sub_title='System Status',
-        site_name=get_setting('name'),
         version=ver,
         main_menu='admin',
         base='admin_status'

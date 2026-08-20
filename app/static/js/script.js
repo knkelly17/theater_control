@@ -54,7 +54,7 @@ const TabulatorActions = {
 
         const data = await api.put(
             endpoint,
-            preparePayload(payloadToSend)
+            preparePayload(payloadToSend),
         );
     }, 
 

@@ -1,13 +1,11 @@
 '''Serices for processing Admin Items'''
 import logging
 
-from app.admin.repositories.admin_repositories import (
-    SettingRepository
-)
-
 from app.functions import(
     udp_connect
 )
+
+from app.settings_cache import get_setting
 
 log = logging.getLogger(__name__)
 
@@ -19,8 +17,10 @@ class QlabService:
         '''Trigger (or cancel) qlab cue'''
         output_result = 1
         this_text = "All Cues stopped"
-        ip = str(SettingRepository.get_setting('qlab_ip'))
-        port = int(SettingRepository.get_setting('qlab_port'))
+        ip = str(get_setting('qlab_ip'))
+        port = int(get_setting('qlab_port'))
+        log.warning(ip)
+        log.warning(port)
         action = data['action']
         if action == 'fire_qlab_cue':
             cue_number = str(data['cue_number'])

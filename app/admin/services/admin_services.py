@@ -115,3 +115,8 @@ class SettingService:
     def get_setting(key):
         '''Get the value of a specific setting'''
         return SettingRepository.get_setting(key)
+
+    @staticmethod
+    def get_last_setting_update():
+        '''Get the last time the settings were updated'''
+        return SettingRepository.get_last_setting_update()
