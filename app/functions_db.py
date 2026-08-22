@@ -127,6 +127,9 @@ def query_db(
         if order:
             query += f" ORDER BY {order}"
 
+        log.warning(query)
+        log.warning(params)
+
         cursor.execute(query, params)
         return cursor.fetchall()
 

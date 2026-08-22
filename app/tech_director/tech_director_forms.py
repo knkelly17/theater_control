@@ -28,6 +28,14 @@ class TechDirectorForm(FlaskForm):
                     'pick_show_fields '
             })
 
+    inventory_type_id= SelectField(
+        "Choose Show",
+        choices=[],
+        render_kw={
+            'class':
+                'pick_inventory_type '
+        })
+
     first_name = StringField('First Name',
         render_kw={
             'class':

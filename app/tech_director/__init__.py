@@ -16,3 +16,4 @@ tech_director_bp = Blueprint(
 from . import tech_director_routes
 from . import show_routes
 from . import student_routes
+from . import inventory_routes

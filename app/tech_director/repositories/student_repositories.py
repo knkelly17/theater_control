@@ -1,5 +1,10 @@
 '''Repository (DB) handling'''
 import logging
+
+from app.tech_director.repositories.tech_director_repositories import (
+    ASSIGNMENT_TABLES
+)
+
 from app.functions_db import (
     check_row_exists,
     insert_db,
@@ -9,10 +14,10 @@ from app.functions_db import (
 
 log = logging.getLogger(__name__)
 
-ASSIGNMENT_TABLES = {
-    'avclub':'student2avclub',
-    'show':'assignments_show'
-    }
+#ASSIGNMENT_TABLES = {
+#    'avclub':'student2avclub',
+#    'show':'assignments_show'
+#    }
 
 class StudentRepository:
     '''Functions used for interacting with show db tables'''
@@ -36,6 +41,7 @@ class StudentRepository:
     @staticmethod
     def get_students(active, start_of_current_year, data_needed, sort_by, exclude_items):
         '''Fetches the list of active students from the database.'''
+        log.warning("data_needed is %s ", data_needed)
 
         field_mappings = {
             "all":"students.ID as index_id, students.*",
@@ -139,7 +145,6 @@ class StudentRepository:
             "parent_email": "parent_email",
             "notes":"notes"
         }
-        log.warning(data)
 
         column = allowed_fields.get(data["field"])
 

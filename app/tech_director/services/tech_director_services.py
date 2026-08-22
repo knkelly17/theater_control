@@ -9,7 +9,11 @@ from app.functions import (
     get_current_academic_year_start
 )
 
-from app.tech_director.repositories.tech_director_repositories import AVClubRepository
+from app.tech_director.repositories.tech_director_repositories import (
+    AVClubRepository,
+    InventoryRepository
+)
+
 from app.tech_director.repositories.student_repositories import StudentRepository
 
 log = logging.getLogger(__name__)
@@ -40,6 +44,37 @@ class AVClubService:
             active,
             get_current_academic_year_start()
         )
+
+class InventoryService:
+    '''Services for Inventory'''
+
+    @staticmethod
+    def list_all(status):
+        '''Fetches the list of inventory.'''
+        return InventoryRepository.list_all(
+            status
+        )
+
+    @staticmethod
+    def list_types(status):
+        '''Fetches the list of inventory.'''
+        return InventoryRepository.list_types(status)
+
+    @staticmethod
+    def add_inventory(data):
+        '''Add new inventory'''
+        new_inventory_id = InventoryRepository.add_inventory(data)
+        return {'index_id':new_inventory_id}
+
+    @staticmethod
+    def update_inventory(data):
+        '''Update show info'''
+        return InventoryRepository.update_inventory(data)
+
+    @staticmethod
+    def list_inventory_assignments():
+        '''list inventory assignments'''
+        return InventoryRepository.list_inventory_assignments()
 
 def upload_student_gsheet(spreadsheet_id, range_name):
     '''upload sheet and insert into db'''

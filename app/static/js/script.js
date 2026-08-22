@@ -156,7 +156,7 @@ const TabulatorActions = {
             })
             .then(async function() {
             if (hasStudentId) {
-                await refreshAvailableStudentOptions(assignment_group);
+                await TechDirectorActions.refreshAvailableStudentOptions(assignment_group);
             }
             thisModal.style.display='none'
             if (targetForm) {

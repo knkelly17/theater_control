@@ -64,6 +64,14 @@ def list_students(state):
     all_students =  StudentService.get_students(state)
     return jsonify(all_students)
 
+@tech_director_bp.route('/api/list_student_names/', methods=['GET'])
+@login_required
+@group_required("tech_director_admin")
+def list_student_names():
+    '''Fetches the list of students from the database and returns it as JSON.'''
+    all_students =  StudentService.get_students("active", "full_name", "full_name")
+    return jsonify(all_students)
+
 @tech_director_bp.route(
         '/api/assign_student/<string:state>/<string:assignment_group>',
         methods=['POST', 'PUT']
@@ -145,7 +153,10 @@ def update_membership_info(assignment_group):
         )
     return jsonify(update_response)
 
-@tech_director_bp.route('/api/get_list_of_students_name_options/<string:assignment_group>', methods=['GET'])
+@tech_director_bp.route(
+        '/api/get_list_of_students_name_options/<string:assignment_group>', 
+        methods=['GET']
+    )
 @login_required
 @group_required("tech_director_admin")
 def get_list_of_students_name_options(assignment_group):
@@ -155,4 +166,15 @@ def get_list_of_students_name_options(assignment_group):
             "message": "Assignment type is missing or invalid."
         }), 422
     exclude = assignment_group
+    return StudentService.get_students_active_names_options(exclude)
+
+@tech_director_bp.route(
+        '/api/get_list_of_students_names/', 
+        methods=['GET']
+    )
+@login_required
+@group_required("tech_director_admin")
+def get_list_of_students_names():
+    """Get an options list of students"""
+    exclude = None
     return StudentService.get_students_active_names_options(exclude)

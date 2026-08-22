@@ -15,10 +15,8 @@ class StudentService:
     '''Class for processing student requests'''
 
     @staticmethod
-    def get_students(active):
+    def get_students(active, data_needed="all", sorted_by="grade"):
         '''Fetches the list of students from the database.'''
-        data_needed = "all"
-        sorted_by = "graduation_year"
         exclude = None
         return StudentRepository.get_students(
             active,
