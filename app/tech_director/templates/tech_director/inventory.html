@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <!-- h1>Enter Channel Number to set Full or Out</h1 -->
+
+{% include 'tech_director/tech_director_menu.html' %}
+
+<!-- Page Content -->
+<div class="w3-main" style="margin-left:200px">
+  <button class="w3-button w3-xlarge w3-hide-large" onclick="w3_open()">&#9776;</button>
+  <div class="w3-container">
+    <h1>Manage 
+      <span id='label-active' style="display:inline-block">Active</span>
+      <span id='label-all' style="display:none">All</span>
+      Inventory
+    </h1>
+    {{ form.see_all_records() }}
+    {{ form.see_active_records() }}
+    <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+    {{ form.add_record() }}
+    {{ form.cancel_add() }}
+    <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+    <div class="pageErrorField w3-text-red"></div>
+    <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+    <div id="page-table"></div>
+    
+  </div>
+</div>
+
+<script>
+
+
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    const typeLabels = await TechDirectorActions.getInventoryTypes()
+    await InitializePageTable(typeLabels)
+  });
+
+  const pageErrorField = document.querySelector(".pageErrorField")
+  const cancelAddButton = document.getElementById("cancel_add");
+  const addRecordButton = document.getElementById("add_record");
+
+  const allButton = document.getElementById("see_all_records");
+  const activeButton = document.getElementById("see_active_records");
+
+
+  const tableBaseUrl = '/tech_director/api/list_inventory';
+  const tableData = `${tableBaseUrl}/active`
+  
+  const requiredFields = ["name"];
+  const excludedFields = ["ID"];
+
+  
+
+  const updateTarget = {
+    endpoint: "/tech_director/api/update_inventory",
+    idField: "index_id",
+  };
+
+  let pageTable = []
+
+  function InitializePageTable  (typeLabels) {
+    
+    pageTable = new Tabulator("#page-table", {
+      ajaxURL: tableData,
+      dataLoader: false,
+      layout:"fitDataTable", //fit columns to width of table (optional)
+      index:"index_id",
+      tabEndNewRow: true,
+      sortOrderReverse: true,
+      initialSort: [
+        {column: "inventory_type_id", dir: "asc"},
+        {column: "name", dir: "asc"},
+      ],
+      columns:[ //Define Table Columns
+        {
+          title:"Name",
+          field:"name",
+          editor:"input",
+          headerFilter:"input",
+          sorter: "alphanum"
+        }, 
+        {
+          title:"Description",
+          field:"description",
+          editor:"input",
+          headerFilter:"input"
+        },
+        {
+          title:"Serial Number",
+          field:"serial_num",
+          editor:"input",
+          headerFilter:"input"
+        }, 
+        {
+          title:"Inventory Type",
+          field:"inventory_type_id",
+          formatter: (cell) => typeLabels[String(cell.getValue())] ?? "",
+          sorter: (a, b) => {
+            const labelA = String(typeLabels[String(a)] ?? "");
+            const labelB = String(typeLabels[String(b)] ?? "");
+
+            return labelA.localeCompare(labelB, undefined, {
+              sensitivity: "base",
+              numeric: true,
+            });
+          },
+          headerFilter: "input",
+          headerFilterFunc: function (headerValue, rowValue) {
+            const displayedName = typeLabels[String(rowValue)] ?? "";
+            return displayedName
+              .toLowerCase()
+              .includes(headerValue.toLowerCase());
+          },
+          editor: "list", // Inline select menu
+          editorParams: function (cell) {
+            return {
+              values: typeLabels, // Grabs the loaded type array
+              autocomplete: true,
+              listOnEmpty: true,
+              clearable: true,
+              itemFormatter: function (label, value, item, element) {
+                  return label;
+              }
+            };
+          },
+        },           
+        {
+          title:"Active",
+          field:"status_id",
+          hozAlign:"center", 
+          formatter:"tickCross",
+          formatterParams: {
+          allowTruthy: true,
+          tickElement:"<i class='fa fa-check'></i>",
+          crossElement:"<i class='fa fa-times'></i>",
+          },
+          cellClick: function (e, cell) {
+            cell.setValue(!cell.getValue());
+          },
+        },
+      ],
+    });
+
+    PageSetup.setupManageRecordChanges({
+      table: pageTable,
+      addButton: addRecordButton,
+      cancelButton: cancelAddButton,
+      errorField: pageErrorField,
+      createEndpoint: "/tech_director/api/add_inventory",
+      updateTarget,
+      requiredFields,
+      excludedFields,
+    });
+  }
+
+  PageSetup.activeAllSelection({
+      allButton: allButton,
+      activeButton: activeButton,
+      pageTable,
+      tableBaseUrl
+  })
+  
+  
+
+</script>
+
+
+<script src="{{ url_for('tech_director.static', filename='js/tech_director.js') }}?v={{ version }}"></script>
+
+{% endblock %}

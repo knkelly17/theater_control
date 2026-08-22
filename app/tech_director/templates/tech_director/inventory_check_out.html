@@ -1,0 +1,317 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <!-- h1>Enter Channel Number to set Full or Out</h1 -->
+
+{% include 'tech_director/tech_director_menu.html' %}
+
+<!-- Page Content -->
+<div class="w3-main" style="margin-left:200px">
+  <button class="w3-button w3-xlarge w3-hide-large" onclick="w3_open()">&#9776;</button>
+  <div class="w3-container">
+    <h1>
+      <span id='label-active' style="display:inline-block">Active</span>
+      <span id='label-all' style="display:none">All</span>
+      Inventory Assignments
+    </h1>
+    {{ form.show_id }}
+    <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+    <div class="w3-margin-bottom manage-show" style="display:block">
+      {{ form.add_member() }}
+      {{ form.add_new_member() }}
+    </div>
+    <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+    <div class="pageErrorField w3-text-red"></div>
+    <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+    <div id="members-table"></div>
+    <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+  </div>
+</div>
+
+<!-- Add Existing User Modal -->
+
+<div id="existing_add_member_modal" class="w3-modal add-member-modal">
+  <div class="w3-modal-content w3-card-4 w3-animate-zoom" style="max-width:600px">
+    <div class="w3-center"><br>
+      <span onclick="document.getElementById('existing_add_member_modal').style.display='none'" class="w3-button w3-xlarge w3-transparent w3-display-topright" title="Close Modal">×</span>
+      <h3 class="w3-wide">Add Existing Student</h3>
+    </div>
+    
+    <div class="w3-container w3-card-4 w3-center">
+      <div class="w3-row">
+        <div class="w3-col m6 l4">&nbsp;</div>
+      </div>
+    
+        {{ form.hidden_tag() }}
+
+        <form class="student_assignment_form">
+
+          {{ form.student_id }}
+        </form>
+
+        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+
+        <button
+          type="button"
+          data-submit-assignment="existing"
+          class="admin_action w3-button w3-blue w3-round w3-hover-aqua w3-small"
+          data-submit="existing">
+          + Add Existing Student
+        </button>
+        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+        <div class="errorField"></div>
+    </div>
+    <div class="w3-row">
+      <div class="w3-col w3-panel w3-pale-blue alert-info" id="change_status"></div>
+    </div>
+  </div>
+</div>
+
+<!-- end of modal-->
+
+<!-- Add New User Modal -->
+
+<div id="new_add_member_modal" class="w3-modal add-member-modal">
+  <div class="w3-modal-content w3-card-4 w3-animate-zoom" style="max-width:600px">
+    <div class="w3-center"><br>
+      <span onclick="document.getElementById('new_add_member_modal').style.display='none'" class="w3-button w3-xlarge w3-transparent w3-display-topright" title="Close Modal">
+        x
+      </span>
+      <h3 class="w3-wide">Add New Student</h3>
+      <h4><span style="color: red;">*</span>All fields are required.</h4>
+    </div>
+    
+    <div class="w3-container w3-card-4 w3-center">
+      <div class="w3-row">
+        <div class="w3-col m6 l4">&nbsp;</div>
+      </div>
+
+      <form class="student_assignment_form">
+  
+        {{ form.hidden_tag() }}
+
+        <span style="color: red;">*</span>{{ form.first_name.label }}: {{ form.first_name }}
+        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+        <span style="color: red;">*</span>{{ form.last_name.label }}: {{ form.last_name }}
+        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+        <span style="color: red;">*</span>{{ form.email.label }}: {{ form.email }}
+        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+        <span style="color: red;">*</span>{{ form.graduation_year.label }}: {{ form.graduation_year }}
+
+
+       </form>
+
+        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+        <button
+          type="button"
+          class="admin_action w3-button w3-blue w3-round w3-hover-aqua w3-small"
+          data-submit-assignment="new">
+          + Add New Student
+        </button>
+        
+        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+        <div class="errorField"></div>
+    </div>
+    <div class="w3-row">
+      <div class="w3-col w3-panel w3-pale-blue alert-info" id="change_status"></div>
+    </div>
+  </div>
+</div>
+
+<!-- end of modal-->
+
+<script>
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    const { namesById, nameOptions } = await getStudentNames();
+    await InitializePageTable(namesById, nameOptions);
+  });
+
+  const tableData = '/tech_director/api/list_inventory_assignments';
+  //const tableData = `${tableBaseUrl}/active`
+
+  const assignment_group = "{{ assignment_group }}"
+
+  const savedShow = sessionStorage.getItem('activeShowId');
+
+  const pageErrorField = document.querySelector(".pageErrorField")
+
+  const updateTargets = {
+    membership: {
+      endpoint: `/tech_director/api/update_membership_info/${assignment_group}`,
+      idField: "index_id",
+    },
+    student: {
+      endpoint: "/tech_director/api/update_student",
+      idField: "student_id",
+    },
+  };
+
+  const fieldEntities = {
+    email: "student",
+    parent_name: "student",
+    parent_email: "student",
+    first_name: "student",
+    last_name: "student",
+    team_id: "membership",
+    role_description: "membership",
+    notes: "membership",
+    status_id: "membership",
+    graduation_year: "student"
+  };
+
+  let pageTable = []
+
+  function InitializePageTable  (studentNames, studentOptions) {
+    const initialSort = [
+      { column: "name", dir: "asc" },
+    ];
+    pageTable = new Tabulator("#members-table", {
+      ajaxURL: tableData,
+      dataLoader: false,
+      layout:"fitDataTable",
+      index:"index_id",
+      tabEndNewRow: true,
+      sortOrderReverse: true,
+      initialSort: initialSort,
+      columns:[ //Define Table Columns
+        {
+          title:"Item Name",
+          field:"name",
+          headerFilter:"input",
+          editable:false
+        },
+        {
+          title:"Student", 
+          field:"student_id",
+          formatter: (cell) => studentNames[String(cell.getValue())] ?? "",
+          editor: "list", // Inline select menu
+          editorParams:{
+            values: studentOptions, // Grabs the loaded team array
+            autocomplete: true,
+            listOnEmpty: true,
+            clearable: true,
+          },
+        },
+        {title:"Role", field:"role_description", editor:"input"},
+        {title:"Email", field:"email", width:300, editor:"input"},
+        {title:"Notes", field:"notes", editor:"input"},
+        {title:"Active", field:"status_id", hozAlign:"center",
+          formatter:"tickCross",
+          formatterParams: {
+            allowTruthy: true,
+            tickElement:"<i class='fa fa-check'></i>",
+            crossElement:"<i class='fa fa-times'></i>",
+          },
+          cellClick: function (e, cell) {
+            cell.setValue(!cell.getValue());
+          },
+        },
+        {title:"Parents' Name(s)", field:"parent_name", editor:"input"},
+        {title:"Parent's Email", field:"parent_email", editor:"input"},
+        {
+          title: "First Name", 
+          field: "first_name", 
+          visible: false
+        },
+        {
+          title: "Last Name", 
+          field: "last_name", 
+          visible: false
+        }
+      ],
+    });
+
+    PageSetup.setupManageRecordChanges({
+        table: pageTable,
+        addButton: null,
+        cancelButton: null,
+        errorField: pageErrorField,
+        createEndpoint: null,
+        updateTargets,
+        fieldEntities,
+        requiredFields: [],
+        excludedFields: ['class']
+      });
+  }
+
+async function loadCurrentShow(show_id) {
+  const dataUrl = `/tech_director/api/list_show_students/${show_id}`;
+  const rows = await TabulatorActions.getData(dataUrl);
+  pageTable.setData(rows);
+}
+
+
+async function getStudentNames() {
+  const rows = await TabulatorActions.getData(
+    "/tech_director/api/list_student_names"
+  );
+
+  const namesById = Object.fromEntries(
+    rows.map((student) => [
+      String(student.ID),
+      student.full_name
+    ])
+  );
+
+  const nameOptions = rows.map((student) => ({
+    label: student.full_name,
+    value: String(student.ID)
+  }));
+
+
+  return { namesById, nameOptions };
+}
+
+const selectShowDropdown = document.querySelector('.pick_show_fields');
+
+selectShowDropdown.addEventListener('change', async (event) => {
+  const show_id = event.target.value;
+  if (!show_id) {
+    sessionStorage.removeItem("activeShowId");
+    pageTable.setData([]);
+    return;
+  }
+  sessionStorage.setItem('activeShowId', show_id);
+  await loadCurrentShow(show_id);
+});
+
+/* Click either the add new or add existing student button */
+const addMemberButtons = document.querySelectorAll('[data-add-member]');
+
+addMemberButtons.forEach(button => {
+  button.addEventListener('click', (event) => {
+    modalId = event.target.dataset.addMember+'_add_member_modal';
+    document.getElementById(modalId).style.display='block';
+    const focusField = document.querySelector('.student_form_focus')
+    if (focusField) {
+      focusField.focus()
+    }
+  });
+});
+
+const extraFields = {'show_id': savedShow}
+const baseEndpoint = '/tech_director/api/assign_student_show'
+
+/* Click Submit button on one of the two forms */
+const submitMemberButtons = document.querySelectorAll('[data-submit-assignment]')
+
+submitMemberButtons.forEach(button => {
+  button.addEventListener('click', (event) => {
+    thisTarget = event.target;
+    TabulatorActions.submitStudentMemberShip(
+      thisTarget,
+      extraFields,
+      baseEndpoint
+    )
+  });
+});
+
+
+</script>
+
+<script src="{{ url_for('tech_director.static', filename='js/tech_director.js') }}?v={{ version }}"></script>
+
+
+
+{% endblock %}
