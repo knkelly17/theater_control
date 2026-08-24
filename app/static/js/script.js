@@ -39,14 +39,18 @@ const TabulatorActions = {
 
     },
 
-    async updateCell(cell, { endpoint, idField }) {
+    async updateCell(cell, { endpoint, idField }, nullableFields = []) {
 
         const rowValues = cell.getRow().getData();
+
+        const value = nullableFields.includes(cell.getField()) && cell.getValue() === ""
+            ? null
+            : cell.getValue();
 
         const rowData = {
             ID: rowValues[idField],
             field: cell.getField(),
-            value: cell.getValue(),
+            value,
         };
 
         payloadToSend = normalizePayloadForDb(rowData)
@@ -222,8 +226,17 @@ const PageSetup = {
         fieldEntities,
         requiredFields,
         excludedFields,
+        nullableFields = [],
     }) {
+        function setAddingState(isAdding) {
+            addButton?.classList.toggle("w3-hide", isAdding);
+            addButton?.classList.toggle("w3-show", !isAdding);
+
+            cancelButton?.classList.toggle("w3-show", isAdding);
+            cancelButton?.classList.toggle("w3-hide", !isAdding);
+        }
         let pendingNewRow = null;
+        
 
         table.on("cellEdited", (cell) => {
             if (excludedFields.includes(cell.getField())) {
@@ -244,7 +257,8 @@ const PageSetup = {
 
                 TabulatorActions.updateCell(
                     cell,
-                    target
+                    target,
+                    nullableFields
                 )
                 .then(() => {
                     errorField.textContent = "";
@@ -277,38 +291,30 @@ const PageSetup = {
             .then(() => {
                 pendingNewRow = null;
                 errorField.textContent = "";
-                addButton.classList.replace("w3-hide", "w3-show");
-                cancelButton.classList.replace("w3-show", "w3-hide");
+                setAddingState(false); // Row successfully created
             })
             .catch((error) => {
                 errorField.textContent = error.message;
             });
         });
 
-        if (addButton) {
-            addButton.addEventListener("click", () => {
-
-                table.addRow({}, true).then((row) => {
-                    pendingNewRow = row;
-                    addButton.classList.replace("w3-show", "w3-hide");
-                    cancelButton.classList.replace("w3-hide", "w3-show");
-                    row.select()
-                    setTimeout(function () {
-                        row.getCells()[0]?.edit();
-                    }, 0);
-                });
+        addButton?.addEventListener("click", () => {
+            table.addRow({}, true).then((row) => {
+                pendingNewRow = row;
+                setAddingState(true); // New row is being edited
+                row.select()
+                setTimeout(function () {
+                    row.getCells()[0]?.edit();
+                }, 0);
             });
-        }
+        });
 
-        if (cancelButton) {
-            cancelButton.addEventListener("click", () => {
-                pendingNewRow?.delete();
-                pendingNewRow = null;
-                errorField.textContent = "";
-                addButton.classList.replace("w3-hide", "w3-show");
-                cancelButton.classList.replace("w3-show", "w3-hide");
-            });
-        }
+        cancelButton?.addEventListener("click", () => {
+            pendingNewRow?.delete();
+            pendingNewRow = null;
+            errorField.textContent = "";
+            setAddingState(false); // New-row editing was cancelled
+        });
     }
 }
 

@@ -27,7 +27,6 @@ def get_db_value(field, table, where):
     with get_db() as db:
         cursor = db.cursor(dictionary=True)
         query = f"SELECT {field} FROM {table} WHERE {where}"
-        log.warning(query)
         cursor.execute(query)
         output = cursor.fetchone()
         return output[field] if output else None
@@ -68,14 +67,15 @@ def insert_db(table_name, data_values):
         cursor = db.cursor(dictionary=True)
         field_list = []
         values_list = []
+        params = []
         for field in data_values:
             field_list.append(str(field))
-            values_list.append("'"+str(data_values[field])+"'")
+            values_list.append('%s')
+            params.append(data_values.get(field))
         field_string = ", ".join(field_list)
         values_string = ", ".join(values_list)
-        query = "INSERT INTO " + table_name + " (" + field_string + ")"
-        query = query + " VALUES (" + values_string + ")"
-        cursor.execute(query)
+        query = f'INSERT INTO {table_name} ({field_string}) VALUES ({values_string})'
+        cursor.execute(query, params)
         db.commit()
         inserted_id = cursor.lastrowid
         return inserted_id
@@ -126,9 +126,6 @@ def query_db(
 
         if order:
             query += f" ORDER BY {order}"
-
-        log.warning(query)
-        log.warning(params)
 
         cursor.execute(query, params)
         return cursor.fetchall()

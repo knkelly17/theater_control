@@ -55,9 +55,7 @@ def inventory():
 def inventory_check_out():
     """List Show Assignment"""
     form = TechDirectorForm()
-    active = "active"
     exclude = None
-    form.show_id.choices = ShowService.list_show_names_options(active)
     form.student_id.choices = StudentService.get_students_active_names_options(exclude)
     return render_template(
         'tech_director/inventory_check_out.html', 
@@ -100,14 +98,18 @@ def add_inventory():
     return jsonify(add_response)
 
 @tech_director_bp.route(
-        '/api/list_inventory_assignments/',
+        '/api/list_inventory_assignments/<string:status>/',
         methods=['GET']
     )
 @login_required
 @group_required("tech_director_admin")
-def list_inventory_assignments():
+def list_inventory_assignments(status):
     '''Fetches the list of inventory that has been checked out.'''
-    all_students =  InventoryService.list_inventory_assignments()
+    if status not in (['all', 'active']):
+        return jsonify({
+            "message": "State (all/active) is missing or invalid."
+        }), 422
+    all_students =  InventoryService.list_inventory_assignments(status)
     return jsonify(all_students)
 
 @tech_director_bp.route(
@@ -154,3 +156,27 @@ def list_inventory_type_options():
     '''get a list of teams for drop down selction'''
     all_types =  InventoryService.list_types('active')
     return jsonify(all_types)
+
+@tech_director_bp.route(
+        '/api/assign_student_inventory/',
+        methods=['POST']
+    )
+@login_required
+@group_required("tech_director_admin")
+def assign_student_inventory():
+    '''Check out inventory to a student.'''
+
+    try:
+        add_response = InventoryService.assign_student_inventory(
+            request.get_json()
+        )
+    except IntegrityError as error:
+        if error.errno == errorcode.ER_DUP_ENTRY:
+            # this contains the actual message: error.msg
+            message = "Error completing task.  Contact Administrator."
+            return jsonify({
+                "message": message,
+                "field": "email",
+            }), 409
+
+    return jsonify(add_response)

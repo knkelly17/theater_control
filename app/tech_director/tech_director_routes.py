@@ -32,7 +32,7 @@ log = logging.getLogger(__name__)
 currentDT = datetime.datetime.now()
 ver = currentDT.strftime("%Y-%m-%d-%H:%M:%S")
 
-VALID_ASSIGNMENTS = {'avclub', 'show', 'all'}
+VALID_ASSIGNMENTS = {'avclub', 'show', 'inventory', 'all'}
 VALID_STATES = {'new', 'existing', 'all', 'active'}
 
 # Main page

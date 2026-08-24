@@ -2,7 +2,8 @@
 import logging
 
 from app.tech_director.repositories.tech_director_repositories import (
-    ASSIGNMENT_TABLES
+    ASSIGNMENT_TABLES,
+    VALID_ASSIGNMENT_FIELDS
 )
 
 from app.functions_db import (
@@ -13,11 +14,6 @@ from app.functions_db import (
 )
 
 log = logging.getLogger(__name__)
-
-#ASSIGNMENT_TABLES = {
-#    'avclub':'student2avclub',
-#    'show':'assignments_show'
-#    }
 
 class StudentRepository:
     '''Functions used for interacting with show db tables'''
@@ -41,7 +37,6 @@ class StudentRepository:
     @staticmethod
     def get_students(active, start_of_current_year, data_needed, sort_by, exclude_items):
         '''Fetches the list of active students from the database.'''
-        log.warning("data_needed is %s ", data_needed)
 
         field_mappings = {
             "all":"students.ID as index_id, students.*",
@@ -164,18 +159,30 @@ class StudentRepository:
     @staticmethod
     def add_assignment(data, assignment_group):
         '''Insert student to the club/group/show table'''
+        data_values = {}
+        for field in data:
+            column = VALID_ASSIGNMENT_FIELDS[assignment_group].get(field)
+            if column is None:
+                raise ValueError(f"Invalid student field: {data['field']}")
+            data_values[field] = data[field]
         inserted_id = insert_db(
             ASSIGNMENT_TABLES[assignment_group],
-            data
+            data_values
         )
         return inserted_id
 
     @staticmethod
     def update_membership_info(data, assignment_group):
         '''Send updates regarding membership to the db'''
+
+        column = VALID_ASSIGNMENT_FIELDS[assignment_group].get(data['field'])
+        if column is None:
+            raise ValueError(f"Invalid {assignment_group} field: {data['field']}")
+
         data_values = {
-            data['field']:data['value']
+            column: data['value']
         }
+
         return update_db(
             ASSIGNMENT_TABLES[assignment_group],
             data['ID'],

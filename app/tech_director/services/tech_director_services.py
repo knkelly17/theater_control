@@ -72,9 +72,30 @@ class InventoryService:
         return InventoryRepository.update_inventory(data)
 
     @staticmethod
-    def list_inventory_assignments():
+    def list_inventory_assignments(status):
         '''list inventory assignments'''
-        return InventoryRepository.list_inventory_assignments()
+        return InventoryRepository.list_inventory_assignments(status)
+
+    @staticmethod
+    def assign_student_inventory(data):
+        '''Assign a student to a group (assignment_type)'''
+        assignment_group = "inventory"
+
+        insert_data = {
+            'student_id':data['student_id'],
+            'inventory_id':data['inventory_id']
+        }
+        if 'show_id' in data:
+            insert_data['show_id'] = data['show_id']
+
+        new_assignment_id = StudentRepository.add_assignment(insert_data, assignment_group)
+        return_row = {
+            'index_id': new_assignment_id,
+            'status_id': 1
+        }
+        return return_row
+
+
 
 def upload_student_gsheet(spreadsheet_id, range_name):
     '''upload sheet and insert into db'''

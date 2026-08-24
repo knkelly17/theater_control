@@ -121,6 +121,7 @@ def get_show_members(show_id):
     all_students =  ShowService.list_show_members(show_id)
     return jsonify(all_students)
 
+# ASSIGN STUDENT TO SHOW
 @tech_director_bp.route(
         '/api/assign_student_show/<string:state>/',
         methods=['POST', 'PUT']
@@ -140,6 +141,7 @@ def assign_student_show(state):
             request.get_json(),
             state
         )
+        return jsonify(add_response)
     except IntegrityError as error:
         if error.errno == errorcode.ER_DUP_ENTRY:
             # this contains the actual message: error.msg
@@ -155,5 +157,8 @@ def assign_student_show(state):
         return jsonify({
             "message": "The student could not be saved."
         }), 500
-
-    return jsonify(add_response)
+    except ValueError as exc:
+        log.error("Invalid update: %s", exc)
+        return jsonify({
+            "message": "System Error.  Contact Administrator."
+        }), 400

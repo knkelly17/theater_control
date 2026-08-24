@@ -10,8 +10,36 @@ log = logging.getLogger(__name__)
 
 ASSIGNMENT_TABLES = {
     'avclub':'student2avclub',
-    'show':'assignments_show'
+    'show':'assignments_show',
+    'inventory': 'assignments_inventory'
     }
+
+VALID_ASSIGNMENT_FIELDS = {
+    'avclub':{
+       'status_id': 'status_id', 
+       'notes':'notes',
+       'student_id':'student_id'
+    },
+    'show':{
+        'status_id': 'status_id', 
+        'notes':'notes',
+        'student_id':'student_id',
+        'show_id':'show_id',
+        'team_id':'team_id',
+        'role_description':'role_description'
+    },
+    'inventory':{
+        'status_id': 'status_id', 
+        'notes':'notes',
+        'student_id':'student_id',
+        'show_id':'show_id',
+        'inventory_id':'inventory_id',
+        'assign_date':'assign_date',
+        'due_date':'due_date',
+        'returned_date':'returned_date'
+    }
+}
+
 
 
 class AVClubRepository:
@@ -90,11 +118,18 @@ class InventoryRepository:
         )
 
     @staticmethod
-    def list_inventory_assignments():
+    def list_inventory_assignments(status):
         '''Gets a list of assigned equipment'''
 
-        fields = "a.ID as index_id, i.name, " \
-                "a.student_id, a.assign_date, a.due_date"
+        # At some point we may need to rethink the status values.
+        # What if there is inventory that is no longer active?
+        # That can easily be managed with the same status argument
+
+        fields = "a.ID as index_id, i.name, i.ID as inventory_id, " \
+                "a.student_id, a.status_id, " \
+                "DATE_FORMAT(a.assign_date, '%Y-%m-%d') as assign_date, " \
+                "DATE_FORMAT(a.due_date, '%Y-%m-%d') as due_date, " \
+                "DATE_FORMAT(a.returned_date, '%Y-%m-%d') as returned_date "
 
         sort = "i.name ASC"
         where_object = {
@@ -113,10 +148,20 @@ class InventoryRepository:
             ],
         }
 
+
         joins = [
             "LEFT JOIN inventory_types t on i.inventory_type_id = t.ID",
-            "LEFT JOIN assignment_inventory a on a.inventory_id = i.ID"
         ]
+
+        if status == "active":
+            joins.append(
+                (   "LEFT JOIN assignments_inventory a "
+                    "ON a.inventory_id = i.ID "
+                    "AND a.status_id = 1"
+                )
+            )
+        elif status == "all":
+            joins.append("LEFT JOIN assignments_inventory a on a.inventory_id = i.ID")
 
         return query_db (
             fields,

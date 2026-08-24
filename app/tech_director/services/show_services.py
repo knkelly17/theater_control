@@ -44,7 +44,6 @@ class ShowService:
         show_list =  ShowRepository.list_all(
             status,
         )
-        log.warning(show_list)
         option_list = [('','')]
         for show in show_list:
             this_option = (show['index_id'], show['name'])

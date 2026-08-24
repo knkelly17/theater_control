@@ -132,14 +132,18 @@ def update_student():
         update_response =  StudentService.update_student(request.get_json())
         return jsonify(update_response)
     except ValueError as exc:
-        log.warning("Invalid student update: %s", exc)
+        log.error("Invalid student update: %s", exc)
 
         return jsonify({
             "message": "System Error.  Contact Administrator."
         }), 400
 
 
-@tech_director_bp.route('/api/update_membership_info/<string:assignment_group>', methods=['PUT'])
+# UPDATE MEMBERSHIP INFO FOR A GROUP/SHOW/ETC
+@tech_director_bp.route(
+        '/api/update_membership_info/<string:assignment_group>', 
+        methods=['PUT', 'POST']
+    )
 @login_required
 @group_required("tech_director_admin")
 def update_membership_info(assignment_group):
@@ -148,11 +152,20 @@ def update_membership_info(assignment_group):
         return jsonify({
             "message": "Assignment type is missing or invalid."
         }), 422
-    update_response =  StudentService.update_membership_info(
-        request.get_json(), assignment_group
-        )
-    return jsonify(update_response)
+    try:
+        update_response =  StudentService.update_membership_info(
+            request.get_json(), assignment_group
+            )
+        return jsonify(update_response)
+    except ValueError as exc:
+        log.error("Invalid assignment update: %s", exc)
 
+        return jsonify({
+            "message": "System Error.  Contact Administrator."
+        }), 400
+
+
+# GET LIST OF STUDENT NAME FOR DROP DOWN
 @tech_director_bp.route(
         '/api/get_list_of_students_name_options/<string:assignment_group>', 
         methods=['GET']
