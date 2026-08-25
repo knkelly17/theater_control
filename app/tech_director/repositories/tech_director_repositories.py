@@ -73,11 +73,11 @@ class AVClubRepository:
                 }
 
         joins = [
-            "LEFT JOIN students ON student2avclub.student_id = students.ID"
+            "LEFT JOIN students ON student2avclub.student_id = students.index_id"
             ]
 
-        fields = "student2avclub.ID as index_id, " \
-        "students.Id as student_id, " \
+        fields = "student2avclub.index_id as index_id, " \
+        "students.index_id as student_id, " \
         "CONCAT(students.first_name,' ',students.last_name) AS full_name, " \
         "students.first_name, students.last_name, " \
         "students.graduation_year, student2avclub.notes, students.email, " \
@@ -113,7 +113,7 @@ class InventoryRepository:
         }
         return update_db(
             "inventory", 
-            data['ID'],
+            data['index_id'],
             data_values
         )
 
@@ -125,7 +125,7 @@ class InventoryRepository:
         # What if there is inventory that is no longer active?
         # That can easily be managed with the same status argument
 
-        fields = "a.ID as index_id, i.name, i.ID as inventory_id, " \
+        fields = "a.index_id as index_id, i.name, i.index_id as inventory_id, " \
                 "a.student_id, a.status_id, " \
                 "DATE_FORMAT(a.assign_date, '%Y-%m-%d') as assign_date, " \
                 "DATE_FORMAT(a.due_date, '%Y-%m-%d') as due_date, " \
@@ -150,18 +150,18 @@ class InventoryRepository:
 
 
         joins = [
-            "LEFT JOIN inventory_types t on i.inventory_type_id = t.ID",
+            "LEFT JOIN inventory_types t on i.inventory_type_id = t.index_id",
         ]
 
         if status == "active":
             joins.append(
                 (   "LEFT JOIN assignments_inventory a "
-                    "ON a.inventory_id = i.ID "
+                    "ON a.inventory_id = i.index_id "
                     "AND a.status_id = 1"
                 )
             )
         elif status == "all":
-            joins.append("LEFT JOIN assignments_inventory a on a.inventory_id = i.ID")
+            joins.append("LEFT JOIN assignments_inventory a on a.inventory_id = i.index_id")
 
         return query_db (
             fields,
@@ -175,7 +175,7 @@ class InventoryRepository:
     def list_types(status):
         '''Gets a list of inventory type'''
 
-        fields = "i.ID as index_id, i.name as name"
+        fields = "i.index_id as index_id, i.name as name"
         sort = "i.name ASC"
         where_object = None
 
@@ -208,7 +208,7 @@ class InventoryRepository:
         '''Fetches the list of inventory from the database.'''
 
 
-        fields = "i.ID as index_id, " \
+        fields = "i.index_id as index_id, " \
             "i.name, i.description, i.serial_num, " \
             "i.status_id, i.inventory_type_id"
         sort = "i.name ASC"

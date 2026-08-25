@@ -176,14 +176,14 @@ async function getStudentNames() {
 
   const namesById = Object.fromEntries(
     rows.map((student) => [
-      String(student.ID),
+      String(student.index_id),
       student.full_name
     ])
   );
 
   let nameOptions = rows.map((student) => ({
     label: student.full_name,
-    value: String(student.ID)
+    value: String(student.index_id)
   }));
 
 

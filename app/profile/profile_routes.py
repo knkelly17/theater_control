@@ -74,34 +74,34 @@ def unauthorized():
 
 @login_manager.user_loader
 def load_user(user_id):
-    '''Load user from the database by ID.'''
+    '''Load user from the database by index_id.'''
     with get_db() as db:
         cursor = db.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM users WHERE ID=%s", (user_id,))
+        cursor.execute("SELECT * FROM users WHERE index_id=%s", (user_id,))
         user_data = cursor.fetchone()
         if not user_data:
             return None
 
         groups_query = """SELECT g.name
         FROM user_groups g
-        JOIN user2group ug ON g.ID = ug.group_id
+        JOIN user2group ug ON g.index_id = ug.group_id
         WHERE ug.user_id = %s"""
 
         cursor.execute(groups_query, (user_id,))
         groups = [row["name"] for row in cursor.fetchall()]
 
-        # Get the most recent session_id for this user from sessionLog
+        # Get the most recent session_id for this user from session_log
         cursor.execute("""
-            SELECT sessionID FROM sessionLog
+            SELECT sessionid FROM session_log
             WHERE user_id = %s
-            ORDER BY sessionID DESC
+            ORDER BY sessionid DESC
             LIMIT 1
         """, (user_id,))
         session_data = cursor.fetchone()
-        session_id = session_data['sessionID'] if session_data else None
+        session_id = session_data['sessionid'] if session_data else None
 
         return User(
-            user_data["ID"],
+            user_data["index_id"],
             user_data["username"],
             user_data["password_hash"],
             groups,
@@ -126,13 +126,13 @@ def login():
                 ):
                 session_id = str(user_data["username"]) + ":" + json_data.get('timestamp', '')
                 user = User(
-                    user_data["ID"],
+                    user_data["index_id"],
                     user_data["username"],
                     user_data["password_hash"],
                     session_id
                 )
                 cursor.execute(
-                    "INSERT INTO sessionLog (sessionID, user_id) VALUES (%s, %s)", 
+                    "INSERT INTO session_log (sessionid, user_id) VALUES (%s, %s)", 
                     (session_id, user.id))
                 db.commit()
                 login_user(user)
@@ -200,7 +200,7 @@ def change_password():
     with get_db() as db:
         cursor = db.cursor()
         cursor.execute(
-            "UPDATE users SET password_hash=%s WHERE ID=%s", 
+            "UPDATE users SET password_hash=%s WHERE index_id=%s", 
             (hashed_password, current_user.id)
         )
         db.commit()

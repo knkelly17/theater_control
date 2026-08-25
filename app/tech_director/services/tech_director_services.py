@@ -106,7 +106,7 @@ def upload_student_gsheet(spreadsheet_id, range_name):
         email = student[columns.index("email")]
         student_exists = StudentRepository.check_for_student(email)
         data_values = {
-            "ID": student[columns.index("indexId")],
+            "index_id": student[columns.index("indexId")],
             "student_id": student[columns.index("studentId")],
             "first_name": student[columns.index("firstName")],
             "last_name":student[columns.index("lastName")],
@@ -118,10 +118,10 @@ def upload_student_gsheet(spreadsheet_id, range_name):
         }
         if student_exists:
             # Need to decide if we want updates to come from the google sheet
-            # output = update_student(data_values['ID'], data_values)
+            # output = update_student(data_values['index_id'], data_values)
             log.warning("Update for %s is  %s", email, student_exists)
         else:
             this_id = StudentRepository.add_student(data_values)
-            log.warning("insert %s with ID %s", email, this_id)
+            log.warning("insert %s with index_id %s", email, this_id)
 
     return columns

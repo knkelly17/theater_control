@@ -83,7 +83,7 @@ def get_actors_db():
     '''Fetches the list of actors from the database.'''
     with get_db() as db:
         cursor = db.cursor(dictionary=True)
-        actor_fields = 'ID, name, year, notes, active'
+        actor_fields = 'index_id, name, year, notes, active'
         query = "SELECT " + actor_fields + " FROM actors ORDER BY name"
         cursor.execute(query)
         actors_data = cursor.fetchall()
@@ -177,10 +177,10 @@ def get_actor_channels():
     '''Get Channel and actor name if assigned'''
     with get_db() as db:
         cursor = db.cursor(dictionary=True)
-        query = "SELECT c.ID, c.channel, a.name as actor " \
+        query = "SELECT c.index_id, c.channel, a.name as actor " \
                 "FROM `channels` c " \
                 "LEFT JOIN actors a on " \
-	            "c.actor = a.ID;"
+	            "c.actor = a.index_id;"
         log.warning(query)
         cursor.execute(query)
         actors_data = cursor.fetchall()
@@ -190,7 +190,7 @@ def get_actor_channels():
 @login_required
 @group_required("dm7")
 def update_field_db():
-    '''Update a specific field in the specified table for the given ID. 
+    '''Update a specific field in the specified table for the given index_id. 
     The sessionid of the current user is automatically included in the update.'''
     edit_row = request.get_json()
     table = edit_row['table']
@@ -198,7 +198,7 @@ def update_field_db():
         edit_row['field']: edit_row['value'],
         'sessionid': current_user.sessionid
     }
-    update_result = update_db(table, edit_row['ID'], update_fields)
+    update_result = update_db(table, edit_row['index_id'], update_fields)
     current_app.settings_last_loaded = currentDT.strftime("%Y-%m-%d-%H:%M:%S")
     return jsonify({
         "status": "ok",

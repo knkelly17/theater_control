@@ -68,7 +68,7 @@ class StudentService:
         )
         option_list = [('','')]
         for student in student_object:
-            this_option = (student['ID'], student['full_name'])
+            this_option = (student['index_id'], student['full_name'])
             option_list.append(this_option)
         return option_list
 

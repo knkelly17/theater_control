@@ -26,7 +26,7 @@ class ShowRepository:
         }
         return update_db(
             "shows", 
-            data['ID'],
+            data['index_id'],
             data_values
         )
 
@@ -45,12 +45,12 @@ class ShowRepository:
             }
 
         joins = [
-            "LEFT JOIN students ON assignments_show.student_id = students.ID",
-            "LEFT JOIN teams ON assignments_show.team_id = teams.ID"
+            "LEFT JOIN students ON assignments_show.student_id = students.index_id",
+            "LEFT JOIN teams ON assignments_show.team_id = teams.index_id"
             ]
 
-        fields = "assignments_show.ID as index_id, " \
-        "students.Id as student_id, " \
+        fields = "assignments_show.index_id as index_id, " \
+        "students.index_id as student_id, " \
         "CONCAT(students.first_name,' ',students.last_name) AS full_name, " \
         "students.first_name, students.last_name, " \
         "teams.name as teamName, assignments_show.team_id, " \
@@ -71,7 +71,7 @@ class ShowRepository:
         '''Fetches the list of shows from the database.'''
 
 
-        fields = "shows.ID as index_id, " \
+        fields = "shows.index_id as index_id, " \
             "shows.name, " \
             "DATE_FORMAT(opening_date, '%Y-%m-%d') as opening_date, " \
             "shows.status_id"
@@ -107,7 +107,7 @@ class TeamRepository:
     def list_all(status):
         '''Fetches the list of teams from the database.'''
 
-        fields = "teams.ID as index_id, " \
+        fields = "teams.index_id as index_id, " \
             "teams.name, " \
             "teams.description, " \
             "teams.the_order, " \

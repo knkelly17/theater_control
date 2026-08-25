@@ -27,7 +27,7 @@ class UserRepository:
         }
         return update_db(
             "users", 
-            data['ID'],
+            data['index_id'],
             data_values
         )
 
@@ -39,14 +39,14 @@ class UserRepository:
         }
         return update_db(
             "users", 
-            data['ID'],
+            data['index_id'],
             data_values
         )
 
     @staticmethod
     def get_user_group_matrix():
         '''Get users assigned to user groups'''
-        fields = 'ID as index_id, user_id, group_id'
+        fields = 'index_id as index_id, user_id, group_id'
         sort = None
         where_object = None
         joins = None
@@ -94,7 +94,7 @@ class UserRepository:
         '''Fetches the list of users from the database.'''
 
 
-        fields = 'ID as index_id, username, first_name, last_name, email, status_id'
+        fields = 'index_id as index_id, username, first_name, last_name, email, status_id'
         sort = "first_name ASC"
 
         where_object = None
@@ -137,7 +137,7 @@ class GroupRepository:
         }
         return update_db(
             "user_groups", 
-            data['ID'],
+            data['index_id'],
             data_values
         )
 
@@ -147,7 +147,7 @@ class GroupRepository:
         '''Fetches the list of groups from the database.'''
 
 
-        fields = 'ID as index_id, name, description, status_id'
+        fields = 'index_id as index_id, name, description, status_id'
         sort = "name ASC"
 
         where_object = None
@@ -190,7 +190,7 @@ class SettingRepository:
         }
         return update_db(
             "settings", 
-            data['ID'],
+            data['index_id'],
             data_values
         )
 
@@ -223,7 +223,7 @@ class SettingRepository:
         '''Fetches the list of settings from the database.'''
 
 
-        fields = 'ID as index_id, name, description, value, the_order, status_id'
+        fields = 'index_id as index_id, name, description, value, the_order, status_id'
         sort = "the_order ASC"
 
         where_object = None

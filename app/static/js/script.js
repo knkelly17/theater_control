@@ -48,7 +48,7 @@ const TabulatorActions = {
             : cell.getValue();
 
         const rowData = {
-            ID: rowValues[idField],
+            index_id: rowValues[idField],
             field: cell.getField(),
             value,
         };
@@ -409,7 +409,7 @@ function editCell(cell, table, endpoint) {
 
 
     const rowData = {
-        "ID": cell.getRow().getIndex(),
+        "index_id": cell.getRow().getIndex(),
         "table": table,
         "field": cell.getField(),
         "value": cell.getValue()
@@ -524,8 +524,8 @@ async function sendNewRowToDB(rowData, row, table, endpoint) {
     const data = await handledResponse.json();
 
     if (handledResponse.ok) {
-        // ✅ assign ID so it becomes a normal row
-        row.update({ ID: data.value });
+        // ✅ assign index_id so it becomes a normal row
+        row.update({ index_id: data.value });
 
         //row.getElement().style.backgroundColor = "#c8f7c5";
         row.getElement().classList.add("w3-pale-green");
@@ -576,7 +576,7 @@ async function editCellAPI(cell, endpoint) {
 
 
     const rowData = {
-        "ID": cell.getRow().getIndex(),
+        "index_id": cell.getRow().getIndex(),
         "field": cell.getField(),
         "value": cell.getValue()
     };

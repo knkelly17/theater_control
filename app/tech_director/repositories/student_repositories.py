@@ -39,8 +39,8 @@ class StudentRepository:
         '''Fetches the list of active students from the database.'''
 
         field_mappings = {
-            "all":"students.ID as index_id, students.*",
-            "full_name": "students.ID, CONCAT(first_name,' ',last_name) AS full_name"
+            "all":"students.index_id as index_id, students.*",
+            "full_name": "students.index_id, CONCAT(first_name,' ',last_name) AS full_name"
         }
 
         sort_mappings = {
@@ -57,10 +57,10 @@ class StudentRepository:
         }
 
         exclude_joins_map = {
-            "avclub": ["LEFT JOIN student2avclub ON students.ID = student2avclub.student_id"]
+            "avclub": ["LEFT JOIN student2avclub ON students.index_id = student2avclub.student_id"]
         }
 
-        fields = field_mappings.get(data_needed, "students.ID as index_id, students.*")
+        fields = field_mappings.get(data_needed, "students.index_id as index_id, students.*")
         sort = sort_mappings.get(sort_by, "students.graduation_year ASC")
         exclude_conditions = exclude_conditions_map.get(exclude_items, None)
         joins = exclude_joins_map.get(exclude_items, None)
@@ -106,14 +106,14 @@ class StudentRepository:
         where_object = {
             "conditions": [
                 {
-                    "column": "ID",
+                    "column": "index_id",
                     "operator": "=",
                     "value": student_id
                 }
             ],
         }
         joins = None
-        fields = "students.ID as student_id, " \
+        fields = "students.index_id as student_id, " \
             "CONCAT(students.first_name,' ',students.last_name) AS full_name, " \
             "students.graduation_year, students.notes, students.email, " \
             "students.status_id, students.parent_name, students.parent_email"
@@ -152,7 +152,7 @@ class StudentRepository:
 
         return update_db(
             "students", 
-            data['ID'],
+            data['index_id'],
             data_values
         )
 
@@ -185,6 +185,6 @@ class StudentRepository:
 
         return update_db(
             ASSIGNMENT_TABLES[assignment_group],
-            data['ID'],
+            data['index_id'],
             data_values
         )

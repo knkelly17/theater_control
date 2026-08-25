@@ -54,7 +54,7 @@ def update_db(table_name, this_id, data_values):
             params.append(data_values.get(field))
         update_string = ', '.join(update_list)
         params.append(str(this_id))
-        query = f'{query} {update_string} WHERE ID = %s'
+        query = f'{query} {update_string} WHERE index_id = %s'
         cursor.execute(query, params)
         db.commit()
         return cursor.rowcount

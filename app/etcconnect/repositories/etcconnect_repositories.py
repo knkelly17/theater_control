@@ -46,7 +46,7 @@ class ETCConnectRepository:
     def list_all():
         '''Fetches the list of ETC API commands from the database.'''
 
-        fields = 'ID as index_id, name, description, ' \
+        fields = 'index_id as index_id, name, description, ' \
         'parameter_1, parameter_2, parameter_3, status_id'
         sort = "name ASC"
 
@@ -75,6 +75,6 @@ class ETCConnectRepository:
         }
         return update_db(
             "etc_api_commands", 
-            data['ID'],
+            data['index_id'],
             data_values
         )

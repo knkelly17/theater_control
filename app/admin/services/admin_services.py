@@ -37,7 +37,7 @@ class UserService:
         new_password = data["new_password"]
         hashed_password = generate_password_hash(new_password)
         password_data = {
-            'ID': data['index_id'],
+            'index_id': data['index_id'],
             'field': 'password_hash',
             'value': hashed_password
         }
