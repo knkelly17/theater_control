@@ -3,7 +3,8 @@ import logging
 from app.functions_db import (
     insert_db,
     update_db,
-    query_db
+    query_db,
+    check_row_exists
 )
 
 # from .tech_director_repository import ASSIGNMENT_TABLES # pylint: disable=relative-beyond-top-level
@@ -101,45 +102,7 @@ class ShowRepository:
             joins
         )
 
-class TeamRepository:
-    '''Used to get team information from the db'''
     @staticmethod
-    def list_all(status):
-        '''Fetches the list of teams from the database.'''
-
-        fields = "teams.index_id as index_id, " \
-            "teams.name, " \
-            "teams.description, " \
-            "teams.the_order, " \
-            "teams.status_id"
-        sort = "teams.the_order ASC"
-
-        joins = None
-
-        where_object = None
-
-        if status == "active":
-            where_object = {
-                "connector": "AND",
-                "conditions": [
-                    {
-                        "column": "teams.status_id", 
-                        "operator": "=", 
-                        "value": 1
-                    }
-                ],
-            }
-
-        return query_db (
-            fields,
-            "teams", 
-            where_object,
-            sort,
-            joins
-        )
-
-    @staticmethod
-    def place_holder():
-        '''placeholder'''
-        message = 'keeping pylint happy'
-        return message
+    def check_for_show_assignment(index_id):
+        '''Check if a row exists for this student'''
+        return check_row_exists("assignments_show", "index_id", index_id)

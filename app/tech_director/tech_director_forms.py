@@ -186,22 +186,38 @@ class TechDirectorForm(FlaskForm):
         }
     )
 
-    google_sheet_id = StringField('Google Sheet ID',
+    student_sheet_id = StringField('Google Sheet ID',
             render_kw={
+                'data-upload-sheet':'student_sheet',
+                "size": "50",
+            }
+        )
+
+    student_sheet_range = StringField('Google Sheed Range',
+            render_kw={
+                'data-upload-range':'student_range', 
                 "size": "50"
             }
         )
 
-    google_sheet_range = StringField('Google Sheed Range',
+    show_assign_sheet_id = StringField('Google Sheet ID',
+                render_kw={
+                    'data-upload-sheet':'show_assign_sheet',
+                    "size": "50"
+                }
+            )
+
+    show_assign_sheet_range = StringField('Google Sheed Range',
             render_kw={
+                'data-upload-range':'show_assign_range',
                 "size": "50"
             }
         )
 
-    upload_students = SubmitField('Upload And Process',
+    upload_google_button = SubmitField('Upload And Process',
         render_kw={
             'class':
-                'dm7_action '
+                'upload_google '
                 'w3-button '
                 'w3-blue '
                 'w3-round '

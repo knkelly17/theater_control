@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <!-- h1>Enter Channel Number to set Full or Out</h1 -->
+
+{% include 'tech_director/tech_director_menu.html' %}
+
+<!-- Page Content -->
+<div class="w3-main" style="margin-left:200px">
+  <button class="w3-button w3-xlarge w3-hide-large" onclick="w3_open()">&#9776;</button>
+  <div class="w3-container">
+    <h1>Manage 
+      <span id='label-active' style="display:inline-block">Active</span>
+      <span id='label-all' style="display:none">All</span>
+      Skills
+    </h1>
+    {{ form.see_all_records() }}
+    {{ form.see_active_records() }}
+    <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+    {{ form.add_record() }}
+    {{ form.cancel_add() }}
+    <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+    <div class="pageErrorField w3-text-red"></div>
+    <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+    <div id="page-table"></div>
+    
+  </div>
+</div>
+
+<script>
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    const teamLabels = await TechDirectorActions.getTechTeamLabels()
+    await InitializePageTable(teamLabels)
+  });
+
+  const pageErrorField = document.querySelector(".pageErrorField")
+  const cancelAddButton = document.getElementById("cancel_add");
+  const addRecordButton = document.getElementById("add_record");
+
+  const allButton = document.getElementById("see_all_records");
+  const activeButton = document.getElementById("see_active_records");
+
+
+  const tableBaseUrl = '/tech_director/api/list_skills';
+  const tableData = `${tableBaseUrl}/active`
+  
+  const requiredFields = ["name"];
+  const excludedFields = ["index_id"];
+
+  
+
+  const updateTarget = {
+    endpoint: "/tech_director/api/update_skill",
+    idField: "index_id",
+  };
+
+  let pageTable = []
+
+  function InitializePageTable  (teamLabels) {
+    pageTable = new Tabulator("#page-table", {
+    ajaxURL: tableData,
+    dataLoader: false,
+    layout:"fitDataTable", //fit columns to width of table (optional)
+    index:"index_id",
+    tabEndNewRow: true,
+    sortOrderReverse: true,
+    initialSort: [
+      {column: "name", dir: "asc"},
+    ],
+    columns:[ //Define Table Columns
+      {
+        title:"Name",
+        field:"name",
+        editor:"input",
+        headerFilter:"input"
+      },
+        {
+          title:"Team", 
+          field:"team_id",
+          formatter: (cell) => teamLabels[String(cell.getValue())] ?? "",
+          editor: "list", // Inline select menu
+          editorParams: function (cell) {
+            return {
+              values: teamLabels, // Grabs the loaded team array
+              autocomplete: true,
+              listOnEmpty: true,
+              clearable: true,
+              itemFormatter: function (label, value, item, element) {
+                  return label;
+              }
+            };
+          },
+          headerFilter: "list", // Renders the dropdown filter
+          headerFilterParams: {
+            values: teamLabels,
+            autocomplete: true,
+            listOnEmpty: true,
+            clearable: true,
+            itemFormatter: function (label) {
+              return label;
+            }
+          }
+        },     
+      {
+        title:"Active",
+        field:"status_id",
+        hozAlign:"center", 
+        formatter:"tickCross",
+        formatterParams: {
+         allowTruthy: true,
+         tickElement:"<i class='fa fa-check'></i>",
+         crossElement:"<i class='fa fa-times'></i>",
+        },
+        cellClick: function (e, cell) {
+          cell.setValue(!cell.getValue());
+        },
+      },
+    ],
+    });
+
+    PageSetup.activeAllSelection({
+      allButton: allButton,
+      activeButton: activeButton,
+      pageTable,
+      tableBaseUrl
+    })
+    
+    PageSetup.setupManageRecordChanges({
+      table: pageTable,
+      addButton: addRecordButton,
+      cancelButton: cancelAddButton,
+      errorField: pageErrorField,
+      createEndpoint: "/tech_director/api/add_skill",
+      updateTarget,
+      requiredFields,
+      excludedFields,
+    });
+
+  }
+
+  
+
+</script>
+
+
+<script src="{{ url_for('tech_director.static', filename='js/tech_director.js') }}?v={{ version }}"></script>
+
+{% endblock %}

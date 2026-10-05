@@ -174,8 +174,6 @@ const TabulatorActions = {
 
     }
 
-    
-
 }
 
 const PageSetup = {

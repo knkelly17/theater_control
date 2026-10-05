@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <!-- h1>Enter Channel Number to set Full or Out</h1 -->
+
+{% include 'tech_director/tech_director_menu.html' %}
+
+{% if base %}
+<script>
+    base_page = "{{ base }}";
+    document.getElementsByClassName(base_page)[0].classList.add("selected-button", "w3-green");
+    document.getElementsByClassName(base_page)[0].classList.remove("w3-dark-gray");
+</script>
+{% endif %}
+
+<!-- Page Content -->
+<div class="w3-main" style="margin-left:200px">
+  <button class="w3-button w3-xlarge w3-hide-large" onclick="w3_open()">&#9776;</button>
+
+  <div data-google-target='student' class="w3-container google_upload_form">
+    <h2>Upload Students From Google Sheet</h2>
+    1l7BY_vD2Y9NQ4lnEG_61XsUCadKpEsowSiCKWfJuXT8
+    <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+
+        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+            {{ form.student_sheet_id.label }} {{ form.student_sheet_id() }}
+
+        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+            {{ form.student_sheet_range.label }} {{ form.student_sheet_range() }}
+            
+        <div class="w3-row">
+          <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+
+            <button
+                type="button"
+                class="upload_google w3-button w3-blue w3-round w3-hover-aqua w3-small">
+                Upload And Process
+            </button>
+        </div>
+      
+
+    <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+
+    <div class="w3-row w3-border-bottom w3-border-black">
+        <div class="upload_response w3-col m6 l4"></div>
+    </div>
+
+  </div>
+
+  <div data-google-target='show_assign' class="w3-container google_upload_form">
+    <h2>Upload Show Assignments From Google Sheet</h2>
+    <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+    {{ form.show_id }}
+
+        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+            {{ form.show_assign_sheet_id.label }} {{ form.show_assign_sheet_id() }}
+
+        <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+            {{ form.show_assign_sheet_range.label }} {{ form.show_assign_sheet_range() }}
+            
+        <div class="w3-row">
+          <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+
+            <button
+                type="button"
+                class="upload_google w3-button w3-blue w3-round w3-hover-aqua w3-small">
+                Upload And Process
+            </button>
+        </div>
+
+    <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+
+    <div class="w3-row w3-border-bottom w3-border-black">
+        <div class="upload_response w3-col m6 l4"></div>
+    </div>
+    
+  </div>
+  
+</div>
+
+<script>
+
+    const targetUrl = "{{ url_for('tech_director.api_upload_google_sheets') }}";
+
+    const selectShowDropdown = document.querySelector('.pick_show_fields');
+
+    let showId = document.getElementById('show_id').value
+
+    selectShowDropdown.addEventListener('change', async (event) => {
+        showId = event.target.value;
+        if (!showId) {
+            sessionStorage.removeItem("activeShowId");
+            return;
+        }
+        sessionStorage.setItem('activeShowId', showId);
+    });
+
+    
+
+
+    document.querySelectorAll('.upload_google').forEach((button) => {
+
+        button.addEventListener('click', async (event) => {
+            event.preventDefault();
+
+            const clickedButton = event.currentTarget;
+            const container = event.currentTarget.closest('.google_upload_form');
+            const responseDiv = container.querySelector('.upload_response');
+
+            const payload = {
+                importProcess: container.dataset.googleTarget,
+                sheetId: container.querySelector('[data-upload-sheet]').value,
+                sheetRange: container.querySelector('[data-upload-range]').value,
+                showId: showId
+            };
+
+            clickedButton.disabled = true; //revents another upload until first is done
+
+            try {
+                await TechDirectorActions.uploadGoogleSheet(
+                    targetUrl,
+                    payload,
+                    responseDiv
+                );
+            } finally {
+                clickedButton.disabled = false;
+            }
+        });
+    });
+  
+</script>
+
+<script src="{{ url_for('tech_director.static', filename='js/tech_director.js') }}?v={{ version }}"></script>
+
+
+
+{% endblock %}

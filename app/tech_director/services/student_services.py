@@ -81,8 +81,12 @@ class StudentService:
 
     @staticmethod
     def update_student(data):
-        '''Update membership info'''
-        return StudentRepository.update_student(data)
+        '''Update student info - one column only'''
+        nomalized_data = {
+            'index_id': data['index_id'],
+            data['field']:data['value']
+        }
+        return StudentRepository.update_student(nomalized_data)
 
     @staticmethod
     def assign_student(data, state, assignment_group):

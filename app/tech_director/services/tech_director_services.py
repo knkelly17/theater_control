@@ -11,10 +11,14 @@ from app.functions import (
 
 from app.tech_director.repositories.tech_director_repositories import (
     AVClubRepository,
-    InventoryRepository
+    InventoryRepository,
+    SkillsRepository,
+    TeamRepository
 )
 
 from app.tech_director.repositories.student_repositories import StudentRepository
+
+from app.tech_director.repositories.show_repositories import ShowRepository
 
 log = logging.getLogger(__name__)
 
@@ -45,6 +49,109 @@ class AVClubService:
             get_current_academic_year_start()
         )
 
+class SkillsService:
+    '''Services for Skills and Students_Skills'''
+    @staticmethod
+    def list_all(status):
+        '''Fetches the list of inventory.'''
+        return SkillsRepository.list_all(
+            status
+        )
+
+    @staticmethod
+    def add_skill(data):
+        '''Add new skill'''
+        new_skill_id = SkillsRepository.add_skill(data)
+        return {'index_id':new_skill_id}
+
+    @staticmethod
+    def update_skill(data):
+        '''Update skill info'''
+        return SkillsRepository.update_skill(data)
+
+    @staticmethod
+    def update_student_skill(data):
+        '''Update student skill info'''
+        update_data = {
+            'student_id':data['index_id'],
+            'skill_id':data['field'].replace('skill_',''),
+            'level_id':data['value']
+        }
+        log.warning(update_data)
+        return()
+        #return SkillsRepository.update_skill(data)
+
+    @staticmethod
+    def list_all_skill_levels():
+        '''Fetches the list of teams from the database.'''
+        return SkillsRepository.list_all_skill_levels()
+
+    @staticmethod
+    def get_student_skills_grid():
+        '''build a matrix of students and skills'''
+        student_list = AVClubService.list_avclub_students('active')
+        skill_list = SkillsService.list_all('active')
+        student_skills = SkillsRepository.get_students_skills_grid()
+        columns = []
+        for skill in skill_list:
+            skill_row = {
+                'field':f"skill_{skill['index_id']}",
+                'skill_id':skill['index_id'],
+                'title':skill['name']
+            }
+            columns.append(skill_row)
+
+
+
+        student_skill_lookup = {
+            (ss["student_id"], ss["skill_id"]): ss["level_id"]
+            for ss in student_skills
+        }
+
+        rows = []
+
+        for student in student_list:
+
+            row = {
+                "student_id": student["student_id"],
+                "name": student["full_name"]
+            }
+
+            for skill in skill_list:
+                skills_id = skill["index_id"]
+
+                row[f"skill_{skills_id}"] = student_skill_lookup.get(
+                    (student["student_id"], skills_id)
+                )
+
+            rows.append(row)
+
+
+        student_skills_grid = {
+            'columns':columns,
+            'rows': rows}
+
+        log.warning(student_skills_grid)
+
+        return student_skills_grid
+
+
+class TeamService:
+    '''Class for specific team items'''
+    @staticmethod
+    def list_all(active):
+        '''Fetches the list of teams from the database.'''
+        return TeamRepository.list_all(
+            active
+        )
+
+    @staticmethod
+    def list_all_tech_team(active):
+        '''Fetches the list of tech_teams from the database.'''
+        return TeamRepository.list_all_tech_teams(
+            active
+        )
+
 class InventoryService:
     '''Services for Inventory'''
 
@@ -68,7 +175,7 @@ class InventoryService:
 
     @staticmethod
     def update_inventory(data):
-        '''Update show info'''
+        '''Update inventory info'''
         return InventoryRepository.update_inventory(data)
 
     @staticmethod
@@ -96,32 +203,86 @@ class InventoryService:
         return return_row
 
 
+class UploadService:
+    '''uploading services'''
 
-def upload_student_gsheet(spreadsheet_id, range_name):
-    '''upload sheet and insert into db'''
-    creds = get_credentials()
-    student_data = read_sheet(creds, spreadsheet_id, range_name)
-    columns = student_data[0]
-    for student in student_data[1:]:
-        email = student[columns.index("email")]
-        student_exists = StudentRepository.check_for_student(email)
-        data_values = {
-            "index_id": student[columns.index("indexId")],
-            "student_id": student[columns.index("studentId")],
-            "first_name": student[columns.index("firstName")],
-            "last_name":student[columns.index("lastName")],
-            "graduation_year": student[columns.index("graduationYear")],
-            "parent_name": student[columns.index("parentName")],
-            "parent_email": student[columns.index("parentEmail")],
-            "email": student[columns.index("email")],
-            "archived": student[columns.index("archived")]
-        }
-        if student_exists:
-            # Need to decide if we want updates to come from the google sheet
-            # output = update_student(data_values['index_id'], data_values)
-            log.warning("Update for %s is  %s", email, student_exists)
-        else:
-            this_id = StudentRepository.add_student(data_values)
-            log.warning("insert %s with index_id %s", email, this_id)
+    @staticmethod
+    def upload_student_gsheet(spreadsheet_id, range_name):
+        '''upload sheet and insert into db'''
+        creds = get_credentials()
+        student_data = read_sheet(creds, spreadsheet_id, range_name)
+        columns = student_data[0]
+        added = []
+        already_exists = []
+        for student in student_data[1:]:
+            index_id = student[columns.index("index_id")]
+            student_exists = StudentRepository.check_for_student(index_id)
+            if student_exists:
+                # Need to decide if we want updates to come from the google sheet
+                data_values = {
+                    "index_id": index_id,
+                    "email": student[columns.index("email")],
+                    "student_num": student[columns.index("student_num")],
+                    "first_name": student[columns.index("first_name")],
+                    "last_name":student[columns.index("last_name")],
+                    "graduation_year": student[columns.index("graduation_year")],
+                    "parent_name": student[columns.index("parent_name")],
+                    "parent_email": student[columns.index("parent_email")],
+                    "preferred_pronouns": student[columns.index("preferred_pronouns")],
+                    "school":student[columns.index("school")]
+                }
+                StudentRepository.update_student(data_values)
 
-    return columns
+                log.warning("Update for %s is  %s", student[columns.index("email")], student_exists)
+                already_exists.append(student[columns.index("email")])
+            else:
+                data_values = {
+                    "index_id": student[columns.index("index_id")],
+                    "student_num": student[columns.index("student_num")],
+                    "first_name": student[columns.index("first_name")],
+                    "last_name":student[columns.index("last_name")],
+                    "graduation_year": student[columns.index("graduation_year")],
+                    "parent_name": student[columns.index("parent_name")],
+                    "parent_email": student[columns.index("parent_email")],
+                    "preferred_pronouns": student[columns.index("preferred_pronouns")],
+                    "email": student[columns.index("email")],
+                    "school":student[columns.index("school")]
+                }
+                this_id = StudentRepository.add_student(data_values)
+                log.warning("insert %s with ID %s", student[columns.index("email")], this_id)
+                added.append(student[columns.index("email")])
+
+
+        response = f"{len(added)} were added and {len(already_exists)} already exist."
+        return response
+
+    @staticmethod
+    def upload_show_assign_gsheet(spreadsheet_id, range_name, show_id):
+        '''upload show assignments'''
+        creds = get_credentials()
+        show_assignments = read_sheet(creds, spreadsheet_id, range_name)
+        columns = show_assignments[0]
+        added = []
+        already_exists = []
+        for assignment in show_assignments[1:]:
+            if show_id == assignment[columns.index("show_id")]:
+                index_id = assignment[columns.index("index_id")]
+                record_exists = ShowRepository.check_for_show_assignment(index_id)
+                if record_exists:
+                    log.warning("Update for %s is  %s", assignment[columns.index("index_id")],
+                                record_exists)
+                    already_exists.append(index_id)
+                else :
+                    data_values = {
+                        "index_id": index_id,
+                        "student_id": assignment[columns.index("student_id")],
+                        "show_id": assignment[columns.index("show_id")],
+                        "team_id":assignment[columns.index("team_id")],
+                        "role_description": assignment[columns.index("role_description")],
+                    }
+                    #this_id = 2222
+                    this_id = StudentRepository.add_assignment(data_values, 'show')
+                    log.warning("insert %s with ID %s", show_id, this_id)
+                    added.append(index_id)
+        response = f"{len(added)} were added and {len(already_exists)} already exist."
+        return response

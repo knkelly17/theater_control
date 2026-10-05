@@ -21,6 +21,7 @@ VALID_ASSIGNMENT_FIELDS = {
        'student_id':'student_id'
     },
     'show':{
+        'index_id': 'index_id',
         'status_id': 'status_id', 
         'notes':'notes',
         'student_id':'student_id',
@@ -96,6 +97,166 @@ class AVClubRepository:
         '''Keeping pyling quiet (too few functions)'''
         message = 'keeping Pylint quiet for now'
         return message
+
+class SkillsRepository:
+    '''Repository for Skills'''
+
+    @staticmethod
+    def add_skill(data):
+        '''Add to the skills table'''
+        return insert_db("skills", data)
+
+    @staticmethod
+    def update_skill(data):
+        '''Update skills field'''
+        data_values = {
+            data['field']:data['value']
+        }
+        return update_db(
+            "skills", 
+            data['index_id'],
+            data_values
+        )
+
+    @staticmethod
+    def list_all(status):
+        '''Fetches the list of skills from the database.'''
+
+
+        fields = "s.index_id as index_id, " \
+            "s.name, s.team_id, s.status_id"
+        sort = "s.name ASC"
+
+        where_object = None
+
+        if status == "active":
+            where_object = {
+                "connector": "AND",
+                "conditions": [
+                    {
+                        "column": "s.status_id", 
+                        "operator": "=", 
+                        "value": 1
+                    }
+                ],
+            }
+
+        joins = None
+
+        return query_db (
+            fields,
+            "skills s", 
+            where_object,
+            sort,
+            joins
+        )
+
+    @staticmethod
+    def list_all_skill_levels():
+        '''Fetches the list of skill levels from the database.'''
+
+
+        fields = "l.index_id as index_id, l.name as name"
+        sort = "l.name ASC"
+
+        where_object = None
+        joins = None
+
+        return query_db (
+            fields,
+            "skill_levels l", 
+            where_object,
+            sort,
+            joins
+        )
+
+    @staticmethod
+    def get_students_skills_grid():
+        '''Get students assigned to skills'''
+        fields = 'index_id as index_id, student_id, skill_id, level_id'
+        sort = None
+        where_object = None
+        joins = None
+        return query_db (
+            fields,
+            "students_skills", 
+            where_object,
+            sort,
+            joins
+        )
+
+
+class TeamRepository:
+    '''Used to get team information from the db'''
+    @staticmethod
+    def list_all(status):
+        '''Fetches the list of teams from the database.'''
+
+        fields = "teams.index_id as index_id, " \
+            "teams.name, " \
+            "teams.description, " \
+            "teams.the_order, " \
+            "teams.status_id"
+        sort = "teams.the_order ASC"
+
+        joins = None
+
+        where_object = None
+
+        if status == "active":
+            where_object = {
+                "connector": "AND",
+                "conditions": [
+                    {
+                        "column": "teams.status_id", 
+                        "operator": "=", 
+                        "value": 1
+                    }
+                ],
+            }
+
+        return query_db (
+            fields,
+            "teams", 
+            where_object,
+            sort,
+            joins
+        )
+
+    @staticmethod
+    def list_all_tech_teams(status):
+        '''Fetches the list of tech teams from the database.'''
+
+        fields = "t.index_id as index_id, " \
+            "t.name, " \
+            "t.description, " \
+            "t.the_order, " \
+            "t.status_id"
+        sort = "t.the_order ASC"
+
+        joins = None
+
+        where_object = None
+
+        if status == "active":
+            where_object = {
+                "connector": "AND",
+                "conditions": [
+                    {
+                        "column": "t.status_id", 
+                        "operator": "=", 
+                        "value": 1
+                    }
+                ],
+            }
+
+        return query_db (
+            fields,
+            "tech_teams t", 
+            where_object,
+            sort,
+            joins
+        )
 
 class InventoryRepository:
     '''Repository for Inventory'''

@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <!-- h1>Enter Channel Number to set Full or Out</h1 -->
+
+{% include 'tech_director/tech_director_menu.html' %}
+
+<!-- Page Content -->
+<div class="w3-main" style="margin-left:200px">
+  <button class="w3-button w3-xlarge w3-hide-large" onclick="w3_open()">&#9776;</button>
+  <div class="w3-container">
+    <h1>
+      Student Skills
+    </h1>
+    <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+    <div class="pageErrorField w3-text-red"></div>
+    <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+    <div id="student-skills-table"></div>
+    <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
+  </div>
+</div>
+
+
+
+<script>
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    const skillLevels = await TechDirectorActions.getSkillLevels()
+    await InitializePageTable(skillLevels)
+  });
+
+  let pageTable = []
+
+  async function InitializePageTable(skillLevels) {
+
+    const response = await fetch('/tech_director/api/students_skills_grid');
+
+    if (!response.ok) {
+        throw new Error(`HTTP error ${response.status}`);
+    }
+
+    const pageErrorField = document.querySelector(".pageErrorField")
+
+  const updateTarget = {
+    endpoint: `/tech_director/api/assign_student_skill/`,
+    idField: "student_id",
+  };
+
+    const data = await response.json();
+
+    const columns = [
+        {
+            title: "Student",
+            field: "name",
+            frozen: true,
+            headerSort: true
+        },
+        ...data.columns.map(skill => ({
+            title: skill.title,
+            field: skill.field,
+            formatter: (cell) => skillLevels[String(cell.getValue())] ?? "",
+
+            editor: "list",
+            editorParams: function (cell) {
+              return {
+                values: skillLevels, // Grabs the loaded team array
+                autocomplete: true,
+                listOnEmpty: true,
+                clearable: true,
+                itemFormatter: function (label, value, item, element) {
+                    return label;
+                }
+              };
+            }
+        }))
+    ];
+
+    pageTable = new Tabulator("#student-skills-table", {
+        data: data.rows,
+        index:"student_id",
+        columns: columns,
+        layout: "fitData",
+        height: "600px"
+        
+    });
+
+    PageSetup.setupManageRecordChanges({
+        table: pageTable,
+        addButton: null,
+        cancelButton: null,
+        errorField: pageErrorField,
+        createEndpoint: null,
+        updateTarget,
+        requiredFields: [],
+        excludedFields: []
+    });
+    
+  }
+
+  
+
+</script>
+
+<script src="{{ url_for('tech_director.static', filename='js/tech_director.js') }}?v={{ version }}"></script>
+
+
+
+{% endblock %}

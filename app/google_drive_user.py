@@ -7,6 +7,7 @@ import logging
 import sys
 import os
 import re
+import json
 from datetime import datetime
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -296,8 +297,9 @@ def gas_list_all_students(creds, state):
         this_function = 'getActiveStudents'
 
     # Target script project ID and the target function name
-    #script_id = 'AKfycbz4GnXz0aof1rmmbGLNk_FCthKl0q1D0hXBLi2T2p6LAfgEFHg5KSjc7rAKnq32B3oG'
-    script_id = 'AKfycbx953vG7sjYy8hycuZL3yZvEruvC87p0lOgUDD6ycKeIxHteUWprC8S6O1F5JZ3tDFp'
+    script_id = 'AKfycbwH8oRUMBJpHiAhICBnwOxatQz_72wI_VtcRScnBjI'
+    #script_id = 'AKfycbztWqVHwHihe5_L4_ZQdDKGVVzNQPNbLzOX7OO1F1Updzzc_pUnvJ7ebrRfGBqfbSZl'
+    
     request = {
         'function': this_function,  # Name of JS function to run
     }
@@ -305,7 +307,7 @@ def gas_list_all_students(creds, state):
     try:
         response = service.scripts().run(scriptId=script_id, body=request).execute() # pylint: disable=maybe-no-member
         # print(response['response']['result'])
-        return response['response']['result']
+        return json.loads(response['response']['result'])
     except HttpError as error:
         return "Error executing script: %s", error
 
@@ -356,7 +358,8 @@ def read_sheet(creds, spreadsheet_id, range_name):
 def main():
     '''Testing only'''
     creds = get_credentials()
-    gas_list_all_students(creds)
+    result = gas_list_all_students(creds, "active")
+    print(result)
     #sheet_id = '1BuNP3ruI6dw-VHDj3erRm--O606qF-Hc0vn25cv81_U'
     #range_name = 'Students!A1:F'
     #data = read_sheet(creds, sheet_id, range_name)

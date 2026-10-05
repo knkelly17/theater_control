@@ -82,6 +82,18 @@
             </div>
 
             <div class="w3-dropdown-hover">
+                <button class="w3-button w3-dark-gray tech_director skills">Tech Skills<i class="fa fa-caret-down"></i></button>
+                <div class="w3-dropdown-content w3-bar-block">
+                    <a href="{{ url_for('tech_director.skills') }}" 
+                       class="w3-button w3-bar-item 
+                       tech_director list_skills"><i class='fa fa-caret-right'></i>List</a>
+                    <a href="{{ url_for('tech_director.students_skills') }}" 
+                       class="w3-button w3-bar-item 
+                       tech_director students_skills"><i class='fa fa-caret-right'></i>Assign Student</a>
+                </div>
+            </div>
+
+            <div class="w3-dropdown-hover">
                 <button class="w3-button w3-dark-gray tech_director inventory">Inventory<i class="fa fa-caret-down"></i></button>
                 <div class="w3-dropdown-content w3-bar-block">
                     <a href="{{ url_for('tech_director.inventory') }}" 
@@ -94,9 +106,9 @@
             </div>
 
         {% if current_user.has_group("admin") %}
-            <a href="{{ url_for('tech_director.upload_students_gsheet') }}"
+            <a href="{{ url_for('tech_director.upload_google_sheets') }}"
             class="w3-button w3-bar-item 
-                    w3-dark-gray tech_director upload_students">Upload Students</a>
+                    w3-dark-gray tech_director upload_google_sheets">Upload From Google</a>
         {% endif %}
 
         </div>

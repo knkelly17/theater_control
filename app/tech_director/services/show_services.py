@@ -2,8 +2,7 @@
 import logging
 
 from app.tech_director.repositories.show_repositories import (
-    ShowRepository,
-    TeamRepository
+    ShowRepository
 )
 
 from app.tech_director.repositories.student_repositories import (
@@ -68,18 +67,3 @@ class ShowService:
         student_details = StudentRepository.get_student_details(student_id)
         student_details[0]['index_id'] = new_assignment_id
         return student_details[0]
-
-class TeamService:
-    '''Class for specific team items'''
-    @staticmethod
-    def list_all(active):
-        '''Fetches the list of students from the database.'''
-        return TeamRepository.list_all(
-            active
-        )
-
-    @staticmethod
-    def place_holder():
-        '''placeholder'''
-        message = 'keeping pylint happy'
-        return message

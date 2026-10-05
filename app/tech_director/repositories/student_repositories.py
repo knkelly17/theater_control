@@ -19,9 +19,9 @@ class StudentRepository:
     '''Functions used for interacting with show db tables'''
 
     @staticmethod
-    def check_for_student(email):
+    def check_for_student(index_id):
         '''Check if a row exists for this student'''
-        return check_row_exists("students", "email", email)
+        return check_row_exists("students", "index_id", index_id)
 
     @staticmethod
     def get_students_all_db():
@@ -138,21 +138,25 @@ class StudentRepository:
             "student_num": "student_num",
             "parent_name": "parent_name",
             "parent_email": "parent_email",
-            "notes":"notes"
+            "preferred_pronouns": "preferred_pronouns",
+            "notes":"notes",
+            "school":"school"
         }
 
-        column = allowed_fields.get(data["field"])
+        index_id = data.pop("index_id", None)
+        data_values = {}
 
-        if column is None:
-            raise ValueError(f"Invalid student field: {data['field']}")
+        for key, value in data.items():
+            column = allowed_fields.get(key)
+            if column is None:
+                raise ValueError(f"Invalid student field: {data['field']}")
+            data_values[column] = value
 
-        data_values = {
-            column: data["value"]
-        }
+        log.warning(data_values)
 
         return update_db(
             "students", 
-            data['index_id'],
+            index_id,
             data_values
         )
 
@@ -163,7 +167,7 @@ class StudentRepository:
         for field in data:
             column = VALID_ASSIGNMENT_FIELDS[assignment_group].get(field)
             if column is None:
-                raise ValueError(f"Invalid student field: {data['field']}")
+                raise ValueError(f"Invalid data field: {data['field']}")
             data_values[field] = data[field]
         inserted_id = insert_db(
             ASSIGNMENT_TABLES[assignment_group],

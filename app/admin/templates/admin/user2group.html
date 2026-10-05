@@ -69,7 +69,7 @@
 
   buildMatrix();
 
-  const currentUserId = {{ current_user.id|tojson }}
+  const currentUserId = "{{ current_user.id|tojson }}"
 
   //Keeping this one local rather than the generic one in script.js
   //as this behaves differently than the typical create/update

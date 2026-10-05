@@ -16,7 +16,7 @@ from app.functions import (
     group_required,
 )
 
-from .services.show_services import ShowService, TeamService
+from .services.show_services import ShowService
 from .services.student_services import StudentService
 
 from .tech_director_forms import TechDirectorForm
@@ -70,14 +70,6 @@ def students_shows():
         assignment_group='show',
     )
 
-
-@tech_director_bp.route('/api/list_teams_options/', methods=['GET'])
-@login_required
-@group_required("tech_director_admin")
-def list_teams_options():
-    '''get a list of teams for drop down selction'''
-    all_teams =  TeamService.list_all('active')
-    return jsonify(all_teams)
 
 # /tech_director/api/get_show_assigments/${show_id}
 

@@ -96,6 +96,17 @@
           return getHighSchoolClass(data.graduation_year);
         }
       },
+      {
+        title: "School", 
+        field: "school", 
+        editor: "list",
+        editorParams:{values:["MHS", "SMHS"]},
+        headerFilter: "list", // Renders the dropdown filter
+        headerFilterParams: {
+            valuesLookup: true, // Automatically grabs unique values from this column
+            clearable: true     // Adds an 'x' button to clear the filter
+        }
+      },
       {title:"Notes", field:"notes", editor:"input"},
       {
         title:"Active",
@@ -111,8 +122,8 @@
           cell.setValue(!cell.getValue());
         },
       },
-      {title:"Parents' Name(s)", field:"parentName", editor:"input"},
-      {title:"Parent's Email", field:"parentEmail", editor:"input"},
+      {title:"Parents' Name(s)", field:"parent_name", editor:"input"},
+      {title:"Parent's Email", field:"parent_email", editor:"input"},
     ],
     });
 

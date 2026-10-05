@@ -126,7 +126,7 @@
     const show_id = sessionStorage.getItem("activeShowId");
     if (show_id) {
       selectShowDropdown.value = show_id;
-      const teamLabels = await getTeamLabels()
+      const teamLabels = await TechDirectorActions.getTeamLabels()
       await InitializePageTable(teamLabels)
       await loadCurrentShow(show_id);
     }
@@ -223,7 +223,17 @@
                   return label;
               }
             };
-        },
+          },
+          headerFilter: "list", // Renders the dropdown filter
+          headerFilterParams: {
+            values: teamLabels,
+            autocomplete: true,
+            listOnEmpty: true,
+            clearable: true,
+            itemFormatter: function (label) {
+              return label;
+            }
+          }
         },
         {title:"Role", field:"role_description", editor:"input"},
         {title:"Email", field:"email", width:300, editor:"input"},
@@ -271,17 +281,6 @@ async function loadCurrentShow(show_id) {
   const dataUrl = `/tech_director/api/list_show_students/${show_id}`;
   const rows = await TabulatorActions.getData(dataUrl);
   pageTable.setData(rows);
-}
-
-
-async function getTeamLabels() {
-  const rows = await TabulatorActions.getData(
-    "/tech_director/api/list_teams_options/"
-  );
-
-  return Object.fromEntries(
-    rows.map((team) => [String(team.index_id), team.name])
-  );
 }
 
 const selectShowDropdown = document.querySelector('.pick_show_fields');
