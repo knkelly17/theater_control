@@ -3,7 +3,7 @@ import logging
 from app.functions_db import (
     query_db,
     update_db,
-    insert_db
+    insert_db,
 )
 
 log = logging.getLogger(__name__)
@@ -124,7 +124,7 @@ class SkillsRepository:
 
 
         fields = "s.index_id as index_id, " \
-            "s.name, s.team_id, s.status_id"
+            "s.name, s.team_id, s.status_id, s.in_grid"
         sort = "s.name ASC"
 
         where_object = None
@@ -173,7 +173,9 @@ class SkillsRepository:
     @staticmethod
     def get_students_skills_grid():
         '''Get students assigned to skills'''
-        fields = 'index_id as index_id, student_id, skill_id, level_id'
+        fields = "index_id as index_id, student_id, skill_id, level_id, " \
+        "assessed_by, notes, " \
+        "DATE_FORMAT(achieved_date, '%Y-%m-%d') as achieved_date "
         sort = None
         where_object = None
         joins = None
@@ -184,6 +186,44 @@ class SkillsRepository:
             sort,
             joins
         )
+
+    @staticmethod
+    def update_student_skill(update_data):
+        '''Update student skill record'''
+        table_name = "students_skills"
+        field = 'index_id'
+        where_object = {
+            "connector": "AND",
+            "conditions": [
+                {
+                    "column": "student_id", 
+                    "operator": "=", 
+                    "value": update_data['student_id']
+                },
+                {
+                    "column": "skill_id", 
+                    "operator": "=", 
+                    "value": update_data['skill_id']
+                }
+            ],
+        }
+        sort = None
+        joins = None
+        row_exists = query_db (
+            field,
+            table_name,
+            where_object,
+            sort,
+            joins
+        )
+        log.warning(row_exists)
+
+        #if row_exists == 0:
+        #    insert_db(table_name, update_data)
+        if row_exists:
+            return update_db(table_name, row_exists[0]['index_id'], update_data)
+        else:
+            return insert_db(table_name, update_data)
 
 
 class TeamRepository:

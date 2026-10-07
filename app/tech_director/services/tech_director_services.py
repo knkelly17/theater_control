@@ -78,7 +78,7 @@ class SkillsService:
             'level_id':data['value']
         }
         log.warning(update_data)
-        return()
+        return SkillsRepository.update_student_skill(update_data)
         #return SkillsRepository.update_skill(data)
 
     @staticmethod
@@ -92,21 +92,59 @@ class SkillsService:
         student_list = AVClubService.list_avclub_students('active')
         skill_list = SkillsService.list_all('active')
         student_skills = SkillsRepository.get_students_skills_grid()
+
         columns = []
+        skill_template = {}
+
         for skill in skill_list:
-            skill_row = {
-                'field':f"skill_{skill['index_id']}",
-                'skill_id':skill['index_id'],
-                'title':skill['name']
+
+            skill_id = skill["index_id"]
+
+            if skill["in_grid"] == 1:
+                skill_row = {
+                    "field": f"skill_{skill_id}",
+                    "skill_id": skill_id,
+                    "title": skill["name"]
+                }
+
+                columns.append(skill_row)
+
+            skill_template[skill_id] = {
+                "skill_id": skill_id,
+                "level_id": None,
+                "achieved_date": None,
+                "assessed_by": None
             }
-            columns.append(skill_row)
 
+        student_skill_lookup = {}
+        student_details = {}
 
+        for ss in student_skills:
 
-        student_skill_lookup = {
-            (ss["student_id"], ss["skill_id"]): ss["level_id"]
-            for ss in student_skills
-        }
+            student_id = ss["student_id"]
+            skill_id = ss["skill_id"]
+
+            # Main grid lookup
+            student_skill_lookup[(student_id, skill_id)] = ss["level_id"]
+
+            # Create student's detail list if necessary
+            if student_id not in student_details:
+                student_details[student_id] = {
+                    skill_id: skill.copy()
+                    for skill_id, skill in skill_template.items()
+                }
+
+            # Overlay the actual assessment
+            student_details[student_id][skill_id].update({
+                "level_id": ss["level_id"],
+                "achieved_date": ss["achieved_date"],
+                "assessed_by": ss["assessed_by"]
+            })
+
+        for student_id in student_details:
+            student_details[student_id] = list(
+                student_details[student_id].values()
+            )
 
         rows = []
 
@@ -118,22 +156,20 @@ class SkillsService:
             }
 
             for skill in skill_list:
-                skills_id = skill["index_id"]
+                if skill['in_grid'] == 1:
+                    skills_id = skill["index_id"]
 
-                row[f"skill_{skills_id}"] = student_skill_lookup.get(
-                    (student["student_id"], skills_id)
-                )
+                    row[f"skill_{skills_id}"] = student_skill_lookup.get(
+                        (student["student_id"], skills_id)
+                    )
 
             rows.append(row)
 
-
-        student_skills_grid = {
+        return {
             'columns':columns,
-            'rows': rows}
-
-        log.warning(student_skills_grid)
-
-        return student_skills_grid
+            'rows': rows,
+            'student_details': student_details
+        }
 
 
 class TeamService:

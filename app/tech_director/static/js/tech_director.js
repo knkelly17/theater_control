@@ -30,6 +30,16 @@ const TechDirectorActions = {
         );
     },
 
+    async  getSkillList() {
+        const rows = await TabulatorActions.getData(
+            "/tech_director/api/list_skills/all"
+        );
+
+        return Object.fromEntries(
+            rows.map((skills) => [String(skills.index_id), skills.name])
+        );
+    },
+
     async  refreshAvailableStudentOptions(exclude) {
 
         const select = document.getElementById("student_id");

@@ -26,12 +26,13 @@
 
   document.addEventListener("DOMContentLoaded", async () => {
     const skillLevels = await TechDirectorActions.getSkillLevels()
-    await InitializePageTable(skillLevels)
+    const skillList = await TechDirectorActions.getSkillList()
+    await InitializePageTable(skillLevels, skillList)
   });
 
   let pageTable = []
 
-  async function InitializePageTable(skillLevels) {
+  async function InitializePageTable(skillLevels, skillList) {
 
     const response = await fetch('/tech_director/api/students_skills_grid');
 
@@ -41,19 +42,100 @@
 
     const pageErrorField = document.querySelector(".pageErrorField")
 
-  const updateTarget = {
-    endpoint: `/tech_director/api/assign_student_skill/`,
-    idField: "student_id",
-  };
+    const updateTarget = {
+      endpoint: `/tech_director/api/assign_student_skill/`,
+      idField: "student_id",
+    };
 
     const data = await response.json();
+    /////////Testing only///////////
+    var testTableData = [
+      {
+          student_id: 1, 
+          name: "Oli Folkerd", 
+          skill_1: "Developer",
+          // Sub-table data specific to this row
+          history: [
+              { date: "2026-01-01", action: "Created Project" },
+              { date: "2026-02-15", action: "Updated Styles" }
+          ]
+      }
+    ];
+
+
+    ////////////////////////////////
 
     const columns = [
         {
             title: "Student",
             field: "name",
             frozen: true,
-            headerSort: true
+            headerSort: true,
+            formatter: function(cell, formatterParams, onRendered) {
+                var value = cell.getValue();
+                // Return a wrapped layout: icon first, then the text value
+                return `<i class="toggle-icon fa fa-caret-right" style="width: 15px; cursor: pointer; margin-right: 5px;"></i> ${value}`;            
+              },
+            cellClick: function(e, cell){
+              // e - the click event object
+              // cell - the cell component
+              const value = cell.getValue();
+              const currentRow = cell.getRow();
+              const rowData = cell.getRow().getData();
+              const student_id = rowData.student_id;
+              
+              //console.log("Student ID: ", student_id);
+
+              const rowEl = currentRow.getElement();
+              const holder = rowEl._subTableHolder;
+              const subTable = rowEl._subTableInstance;
+              const iconEl = cell.getElement().querySelector(".toggle-icon");
+
+              if (holder) {
+                  // 1. If we are expanding a row, collapse all other rows first
+                  if (holder.style.display === "none") {
+                      
+                      // Get all visible rows in the table
+                      const allRows = cell.getTable().getRows("active");
+                      
+                      allRows.forEach(function(row) {
+                          // Skip the row the user just clicked
+                          if (row.getIndex() !== currentRow.getIndex()) {
+                              const otherRowEl = row.getElement();
+                              const otherHolder = otherRowEl._subTableHolder;
+                              
+                              // If an open sub-table container is found, collapse it
+                              if (otherHolder && otherHolder.style.display === "block") {
+                                  otherHolder.style.display = "none";
+                                  
+                                  // Find and reset the caret icon on that other row
+                                  const otherIconEl = otherRowEl.querySelector(".toggle-icon");
+                                  if (otherIconEl) {
+                                      otherIconEl.classList.remove("fa-caret-down");
+                                      otherIconEl.classList.add("fa-caret-right");
+                                  }
+                              }
+                          }
+                      });
+
+                      // 2. Now safely expand the current row
+                      holder.style.display = "block";
+                      if (iconEl) {
+                          iconEl.classList.remove("fa-caret-right");
+                          iconEl.classList.add("fa-caret-down");
+                      }
+                      subTable.redraw(true); // Recalculate column widths
+                      
+                  } else {
+                      // 3. If the user clicked an already open row, just collapse it
+                      holder.style.display = "none";
+                      if (iconEl) {
+                          iconEl.classList.remove("fa-caret-down");
+                          iconEl.classList.add("fa-caret-right");
+                      }
+                  }
+              }
+            } 
         },
         ...data.columns.map(skill => ({
             title: skill.title,
@@ -78,10 +160,60 @@
     pageTable = new Tabulator("#student-skills-table", {
         data: data.rows,
         index:"student_id",
+        dataLoader: false,
+        layout:"fitDataTable",
         columns: columns,
-        layout: "fitData",
-        height: "600px"
-        
+        rowFormatter: function(row) {
+          const holderEl = document.createElement("div");
+          const tableEl = document.createElement("div");
+
+          // Start hidden by default
+          holderEl.style.display = "none"; 
+          holderEl.style.padding = "10px 10px 10px 30px";
+          holderEl.style.background = "#f9f9f9";
+
+          holderEl.appendChild(tableEl);
+          row.getElement().appendChild(holderEl);
+          //console.log(data.student_details[row.getIndex()])
+
+          // Build the inner Tabulator instance
+          var subTable = new Tabulator(tableEl, {
+              data: data.student_details[row.getIndex()],
+              //data: testTableData,
+              layout: "fitColumns",
+              index: "skill_id",
+              columns: [
+                  { 
+                    title: "Skill", 
+                    field: "skill_id",
+                    formatter: (cell) => skillList[String(cell.getValue())] ?? "",
+                  },
+                  {
+                    title: "Level",
+                    field: "level_id",
+                    formatter: (cell) => skillLevels[String(cell.getValue())] ?? "",
+
+                    editor: "list",
+                    editorParams: function (cell) {
+                      return {
+                        values: skillLevels, // Grabs the loaded team array
+                        autocomplete: true,
+                        listOnEmpty: true,
+                        clearable: true,
+                        itemFormatter: function (label, value, item, element) {
+                            return label;
+                        }
+                      };
+                    }
+                  },
+              ]
+        });
+
+        // CRITICAL: Cache a reference to the element on the DOM row object 
+        // so we can grab it later during the click event
+        row.getElement()._subTableHolder = holderEl;
+        row.getElement()._subTableInstance = subTable;
+      }
     });
 
     PageSetup.setupManageRecordChanges({

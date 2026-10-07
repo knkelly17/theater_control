@@ -75,42 +75,56 @@
         editor:"input",
         headerFilter:"input"
       },
-        {
-          title:"Team", 
-          field:"team_id",
-          formatter: (cell) => teamLabels[String(cell.getValue())] ?? "",
-          editor: "list", // Inline select menu
-          editorParams: function (cell) {
-            return {
-              values: teamLabels, // Grabs the loaded team array
-              autocomplete: true,
-              listOnEmpty: true,
-              clearable: true,
-              itemFormatter: function (label, value, item, element) {
-                  return label;
-              }
-            };
-          },
-          headerFilter: "list", // Renders the dropdown filter
-          headerFilterParams: {
-            values: teamLabels,
+      {
+        title:"Team", 
+        field:"team_id",
+        formatter: (cell) => teamLabels[String(cell.getValue())] ?? "",
+        editor: "list", // Inline select menu
+        editorParams: function (cell) {
+          return {
+            values: teamLabels, // Grabs the loaded team array
             autocomplete: true,
             listOnEmpty: true,
             clearable: true,
-            itemFormatter: function (label) {
-              return label;
+            itemFormatter: function (label, value, item, element) {
+                return label;
             }
+          };
+        },
+        headerFilter: "list", // Renders the dropdown filter
+        headerFilterParams: {
+          values: teamLabels,
+          autocomplete: true,
+          listOnEmpty: true,
+          clearable: true,
+          itemFormatter: function (label) {
+            return label;
           }
-        },     
+        }
+      }, 
+      {
+      title:"In Grid",
+      field:"in_grid",
+      hozAlign:"center", 
+      formatter:"tickCross",
+      formatterParams: {
+        allowTruthy: true,
+        tickElement:"<i class='fa fa-check'></i>",
+        crossElement:"<i class='fa fa-times'></i>",
+      },
+      cellClick: function (e, cell) {
+        cell.setValue(!cell.getValue());
+      },
+      },    
       {
         title:"Active",
         field:"status_id",
         hozAlign:"center", 
         formatter:"tickCross",
         formatterParams: {
-         allowTruthy: true,
-         tickElement:"<i class='fa fa-check'></i>",
-         crossElement:"<i class='fa fa-times'></i>",
+          allowTruthy: true,
+          tickElement:"<i class='fa fa-check'></i>",
+          crossElement:"<i class='fa fa-times'></i>",
         },
         cellClick: function (e, cell) {
           cell.setValue(!cell.getValue());
