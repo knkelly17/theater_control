@@ -7,7 +7,7 @@
     position: static;
   }
 
-  #tech_directorSidebar .w3-dropdown-hover {
+  #tech_directorSidebar .w3-dropdown-click {
     display: block;
     float: none;
   }
@@ -60,18 +60,30 @@
                 class="w3-button w3-bar-item 
                     w3-left w3-dark-gray tech_director av_club_members">AV Club</a-->
 
-            <div class="w3-dropdown-hover">
-                <button class="w3-button w3-dark-gray tech_director av_club_members">AV Club<i class="fa fa-caret-down"></i></button>
-                <div class="w3-dropdown-content w3-bar-block">
+            <div class="w3-dropdown-click">
+                <button 
+                    type="button"
+                    class="w3-button w3-dark-gray tech_director av_club_members"
+                    data-menu-toggle
+                    aria-expanded="{{ 'true' if base == 'av_club_members' else 'false' }}">
+                    AV Club<i class="fa fa-caret-down"></i></button>
+                <div class="w3-dropdown-content w3-bar-block
+                  {% if base == 'av_club_members' %}w3-show{% endif %}">
                     <a href="{{ url_for('tech_director.av_club_members') }}" 
                        class="w3-button w3-bar-item 
                        tech_director assign_student"><i class='fa fa-caret-right'></i>Assign Student</a>
                 </div>
             </div>
     
-            <div class="w3-dropdown-hover">
-                <button class="w3-button w3-dark-gray tech_director shows">Shows/Events<i class="fa fa-caret-down"></i></button>
-                <div class="w3-dropdown-content w3-bar-block">
+            <div class="w3-dropdown-click">
+                <button 
+                    type="button"
+                    class="w3-button w3-dark-gray tech_director shows"
+                    data-menu-toggle
+                    aria-expanded="{{ 'true' if base == 'shows' else 'false' }}">
+                    Shows/Events<i class="fa fa-caret-down"></i></button>
+                <div class="w3-dropdown-content w3-bar-block
+                  {% if base == 'shows' %}w3-show{% endif %}">
                     <a href="{{ url_for('tech_director.shows') }}" 
                        class="w3-button w3-bar-item 
                        tech_director list_show"><i class='fa fa-caret-right'></i>List</a>
@@ -81,9 +93,16 @@
                 </div>
             </div>
 
-            <div class="w3-dropdown-hover">
-                <button class="w3-button w3-dark-gray tech_director skills">Tech Skills<i class="fa fa-caret-down"></i></button>
-                <div class="w3-dropdown-content w3-bar-block">
+            <div class="w3-dropdown-click">
+                <button
+                    type="button"
+                    class="w3-button w3-dark-gray tech_director skills"
+                    data-menu-toggle
+                    aria-expanded="{{ 'true' if base == 'skills' else 'false' }}">
+                    Tech Skills <i class="fa fa-caret-down"></i>
+                </button>
+                <div class="w3-dropdown-content w3-bar-block
+                  {% if base == 'skills' %}w3-show{% endif %}">
                     <a href="{{ url_for('tech_director.skills') }}" 
                        class="w3-button w3-bar-item 
                        tech_director list_skills"><i class='fa fa-caret-right'></i>List</a>
@@ -93,15 +112,25 @@
                 </div>
             </div>
 
-            <div class="w3-dropdown-hover">
-                <button class="w3-button w3-dark-gray tech_director inventory">Inventory<i class="fa fa-caret-down"></i></button>
-                <div class="w3-dropdown-content w3-bar-block">
-                    <a href="{{ url_for('tech_director.inventory') }}" 
-                       class="w3-button w3-bar-item 
-                       tech_director list_inventory"><i class='fa fa-caret-right'></i>Inventory List</a>
-                    <a href="{{ url_for('tech_director.inventory_check_out') }}" 
-                       class="w3-button w3-bar-item 
-                       tech_director inventory_check_out"><i class='fa fa-caret-right'></i>Inventory Check Out</a>
+            <div class="w3-dropdown-click">
+                 <button
+                    type="button"
+                    class="w3-button w3-dark-gray tech_director inventory"
+                    data-menu-toggle
+                    aria-expanded="{{ 'true' if base == 'inventory' else 'false' }}">
+                    Inventory <i class="fa fa-caret-down"></i>
+                </button>
+
+                <div class="w3-dropdown-content w3-bar-block
+                  {% if base == 'inventory' %}w3-show{% endif %}">
+                    <a href="{{ url_for('tech_director.inventory') }}"
+                    class="w3-button w3-bar-item tech_director list_inventory">
+                        <i class="fa fa-caret-right"></i>Inventory List
+                    </a>
+                    <a href="{{ url_for('tech_director.inventory_check_out') }}"
+                    class="w3-button w3-bar-item tech_director inventory_check_out">
+                        <i class="fa fa-caret-right"></i>Inventory Check Out
+                    </a>
                 </div>
             </div>
 
@@ -125,6 +154,33 @@ function w3_open() {
 function w3_close() {
   document.getElementById("tech_directorSidebar").style.display = "none";
 }
+
+document.querySelectorAll("#tech_directorSidebar [data-menu-toggle]")
+  .forEach((button) => {
+    button.addEventListener("click", () => {
+      const submenu = button.nextElementSibling;
+      const wasOpen = submenu.classList.contains("w3-show");
+
+      // Close every menu first.
+      document.querySelectorAll(
+        "#tech_directorSidebar .w3-dropdown-content"
+      ).forEach((menu) => {
+        menu.classList.remove("w3-show");
+      });
+
+      document.querySelectorAll(
+        "#tech_directorSidebar [data-menu-toggle]"
+      ).forEach((toggle) => {
+        toggle.setAttribute("aria-expanded", "false");
+      });
+
+      // Reopen the clicked menu unless it was already open.
+      if (!wasOpen) {
+        submenu.classList.add("w3-show");
+        button.setAttribute("aria-expanded", "true");
+      }
+    });
+  });
 
 </script>
 
