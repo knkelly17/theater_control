@@ -39,28 +39,38 @@ const TabulatorActions = {
 
     },
 
-    async updateCell(cell, { endpoint, idField }, nullableFields = []) {
+    async sendCellUpdate(cell, endpoint, payload) {
+        const payloadToSend = normalizePayloadForDb(payload);
 
-        const rowValues = cell.getRow().getData();
-
-        const value = nullableFields.includes(cell.getField()) && cell.getValue() === ""
-            ? null
-            : cell.getValue();
-
-        const rowData = {
-            index_id: rowValues[idField],
-            field: cell.getField(),
-            value,
-        };
-
-        payloadToSend = normalizePayloadForDb(rowData)
-
-
-        const data = await api.put(
+        await api.put(
             endpoint,
             preparePayload(payloadToSend),
         );
-    }, 
+
+        cell.getElement().classList.add("w3-pale-green");
+        setTimeout(
+            () => cell.getElement().classList.remove("w3-pale-green"),
+            1000,
+        );
+    },
+
+    async updateCell(cell, { endpoint, idField }, nullableFields = []) {
+        const rowValues = cell.getRow().getData();
+        const value = nullableFields.includes(cell.getField()) &&
+            cell.getValue() === ""
+            ? null
+            : cell.getValue();
+
+        return TabulatorActions.sendCellUpdate(cell, endpoint, {
+            index_id: rowValues[idField],
+            field: cell.getField(),
+            value,
+        });
+    },
+
+    async updateSubTableCell(cell, payload, endpoint) {
+        return TabulatorActions.sendCellUpdate(cell, endpoint, payload);
+    },
 
     async getData(endpoint) {
         try {

@@ -77,8 +77,72 @@ def insert_db(table_name, data_values):
         query = f'INSERT INTO {table_name} ({field_string}) VALUES ({values_string})'
         cursor.execute(query, params)
         db.commit()
-        inserted_id = cursor.lastrowid
-        return inserted_id
+        return cursor.lastrowid
+
+def upsert_db(table_name, data_values, update_fields, id_field="index_id"):
+    '''Insert a row or update designated fields when a unique key conflicts.'''
+    data_values = {
+        **data_values,
+        "sessionid": current_user.sessionid,
+    }
+
+    field_string = ", ".join(data_values)
+    values_string = ", ".join(["%s"] * len(data_values))
+    update_string = ", ".join(
+        [f"{id_field} = LAST_INSERT_ID({id_field})"]
+        + [
+            f"{field} = VALUES({field})"
+            for field in update_fields
+        ]
+    )
+
+    query = f"""
+        INSERT INTO {table_name} ({field_string})
+        VALUES ({values_string})
+        ON DUPLICATE KEY UPDATE
+            {update_string}
+    """
+
+    with get_db() as db:
+        cursor = db.cursor(dictionary=True)
+        cursor.execute(query, tuple(data_values.values()))
+        db.commit()
+        return cursor.lastrowid
+
+def upsert_db_og(table_name, data_values, update_fields, id_field="index_id"):
+    '''Insert a row or update designated fields when a unique key conflicts.'''
+    data_values['sessionid'] = current_user.sessionid
+
+    field_list = []
+    values_list = []
+    params = []
+
+    for field, value in data_values.items():
+        field_list.append(field)
+        values_list.append("%s")
+        params.append(value)
+
+    field_string = ", ".join(field_list)
+    values_string = ", ".join(values_list)
+    update_list = [f"{id_field} = LAST_INSERT_ID({id_field})"]
+    update_list.extend(
+        f"{field} = VALUES({field})"
+        for field in update_fields
+    )
+    update_string = ", ".join(update_list)
+
+    query = f"""
+        INSERT INTO {table_name} ({field_string})
+        VALUES ({values_string})
+        ON DUPLICATE KEY UPDATE
+            {update_string}
+    """
+
+    with get_db() as db:
+        cursor = db.cursor(dictionary=True)
+        cursor.execute(query, params)
+        db.commit()
+        return cursor.lastrowid
 
 def delete_db(
         table_name,

@@ -12,6 +12,7 @@
     <h1>
       Student Skills
     </h1>
+    <p>Click on the student's name to access more skills</p>
     <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
     <div class="pageErrorField w3-text-red"></div>
     <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
@@ -30,6 +31,40 @@
     await InitializePageTable(skillLevels, skillList)
   });
 
+  const assign_endpoint = "/tech_director/api/assign_student_skill/";
+
+  async function handleSubTableCellEdit(cell, parentRow) {
+    console.log("This function is called")
+    const parentData = parentRow.getData();
+    const subTableRecord = cell.getRow().getData();
+
+    const payload = {
+      // Retains the payload shape expected by the current service method.
+      index_id: parentData.student_id,
+      field: `skill_${subTableRecord.skill_id}`,
+      value: cell.getValue() || null,
+    };
+
+    console.log("Saving skill update:", payload);
+
+    try {
+      await api.put(
+        "/tech_director/api/assign_student_skill/",
+        preparePayload(payload),
+      );
+
+      cell.getElement().classList.add("w3-pale-green");
+      setTimeout(
+        () => cell.getElement().classList.remove("w3-pale-green"),
+        1000,
+      );
+    } catch (error) {
+      console.error("Unable to save skill update:", error);
+      cell.getElement().classList.add("w3-pale-red");
+    }
+  }
+
+
   let pageTable = []
 
   async function InitializePageTable(skillLevels, skillList) {
@@ -43,27 +78,11 @@
     const pageErrorField = document.querySelector(".pageErrorField")
 
     const updateTarget = {
-      endpoint: `/tech_director/api/assign_student_skill/`,
+      endpoint: assign_endpoint,
       idField: "student_id",
     };
 
     const data = await response.json();
-    /////////Testing only///////////
-    var testTableData = [
-      {
-          student_id: 1, 
-          name: "Oli Folkerd", 
-          skill_1: "Developer",
-          // Sub-table data specific to this row
-          history: [
-              { date: "2026-01-01", action: "Created Project" },
-              { date: "2026-02-15", action: "Updated Styles" }
-          ]
-      }
-    ];
-
-
-    ////////////////////////////////
 
     const columns = [
         {
@@ -171,7 +190,6 @@
           holderEl.style.display = "none"; 
           holderEl.style.padding = "10px 10px 10px 30px";
           holderEl.style.background = "#f9f9f9";
-
           holderEl.appendChild(tableEl);
           row.getElement().appendChild(holderEl);
           //console.log(data.student_details[row.getIndex()])
@@ -179,7 +197,6 @@
           // Build the inner Tabulator instance
           var subTable = new Tabulator(tableEl, {
               data: data.student_details[row.getIndex()],
-              //data: testTableData,
               layout: "fitColumns",
               index: "skill_id",
               columns: [
@@ -206,7 +223,23 @@
                       };
                     }
                   },
-              ]
+              ],
+              //Register the event listener right here inside the configuration block!
+              
+        });
+        subTable.on("cellEdited", (cell) => {
+          const parentData = row.getData();
+          const subTableRecord = cell.getRow().getData();
+          const payload = {
+            index_id: parentData.student_id,
+            field: `skill_${subTableRecord.skill_id}`,
+            value: cell.getValue() === "" ? null : cell.getValue(),
+          };
+          TabulatorActions.updateSubTableCell(
+            cell,
+            payload,
+            assign_endpoint
+          );
         });
 
         // CRITICAL: Cache a reference to the element on the DOM row object 

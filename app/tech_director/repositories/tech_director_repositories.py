@@ -4,6 +4,8 @@ from app.functions_db import (
     query_db,
     update_db,
     insert_db,
+    delete_db,
+    upsert_db
 )
 
 log = logging.getLogger(__name__)
@@ -123,9 +125,9 @@ class SkillsRepository:
         '''Fetches the list of skills from the database.'''
 
 
-        fields = "s.index_id as index_id, " \
+        fields = "s.index_id as index_id, s.display_order, " \
             "s.name, s.team_id, s.status_id, s.in_grid"
-        sort = "s.name ASC"
+        sort = "s.display_order ASC"
 
         where_object = None
 
@@ -189,41 +191,36 @@ class SkillsRepository:
 
     @staticmethod
     def update_student_skill(update_data):
-        '''Update student skill record'''
+        '''Insert, update, or remove a student's skill level.'''
         table_name = "students_skills"
-        field = 'index_id'
-        where_object = {
-            "connector": "AND",
-            "conditions": [
-                {
-                    "column": "student_id", 
-                    "operator": "=", 
-                    "value": update_data['student_id']
-                },
-                {
-                    "column": "skill_id", 
-                    "operator": "=", 
-                    "value": update_data['skill_id']
-                }
-            ],
-        }
-        sort = None
-        joins = None
-        row_exists = query_db (
-            field,
-            table_name,
-            where_object,
-            sort,
-            joins
-        )
-        log.warning(row_exists)
 
-        #if row_exists == 0:
-        #    insert_db(table_name, update_data)
-        if row_exists:
-            return update_db(table_name, row_exists[0]['index_id'], update_data)
-        else:
-            return insert_db(table_name, update_data)
+
+        if not update_data['level_id']:
+            where_object = {
+                "connector": "AND",
+                "conditions": [
+                    {
+                        "column": "student_id",
+                        "operator": "=",
+                        "value": update_data["student_id"],
+                    },
+                    {
+                        "column": "skill_id",
+                        "operator": "=",
+                        "value": update_data["skill_id"],
+                    },
+                ],
+            }
+            return delete_db(table_name, where_object)
+
+        update_fields = ['level_id', 'sessionid']
+
+        return upsert_db(
+            table_name,
+            update_data,
+            update_fields,
+            'index_id'
+        )
 
 
 class TeamRepository:
