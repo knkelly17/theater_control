@@ -12,7 +12,7 @@
     <h1>
       Student Skills
     </h1>
-    <p>Click on the student's name to access more skills</p>
+    <p>Click on the row to access more skills and more skill details.</p>
     <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
     <div class="pageErrorField w3-text-red"></div>
     <div class="w3-row"><div class="w3-col m6 l4">&nbsp;</div></div>
@@ -31,39 +31,45 @@
     await InitializePageTable(skillLevels, skillList)
   });
 
-  const assign_endpoint = "/tech_director/api/assign_student_skill/";
+  function toggleSubTable(cell) {
+    const currentRow = cell.getRow();
+    const rowEl = currentRow.getElement();
+    const holder = rowEl._subTableHolder;
+    const subTable = rowEl._subTableInstance;
+    const iconEl = rowEl.querySelector(".toggle-icon");
 
-  async function handleSubTableCellEdit(cell, parentRow) {
-    console.log("This function is called")
-    const parentData = parentRow.getData();
-    const subTableRecord = cell.getRow().getData();
-
-    const payload = {
-      // Retains the payload shape expected by the current service method.
-      index_id: parentData.student_id,
-      field: `skill_${subTableRecord.skill_id}`,
-      value: cell.getValue() || null,
-    };
-
-    console.log("Saving skill update:", payload);
-
-    try {
-      await api.put(
-        "/tech_director/api/assign_student_skill/",
-        preparePayload(payload),
-      );
-
-      cell.getElement().classList.add("w3-pale-green");
-      setTimeout(
-        () => cell.getElement().classList.remove("w3-pale-green"),
-        1000,
-      );
-    } catch (error) {
-      console.error("Unable to save skill update:", error);
-      cell.getElement().classList.add("w3-pale-red");
+    if (!holder) {
+      return;
     }
+
+    if (holder.style.display === "none") {
+      cell.getTable().getRows("active").forEach((otherRow) => {
+        if (otherRow.getIndex() === currentRow.getIndex()) {
+          return;
+        }
+
+        const otherRowEl = otherRow.getElement();
+        const otherHolder = otherRowEl._subTableHolder;
+
+        if (otherHolder?.style.display === "block") {
+          otherHolder.style.display = "none";
+
+          const otherIcon = otherRowEl.querySelector(".toggle-icon");
+          otherIcon?.classList.replace("fa-caret-down", "fa-caret-right");
+        }
+      });
+
+      holder.style.display = "block";
+      iconEl?.classList.replace("fa-caret-right", "fa-caret-down");
+      subTable.redraw(true);
+      return;
+    }
+
+    holder.style.display = "none";
+    iconEl?.classList.replace("fa-caret-down", "fa-caret-right");
   }
 
+  const assign_endpoint = "/tech_director/api/assign_student_skill/";
 
   let pageTable = []
 
@@ -95,84 +101,15 @@
                 // Return a wrapped layout: icon first, then the text value
                 return `<i class="toggle-icon fa fa-caret-right" style="width: 15px; cursor: pointer; margin-right: 5px;"></i> ${value}`;            
               },
-            cellClick: function(e, cell){
-              // e - the click event object
-              // cell - the cell component
-              const value = cell.getValue();
-              const currentRow = cell.getRow();
-              const rowData = cell.getRow().getData();
-              const student_id = rowData.student_id;
-              
-              //console.log("Student ID: ", student_id);
-
-              const rowEl = currentRow.getElement();
-              const holder = rowEl._subTableHolder;
-              const subTable = rowEl._subTableInstance;
-              const iconEl = cell.getElement().querySelector(".toggle-icon");
-
-              if (holder) {
-                  // 1. If we are expanding a row, collapse all other rows first
-                  if (holder.style.display === "none") {
-                      
-                      // Get all visible rows in the table
-                      const allRows = cell.getTable().getRows("active");
-                      
-                      allRows.forEach(function(row) {
-                          // Skip the row the user just clicked
-                          if (row.getIndex() !== currentRow.getIndex()) {
-                              const otherRowEl = row.getElement();
-                              const otherHolder = otherRowEl._subTableHolder;
-                              
-                              // If an open sub-table container is found, collapse it
-                              if (otherHolder && otherHolder.style.display === "block") {
-                                  otherHolder.style.display = "none";
-                                  
-                                  // Find and reset the caret icon on that other row
-                                  const otherIconEl = otherRowEl.querySelector(".toggle-icon");
-                                  if (otherIconEl) {
-                                      otherIconEl.classList.remove("fa-caret-down");
-                                      otherIconEl.classList.add("fa-caret-right");
-                                  }
-                              }
-                          }
-                      });
-
-                      // 2. Now safely expand the current row
-                      holder.style.display = "block";
-                      if (iconEl) {
-                          iconEl.classList.remove("fa-caret-right");
-                          iconEl.classList.add("fa-caret-down");
-                      }
-                      subTable.redraw(true); // Recalculate column widths
-                      
-                  } else {
-                      // 3. If the user clicked an already open row, just collapse it
-                      holder.style.display = "none";
-                      if (iconEl) {
-                          iconEl.classList.remove("fa-caret-down");
-                          iconEl.classList.add("fa-caret-right");
-                      }
-                  }
-              }
-            } 
+            cellClick: (event, cell) => PageSetup.toggleSubTable(cell),
         },
         ...data.columns.map(skill => ({
             title: skill.title,
             field: skill.field,
             formatter: (cell) => skillLevels[String(cell.getValue())] ?? "",
+            editable: false,
+            cellClick: (event, cell) => PageSetup.toggleSubTable(cell),
 
-            editor: "list",
-            editorParams: function (cell) {
-              return {
-                values: skillLevels, // Grabs the loaded team array
-                autocomplete: true,
-                listOnEmpty: true,
-                clearable: true,
-                itemFormatter: function (label, value, item, element) {
-                    return label;
-                }
-              };
-            }
         }))
     ];
 
@@ -183,6 +120,11 @@
         layout:"fitDataTable",
         columns: columns,
         rowFormatter: function(row) {
+          const rowEl = row.getElement();
+
+          if (rowEl._subTableInstance) {
+            return;
+          }
           const holderEl = document.createElement("div");
           const tableEl = document.createElement("div");
 
@@ -223,22 +165,27 @@
                       };
                     }
                   },
+                  {title:"Notes", field:"notes", editor:"input"},
               ],
               //Register the event listener right here inside the configuration block!
               
         });
-        subTable.on("cellEdited", (cell) => {
+        subTable.on("cellEdited", async (cell) => {
           const parentData = row.getData();
           const subTableRecord = cell.getRow().getData();
           const payload = {
-            index_id: parentData.student_id,
-            field: `skill_${subTableRecord.skill_id}`,
+            student_id: parentData.student_id,
+            skill_id: subTableRecord.skill_id,
+            field: cell.getField(),
             value: cell.getValue() === "" ? null : cell.getValue(),
           };
-          TabulatorActions.updateSubTableCell(
+          await TabulatorActions.updateSubTableCell(
             cell,
             payload,
             assign_endpoint
+          );
+          row.getCell(`skill_${subTableRecord.skill_id}`).setValue(
+            cell.getValue(),
           );
         });
 
@@ -249,7 +196,7 @@
       }
     });
 
-    PageSetup.setupManageRecordChanges({
+    /*PageSetup.setupManageRecordChanges({
         table: pageTable,
         addButton: null,
         cancelButton: null,
@@ -259,6 +206,7 @@
         requiredFields: [],
         excludedFields: []
     });
+    */
     
   }
 

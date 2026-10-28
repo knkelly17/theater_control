@@ -190,12 +190,12 @@ class SkillsRepository:
         )
 
     @staticmethod
-    def update_student_skill(update_data):
+    def update_student_skill(field, update_data):
         '''Insert, update, or remove a student's skill level.'''
         table_name = "students_skills"
 
 
-        if not update_data['level_id']:
+        if 'delete_record' in update_data: #need a way to trigger this
             where_object = {
                 "connector": "AND",
                 "conditions": [
@@ -213,7 +213,7 @@ class SkillsRepository:
             }
             return delete_db(table_name, where_object)
 
-        update_fields = ['level_id', 'sessionid']
+        update_fields = [field, 'sessionid']
 
         return upsert_db(
             table_name,

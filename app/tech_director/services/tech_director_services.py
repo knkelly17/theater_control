@@ -72,13 +72,25 @@ class SkillsService:
     @staticmethod
     def update_student_skill(data):
         '''Update student skill info'''
+        field = data['field']
         update_data = {
-            'student_id':data['index_id'],
-            'skill_id':data['field'].replace('skill_',''),
-            'level_id':data['value']
+            'student_id':data['student_id'],
+            'skill_id':data['skill_id'],
+            field:data['value']
         }
-        return SkillsRepository.update_student_skill(update_data)
-        #return SkillsRepository.update_skill(data)
+        ## Need to get rid of this "if"
+        ## would only happen if an update happened
+        ## on the main table - which is now read only.
+        ## Keeping for now.
+        if 'index_in' in data:
+            field = 'level_id'
+            update_data = {
+                'student_id':data['index_id'],
+                'skill_id':data['field'].replace('skill_',''),
+                field:data['value']
+            }
+
+        return SkillsRepository.update_student_skill(field, update_data)
 
     @staticmethod
     def list_all_skill_levels():
@@ -87,6 +99,95 @@ class SkillsService:
 
     @staticmethod
     def get_student_skills_grid():
+        '''build a matrix of students and skills'''
+        data = {
+            'student_list':AVClubService.list_avclub_students('active'),
+            'skill_list':SkillsService.list_all('active'),
+            'student_skills':SkillsRepository.get_students_skills_grid()
+        }
+
+        columns = []
+        skill_template = {}
+
+        for skill in data['skill_list']:
+
+            skill_id = skill["index_id"]
+
+            if skill["in_grid"] == 1:
+                skill_row = {
+                    "field": f"skill_{skill_id}",
+                    "skill_id": skill_id,
+                    "title": skill["name"]
+                }
+
+                columns.append(skill_row)
+
+            skill_template[skill_id] = {
+                "skill_id": skill_id,
+                "level_id": None,
+                "achieved_date": None,
+                "assessed_by": None,
+                "notes": None
+            }
+
+        student_skill_lookup = {}
+        student_details = {}
+
+        for ss in data['student_skills']:
+
+            student_id = ss["student_id"]
+            skill_id = ss["skill_id"]
+
+            # Main grid lookup
+            student_skill_lookup[(student_id, skill_id)] = ss["level_id"]
+
+            # Create student's detail list if necessary
+            if student_id not in student_details:
+                student_details[student_id] = {
+                    skill_id: skill.copy()
+                    for skill_id, skill in skill_template.items()
+                }
+
+            # Overlay the actual assessment
+            student_details[student_id][skill_id].update({
+                "level_id": ss["level_id"],
+                "achieved_date": ss["achieved_date"],
+                "assessed_by": ss["assessed_by"],
+                "notes":ss["notes"]
+            })
+
+        for student_id in student_details:
+            student_details[student_id] = list(
+                student_details[student_id].values()
+            )
+
+        rows = []
+
+        for student in data['student_list']:
+
+            row = {
+                "student_id": student["student_id"],
+                "name": student["full_name"]
+            }
+
+            for skill in data['skill_list']:
+                if skill['in_grid'] == 1:
+                    skills_id = skill["index_id"]
+
+                    row[f"skill_{skills_id}"] = student_skill_lookup.get(
+                        (student["student_id"], skills_id)
+                    )
+
+            rows.append(row)
+
+        return {
+            'columns':columns,
+            'rows': rows,
+            'student_details': student_details
+        }
+
+    @staticmethod
+    def get_student_skills_grid_subtable_filtered(): #DELETE but keep this around for now
         '''build a matrix of students and skills'''
         data = {
             'student_list':AVClubService.list_avclub_students('active'),
@@ -254,6 +355,7 @@ class UploadService:
         added = []
         already_exists = []
         for student in student_data[1:]:
+            log.warning(student[columns.index("email")])
             index_id = student[columns.index("index_id")]
             student_exists = StudentRepository.check_for_student(index_id)
             if student_exists:
@@ -271,8 +373,6 @@ class UploadService:
                     "school":student[columns.index("school")]
                 }
                 StudentRepository.update_student(data_values)
-
-                log.warning("Update for %s is  %s", student[columns.index("email")], student_exists)
                 already_exists.append(student[columns.index("email")])
             else:
                 data_values = {
@@ -288,7 +388,6 @@ class UploadService:
                     "school":student[columns.index("school")]
                 }
                 this_id = StudentRepository.add_student(data_values)
-                log.warning("insert %s with ID %s", student[columns.index("email")], this_id)
                 added.append(student[columns.index("email")])
 
 

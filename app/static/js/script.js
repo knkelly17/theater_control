@@ -188,6 +188,48 @@ const TabulatorActions = {
 
 const PageSetup = {
 
+    toggleSubTable(cell) {
+        const currentRow = cell.getRow();
+        const rowEl = currentRow.getElement();
+        const holder = rowEl._subTableHolder;
+        const subTable = rowEl._subTableInstance;
+        const iconEl = rowEl.querySelector(".toggle-icon");
+
+        if (!holder) {
+            return;
+        }
+
+        if (holder.style.display === "none") {
+            cell.getTable().getRows("active").forEach((otherRow) => {
+                if (otherRow.getIndex() === currentRow.getIndex()) {
+                    return;
+                }
+
+                const otherRowEl = otherRow.getElement();
+                const otherHolder = otherRowEl._subTableHolder;
+
+                if (otherHolder?.style.display === "block") {
+                    otherHolder.style.display = "none";
+
+                    otherRowEl
+                        .querySelector(".toggle-icon")
+                        ?.classList.replace(
+                            "fa-caret-down",
+                            "fa-caret-right",
+                        );
+                }
+            });
+
+            holder.style.display = "block";
+            iconEl?.classList.replace("fa-caret-right", "fa-caret-down");
+            subTable.redraw(true);
+            return;
+        }
+
+        holder.style.display = "none";
+        iconEl?.classList.replace("fa-caret-down", "fa-caret-right");
+    },
+
     activeAllSelection({
         allButton,
         activeButton,
