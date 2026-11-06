@@ -79,8 +79,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        if (Number.isNaN(level) || level < 0 || level > 100) {
-            statusEl.textContent = 'Enter a valid level (0–100)' + level;
+        if (Number.isNaN(level) || level < 0 || level > 1000) {
+            statusEl.textContent = 'Enter a valid level (0–1000)' + level;
             return;
         }
 
