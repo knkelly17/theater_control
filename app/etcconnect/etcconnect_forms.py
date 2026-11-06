@@ -17,7 +17,8 @@ class ETCForm(FlaskForm):
         choices=[
             ('channel', 'Channel'),
             ('address', 'Address'),
-            ('cue', 'Cue')
+            ('cue', 'Cue'),
+            ('go_button', 'Go Button')
         ],
         render_kw={
             'data_role': 'mode',

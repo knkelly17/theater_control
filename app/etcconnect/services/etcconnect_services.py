@@ -89,6 +89,7 @@ class ETCConnectService:
         port = int(get_setting('etc_port'))
 
         mode = data['mode']
+        action = data['action']
         target = str(data['target'])
         level = str(data['level'])
 
@@ -106,6 +107,15 @@ class ETCConnectService:
             return_text = 'Cue ' + level + ' is active'
 
         message = "/eos/"+ mode_code + "/" + target + "/"
+
+        if mode == 'go_button':
+            message = f"/eos/key/{action}"
+            level = ""
+            this_button = "Go Button"
+            if action == 'stop':
+                this_button = "Back Button"
+            return_text = f"{this_button} pushed"
+            log.warning(message)
 
         udp_connect(ip, port, message, level)
 

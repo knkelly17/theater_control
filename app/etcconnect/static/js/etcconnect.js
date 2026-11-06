@@ -9,7 +9,9 @@ document.addEventListener('DOMContentLoaded', () => {
 		const mode = modeEl.value; // "channel", "address" or "cue"
 
 		//show or hid the relevant sections
-		const activeBlock = (mode === 'cue') ? 'cue' : 'channel';
+		const activeBlock = mode === 'cue'
+			? 'cue'
+			: mode === 'go_button' ? 'go' : 'channel';
 		
 		container.querySelectorAll(".etc_block").forEach(el => {
 			const isActive = el.dataset.block === activeBlock;
@@ -73,6 +75,11 @@ document.addEventListener('DOMContentLoaded', () => {
 			level = parseFloat(levelEl.value);
 		}
 
+        if (action === 'go' || action === 'stop') {
+            target = 1
+            level = 0
+        }
+
         // Basic validation
         if (!target || target < 1) {
             statusEl.textContent = 'Enter a valid channel/address';
@@ -80,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (Number.isNaN(level) || level < 0 || level > 1000) {
-            statusEl.textContent = 'Enter a valid level (0–1000)' + level;
+            statusEl.textContent = 'Enter a valid level (0–1000) ' + level;
             return;
         }
 

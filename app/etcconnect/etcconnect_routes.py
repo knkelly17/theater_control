@@ -44,6 +44,8 @@ def etcconnect_control():
 def level_set():
     """Channel/Address level setting or Cue fire."""
 
+    log.warning(request.get_json())
+
     result = ETCConnectService.set_level(request.get_json())
     return jsonify(result)
 
