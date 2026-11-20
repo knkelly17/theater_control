@@ -324,7 +324,7 @@ class InventoryRepository:
         # That can easily be managed with the same status argument
 
         fields = "a.index_id as index_id, i.name, i.index_id as inventory_id, " \
-                "a.student_id, a.status_id, " \
+                "a.student_id, a.status_id, a.notes, " \
                 "DATE_FORMAT(a.assign_date, '%Y-%m-%d') as assign_date, " \
                 "DATE_FORMAT(a.due_date, '%Y-%m-%d') as due_date, " \
                 "DATE_FORMAT(a.returned_date, '%Y-%m-%d') as returned_date "
